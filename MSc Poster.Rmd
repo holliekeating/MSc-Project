@@ -1,12 +1,12 @@
 ---
-title: MSc Health Data Science Project Title
+title: EEG signals during sensory task among schizophrenics and controls
 author:
   - name: Hollie Keating
   - name: Sarah Conway
   - name: Maeve Samali
     affil: 1
 affiliation:
-  - num: 1
+  - num: 1   n
     address: School of Mathematical and Statistical Sciences, University of Galway
 logoleft_name: https&#58;//sport.universityofgalway.ie/assets/img/logo2.png
 
