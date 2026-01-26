@@ -77,6 +77,24 @@ A common problem in clinical research is messed up data[^1]. It can lead to bias
 
 ## Objectives of Project
 
+*Hypothesis*
+
+We hypothesize that individuals with schizophrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions.
+
+We will be using FP1 as a representative frontal electrode
+
+*Why FP1?*
+
+Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
+
+[^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
+
+```         
+![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png)
+```
+git pull --rebase
+
+
 1.  Explain the statistical issue or research question in health data science to be investigated.
 2.  Explore a method of analysis.
 3.  Apply any methods to selected datasets.
@@ -92,6 +110,11 @@ Our data were taken from a cluster-randomised trial [^2], available from the [Ir
 <!-- You can change where you put these breaks, and the "column_numbers: 4" argument in the YAMLS header to change the layout of the poster, with care! -->
 
 #### 
+
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
 
 # Early Results / Descriptive Statistics of Datasets
 
