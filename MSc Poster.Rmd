@@ -1,5 +1,5 @@
 ---
-title: EEG signals during sensory task among schizophrenics and controls
+title: EEG Signals of Schizophrenics
 author:
   - name: Hollie Keating
   - name: Sarah Conway
@@ -62,12 +62,15 @@ library(kableExtra)
 
 # Background and Problem
 
-In this project, we have used EEG data collected from individuals diagnosed with schizophrenia and those without. Three different sensory tests were conducted on the two groups of individuals, and data were collected throughout. In the first test subject pressed a button which immediately generated a sound, in the second test, subjects passively listened to the same sound without pressing the button, and in the third test, subjects pressed the button and no sound was generated. 
+Schizophrenia is associated with impaired sensory gating - the brain's ability to filter out redundant stimuli.
+
+In our data, three different sensory tasks were conducted on cases and controls. The conditions are as follows:
+
+1.  Subjects press a button to immediately produce a sound
+2.  Subjects passively listen to the same sound without pressing a button
+3.  Subjects press a button, and no sound is produced.
 
 We will be looking at N100 & P200 brainwaves, which indicate the attention triggering and allocation process to determine whether sensory gating is occurring here.
-
-
-This template has been produced using the `posterdown` package. It generates a standard conference-style poster layout.
 
 <!-- You can add references by inserting the following ^[reference details here] -->
 
@@ -77,15 +80,15 @@ A common problem in clinical research is messed up data[^1]. It can lead to bias
 
 ## Objectives of Project
 
-1.  Explain the statistical issue or research question in health data science to be investigated.
+1.  Determine whether there is a difference in EEG signals of shizophrenics vs controls
+
 2.  Explore a method of analysis.
+
 3.  Apply any methods to selected datasets.
 
 # Data Sources and Datasets
 
-Our data were taken from a cluster-randomised trial [^2], available from the [Irish Social Science Data Archive](https://www.ucd.ie/issda/data/).
-
-[^2]: Murphy et al. 2005 doi: 10.1186/1468-6708-6-11
+Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [www.kaggle.com/datasets/broach/button-tone-sz/data ](https://www.kaggle.com/datasets/broach/button-tone-sz/data)
 
 <!-- This #### below causes the columns to break -->
 
@@ -152,23 +155,17 @@ ggplotly(p)
 
 We plan to conduct further analysis using:
 
--   Variable discombobulation [^3]
--   Expand our minds with explosive machine learning [^4].
+-   Variable discombobulation [^2]
+-   Expand our minds with explosive machine learning [^3].
 
-[^3]: Massey et al. 2005 doi: 15.36.413
+[^2]: Massey et al. 2005 doi: 15.36.413
 
-[^4]: Smith et al. 1991 doi: 12.36.486
+[^3]: Smith et al. 1991 doi: 12.36.486
 
 We will use the `plasticanalysis` package for this.
 
-
 # GitHub
 
-The code and datasets for this project can be viewed at our GitHub repository here: <https://github.com/>
-
-
+The code and datasets for this project can be viewed at our GitHub repository here: <https://github.com/maeve-susan/MSc-Project>
 
 # References
-
-
-
