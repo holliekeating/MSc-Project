@@ -6,7 +6,7 @@ author:
   - name: Maeve Samali
     affil: 1
 affiliation:
-  - num: 1   n
+  - num: 1   
     address: School of Mathematical and Statistical Sciences, University of Galway
 logoleft_name: https&#58;//sport.universityofgalway.ie/assets/img/logo2.png
 
@@ -74,13 +74,30 @@ We will be looking at N100 & P200 brainwaves, which indicate the attention trigg
 
 <!-- You can add references by inserting the following ^[reference details here] -->
 
-A common problem in clinical research is messed up data[^1]. It can lead to bias or nonsensical results. Appropriate statistical analysis can result in superb findings in such cases, with the right assumptions.
+A common problem in clinical research is messed up data[^1].
 
 [^1]: Evans 2010, doi: 10.6030/1939-067x-3.1.1
 
 ## Objectives of Project
 
-1.  Determine whether there is a difference in EEG signals of shizophrenics vs controls
+***Hypothesis***
+
+We hypothesize that individuals with schizophrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions.
+
+We will be using FP1 as a representative frontal electrode
+
+***Why FP1?***
+
+Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
+
+[^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
+
+```         
+
+![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png)
+```
+
+1.  Explain the statistical issue or research question in health data science to be investigated.
 
 2.  Explore a method of analysis.
 
@@ -88,13 +105,11 @@ A common problem in clinical research is messed up data[^1]. It can lead to bias
 
 # Data Sources and Datasets
 
-Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [www.kaggle.com/datasets/broach/button-tone-sz/data ](https://www.kaggle.com/datasets/broach/button-tone-sz/data)
+Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [www.kaggle.com/datasets/broach/button-tone-sz/data]
 
 <!-- This #### below causes the columns to break -->
 
 <!-- You can change where you put these breaks, and the "column_numbers: 4" argument in the YAMLS header to change the layout of the poster, with care! -->
-
-#### 
 
 # Early Results / Descriptive Statistics of Datasets
 
@@ -155,12 +170,12 @@ ggplotly(p)
 
 We plan to conduct further analysis using:
 
--   Variable discombobulation [^2]
--   Expand our minds with explosive machine learning [^3].
+-   Variable discombobulation [^3]
+-   Expand our minds with explosive machine learning [^4].
 
-[^2]: Massey et al. 2005 doi: 15.36.413
+[^3]: Massey et al. 2005 doi: 15.36.413
 
-[^3]: Smith et al. 1991 doi: 12.36.486
+[^4]: Smith et al. 1991 doi: 12.36.486
 
 We will use the `plasticanalysis` package for this.
 
