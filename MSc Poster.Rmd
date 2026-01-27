@@ -163,20 +163,19 @@ knitr::include_graphics('cond3_permt')
 #### 
 # Conclusions
 
-
-We conclude that we observe a significant difference between case and control, as seen in Figure (fig. \@ref(fig:fig4)). This is indicated by the observed statistic displaying a larger test statistic than the pointwise 0.05 critical value.
-
-It is of noting that we observe a marginally significant difference at approximately T300 in Figure (fig. \@ref(fig:fig5)), and no significant result in Figure (fig. \@ref(fig:fig6)). 
-
-
-This supports our above hypothesis, and gives us 
+Our hypothesis is proven visually by the Figures produced by our t-test. 
+• In Figure \@ref(fig:fig4), we see a statistically significant difference around N400 which approximately increases on average as time increases.
+• Figures \@ref(fig:fig5) and \@ref(fig:fig6) show less significant differences between case and control for conditions 2 & 3 respectively.
+This indicates that both auditory and motor stimuli are required to stimulate an significant EEG response for those with schizophrenia. 
 
 
 # Next Project Steps
 
-We plan to conduct further analysis using:
+We plan to conduct further analysis:
 
--   Functional Principal Component Analysis 
+1.  Test for population / sensor clustering
+2.  Functional Principal Component Analysis
+3.  Repeated tests using other nodes e.g. FP2, FCZ
 
 We will use the `fpca` and `fda` package for this.
 
