@@ -64,9 +64,7 @@ library(kableExtra)
 
 Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking.
 
-Humans typically suppress the brain's response to expected sensory consequences when they result from their own actions, known as sensory gating. This presents as a smaller amplitude brain wave. 
-
-Schizophrenia is associated with impaired sensory gating, i.e. the brain is unable to filter out redundant or expected stimuli effectively[^1].
+Humans typically suppress the brain's response to expected sensory consequences when they result from their own actions, known as sensory gating. This presents as a smaller amplitude brain wave. Schizophrenia is associated with impaired sensory gating[^1].
 
 [^1]: Boutros, N. N., Brockhaus-Dumke, A., Gjini, K., Vedeniapin, A., Elfakhani, M., Burroughs, S., & Keshavan, M. (2009). Sensory-gating deficit of the N100 mid-latency auditory evoked potential in medicated schizophrenia patients. Schizophrenia research, 113(2-3), 339–346. <https://doi.org/10.1016/j.schres.2009.05.019>
 
@@ -83,6 +81,7 @@ We will examine the auditory N100 brainwave (occuring ~100ms after stimulus), wh
 ## Objectives of Project
 
 ***Hypothesis***
+
 We want to determine whether individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during the task conditions.
 
 We hypothesize that there will be a statistically significant difference between the cases and controls at the N100 around 100 ms after the sound.
@@ -113,9 +112,9 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 # Early Results / Descriptive Statistics of Datasets
 
-***Smoothing Process:***
+***Smoothing Process***
 
-•	Principal functional component analysis was applied to smooth the observed data.
+•	Spline smoothing was applied to remove noise from the data.
 
 •	Curves represented by 100 cubic B-spline basis functions along the x-axis between 0 and 1638ms allowing enough flexibility to capture local changes in slope characteristic of brain wave data. 
 
@@ -132,7 +131,7 @@ knitr::include_graphics('mean.fd')
 
 ***Permutation T-Test***
 
-•	FDA method which tests H0 that there is no difference between the two groups and therefore the group labels are arbitrary.  
+•	FDA method which tests $H_0$ that there is no difference between the two groups and therefore the group labels are arbitrary.  
 
 •	Resampling technique which randomly assigns group labels to each group each permutation and computes a test statistic comparing the mean functions.
 
