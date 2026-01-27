@@ -60,7 +60,7 @@ library(plotly)
 library(kableExtra)
 ```
 
-# Background and Problem
+# Background 
 
 Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking.
 
@@ -107,8 +107,7 @@ knitr::include_graphics("nodes.png")
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-# Early Results / Descriptive Statistics of Datasets
-
+# Early Results 
 ***Raw data***
 
 ```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
@@ -165,12 +164,12 @@ knitr::include_graphics('cond3_permt')
 # Conclusions
 
 
-We conclude that we observe a significant difference between case and control, as seen in Figure (fig. \@ref(fig:fig3)). This is indicated by the observed statistic displaying a larger test statistic than the pointwise 0.05 critical value.
+We conclude that we observe a significant difference between case and control, as seen in Figure (fig. \@ref(fig:fig4)). This is indicated by the observed statistic displaying a larger test statistic than the pointwise 0.05 critical value.
+
+It is of noting that we observe a marginally significant difference at approximately T300 in Figure (fig. \@ref(fig:fig5)), and no significant result in Figure (fig. \@ref(fig:fig6)). 
 
 
-
-In Figure (fig. \@ref(fig:fig3)), 
-** hypothesise that clicking and sound suppresses response in a healthy brain and not in schizophrenics therefore we see a significant change. 
+This supports our above hypothesis, and gives us 
 
 
 # Next Project Steps
