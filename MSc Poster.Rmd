@@ -96,11 +96,12 @@ Previous EEG studies reported altered frontal activity and reduced frontal coher
 
 [^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
-<!-- ``` -->
+```{r fig1, echo = FALSE, out.width="100%", fig.cap = "Nodes Cap"}
 
-<!-- ![Image to display the position of chosen FP1 node on EEG receptor cap.](nodespic.png) -->
+knitr::include_graphics("nodespic.png")
 
-<!-- ``` -->
+```
+
 
 # Data Sources and Datasets
 
