@@ -106,9 +106,13 @@ Previous EEG studies reported altered frontal activity and reduced frontal coher
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-<!-- This #### below causes the columns to break -->
+```{r echo = FALSE, out.width = '100%'}
 
-<!-- You can change where you put these breaks, and the "column_numbers: 4" argument in the YAMLS header to change the layout of the poster, with care! -->
+knitr::include_graphics('raw_data')
+
+```
+
+
 
 # Early Results / Descriptive Statistics of Datasets
 
