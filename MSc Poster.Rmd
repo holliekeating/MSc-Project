@@ -77,6 +77,24 @@ A common problem in clinical research is messed up data[^1]. It can lead to bias
 
 ## Objectives of Project
 
+*Hypothesis*
+
+We hypothesise that individuals with schizpohrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions.
+
+We will be using FP1 as a representative frontal electrode
+
+
+*Why FP1?*
+
+Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2022]
+
+[^2022]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
+
+
+```         
+![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png)
+```
+
 1.  Explain the statistical issue or research question in health data science to be investigated.
 2.  Explore a method of analysis.
 3.  Apply any methods to selected datasets.
