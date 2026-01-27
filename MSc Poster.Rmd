@@ -110,11 +110,15 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 ***Raw data***
 
-```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
+-   <div>
 
-knitr::include_graphics('raw_data')
+    ```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
 
-```
+    knitr::include_graphics('raw_data')
+
+    ```
+
+    </div>
 
 ***Smoothing Process***
 
@@ -124,7 +128,16 @@ knitr::include_graphics('raw_data')
 
 • Second-derivative penalty applied: controls the model from fitting sudden, drastic fluctuations in the data and therefore prevents the model from fitting to noise and individual level variability.
 
-• This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
+• This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while suppressing noise.
+
+```{=html}
+<!-- Suggestion
+
+    Spline smoothing applied to remove noise from data:
+    - 100 cubic B-spline functions between [0, 1638]ms
+    - Second derivative penalty applied
+    -->
+```
 
 ```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
@@ -144,6 +157,14 @@ knitr::include_graphics('mean.fd')
 
 • Non-parametric: no normality or equal variance between groups assumptions.
 
+```{=html}
+<!-- Suggestion
+
+    -   Testing $H_0$, no significant difference between cases and controls via FDA
+    -   Re-sampling technique testing and producing test statistic on each permutation
+    -   Comparison of permutation null distribution and observed data following random reshuffling, observed difference signifies evidence of difference between the groups -->
+```
+
 ```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('cond1_permt')
@@ -161,7 +182,11 @@ knitr::include_graphics('cond3_permt')
 
 # Conclusions
 
-Our hypothesis is proven visually by the Figures produced by our t-test. • In Figure \@ref(fig:fig4), we see a statistically significant difference around N400 which approximately increases on average as time increases. • Figures \@ref(fig:fig5) and \@ref(fig:fig6) show less significant differences between case and control for conditions 2 & 3 respectively. This indicates that both auditory and motor stimuli are required to stimulate an significant EEG response for those with schizophrenia.
+Our hypothesis is proven visually by the Figures produced by our t-test.
+
+• In Figure \@ref(fig:fig4), we see a statistically significant difference around N400 which approximately increases on average as time increases.
+
+• Figures \@ref(fig:fig5) and \@ref(fig:fig6) show less significant differences between case and control for conditions 2 & 3 respectively. This indicates that both auditory and motor stimuli are required to stimulate an significant EEG response for those with schizophrenia.
 
 # Next Project Steps
 
