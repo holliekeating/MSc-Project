@@ -156,7 +156,7 @@ mean_cond1_s0 <- mean.fd(sm_cond1_s0)
 mean_cond1_s1 <- mean.fd(sm_cond1_s1)
 
 # Plot both mean curves together
-plot(mean_cond1_s1, 
+mean.fd <- plot(mean_cond1_s1, 
      col = "blue", lwd = 2,
      xlab = "Time", ylab = "Value",
      main = "Mean Smoothed Curves: Cases vs Controls",
@@ -169,6 +169,8 @@ legend("topright",
        legend = c("Controls", "Cases"),
        col = c("blue", "green"),
        lwd = 2)
+
+mean.fd
 
 
 
