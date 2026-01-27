@@ -60,7 +60,7 @@ library(plotly)
 library(kableExtra)
 ```
 
-# Background 
+# Background
 
 Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking.
 
@@ -74,7 +74,7 @@ In our data, three different sensory tasks were conducted on cases and controls.
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
 
-We will examine the auditory N100 brainwave (occuring ~100ms after stimulus), which indicates the early attention-triggering and allocation process, to determine whether sensory gating is occurring.
+We will examine the auditory N100 brainwave (occuring \~100ms after stimulus), which indicates the early attention-triggering and allocation process, to determine whether sensory gating is occurring.
 
 <!-- You can add references by inserting the following ^[reference details here] -->
 
@@ -82,13 +82,13 @@ We will examine the auditory N100 brainwave (occuring ~100ms after stimulus), wh
 
 ***Hypothesis***
 
-We want to determine whether individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during the task conditions.
+We want to hypothesise:
 
-We hypothesize that there will be a statistically significant difference between the cases and controls at the N100 around 100 ms after the sound.
+-   Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during task conditions
 
-We hypothesize that condition 1 will be the most different due to impaired sensory gating in schizophrenics.
+-   There will be statistically different EEG signals between cases and controls around 100 ms after a sound. Condition 1 to have most significance due to schizophrenia sensory gating.
 
-We will investigate this difference using functional data analysis where FP1 will be taken as a representative frontal electrode.
+We will investigate this difference using Functional Data Analysis (FDA) where FP1 will be taken as a representative frontal electrode.
 
 ***Why FP1?***
 
@@ -102,12 +102,12 @@ knitr::include_graphics("nodes.png")
 
 ```
 
-
 # Data Sources and Datasets
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-# Early Results 
+# Early Results
+
 ***Raw data***
 
 ```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
@@ -116,16 +116,15 @@ knitr::include_graphics('raw_data')
 
 ```
 
-
 ***Smoothing Process***
 
-•	Spline smoothing was applied to remove noise from the data.
+• Spline smoothing was applied to remove noise from the data.
 
-•	Curves represented by 100 cubic B-spline basis functions along the x-axis between 0 and 1638ms allowing enough flexibility to capture local changes in slope characteristic of brain wave data. 
+• Curves represented by 100 cubic B-spline basis functions along the x-axis between 0 and 1638ms allowing enough flexibility to capture local changes in slope characteristic of brain wave data.
 
-•	Second-derivative penalty applied: controls the model from fitting sudden, drastic fluctuations in the data and therefore prevents the model from fitting to noise and individual level variability. 
+• Second-derivative penalty applied: controls the model from fitting sudden, drastic fluctuations in the data and therefore prevents the model from fitting to noise and individual level variability.
 
-•	This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
+• This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
 
 ```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
@@ -133,18 +132,17 @@ knitr::include_graphics('mean.fd')
 
 ```
 
-
 ***Permutation T-Test***
 
-•	FDA method which tests $H_0$ that there is no difference between the two groups and therefore the group labels are arbitrary.  
+• FDA method which tests $H_0$ that there is no difference between the two groups and therefore the group labels are arbitrary.
 
-•	Resampling technique which randomly assigns group labels to each group each permutation and computes a test statistic comparing the mean functions.
+• Resampling technique which randomly assigns group labels to each group each permutation and computes a test statistic comparing the mean functions.
 
-•	A null distribution is constructed from the permutation test statistics, and the test statistic of the observed data is then compared with this distribution.
+• A null distribution is constructed from the permutation test statistics, and the test statistic of the observed data is then compared with this distribution.
 
-•	If the observed difference is unlikely following the random reshuffling, there is evidence of a difference between the groups. 
+• If the observed difference is unlikely following the random reshuffling, there is evidence of a difference between the groups.
 
-•	Non-parametric: no normality or equal variance between groups assumptions.
+• Non-parametric: no normality or equal variance between groups assumptions.
 
 ```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
@@ -159,15 +157,11 @@ knitr::include_graphics('cond2_permt')
 knitr::include_graphics('cond3_permt')
 ```
 
-
 #### 
+
 # Conclusions
 
-Our hypothesis is proven visually by the Figures produced by our t-test. 
-• In Figure \@ref(fig:fig4), we see a statistically significant difference around N400 which approximately increases on average as time increases.
-• Figures \@ref(fig:fig5) and \@ref(fig:fig6) show less significant differences between case and control for conditions 2 & 3 respectively.
-This indicates that both auditory and motor stimuli are required to stimulate an significant EEG response for those with schizophrenia. 
-
+Our hypothesis is proven visually by the Figures produced by our t-test. • In Figure \@ref(fig:fig4), we see a statistically significant difference around N400 which approximately increases on average as time increases. • Figures \@ref(fig:fig5) and \@ref(fig:fig6) show less significant differences between case and control for conditions 2 & 3 respectively. This indicates that both auditory and motor stimuli are required to stimulate an significant EEG response for those with schizophrenia.
 
 # Next Project Steps
 
