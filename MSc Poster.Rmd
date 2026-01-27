@@ -62,7 +62,13 @@ library(kableExtra)
 
 # Background and Problem
 
-Schizophrenia is associated with impaired sensory gating - the brain's ability to filter out redundant stimuli.
+Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking.
+
+Humans typically suppress the brain's response to expected sensory consequences when they result from their own actions, known as sensory gating. This presents as a smaller amplitude brain wave. 
+
+Schizophrenia is associated with impaired sensory gating, i.e. the brain is unable to filter out redundant or expected stimuli effectively[^1].
+
+[^1]: Boutros, N. N., Brockhaus-Dumke, A., Gjini, K., Vedeniapin, A., Elfakhani, M., Burroughs, S., & Keshavan, M. (2009). Sensory-gating deficit of the N100 mid-latency auditory evoked potential in medicated schizophrenia patients. Schizophrenia research, 113(2-3), 339–346. <https://doi.org/10.1016/j.schres.2009.05.019>
 
 In our data, three different sensory tasks were conducted on cases and controls. The conditions are as follows:
 
@@ -70,21 +76,17 @@ In our data, three different sensory tasks were conducted on cases and controls.
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
 
-We will be looking at N100 & P200 brainwaves, which indicate the attention triggering and allocation process to determine whether sensory gating is occurring here.
+We will examine the auditory N100 brainwave (occuring ~100ms after stimulus), which indicates the early attention-triggering and allocation process, to determine whether sensory gating is occurring.
 
 <!-- You can add references by inserting the following ^[reference details here] -->
-
-A common problem in clinical research is messed up data[^1].
-
-[^1]: Evans 2010, doi: 10.6030/1939-067x-3.1.1
 
 ## Objectives of Project
 
 ***Hypothesis***
 
-We hypothesize that individuals with schizophrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions.
+We hypothesize that individuals with schizophrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions at the N100 brainwave.
 
-We will be using FP1 as a representative frontal electrode
+We will investigate this difference using functional data analysis where FP1 will be taken as a representative frontal electrode.
 
 ***Why FP1?***
 
@@ -92,10 +94,11 @@ Previous EEG studies reported altered frontal activity and reduced frontal coher
 
 [^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
-```         
+<!-- ```          -->
 
-![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png)
-```
+<!-- ![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png) -->
+
+<!-- ``` -->
 
 1.  Explain the statistical issue or research question in health data science to be investigated.
 
@@ -113,13 +116,14 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 # Early Results / Descriptive Statistics of Datasets
 
-Usually you want to have a nice table displaying some important results that you have calculated. In `posterdown` this is as easy as using the `kable` table formatting you are probably use to as per typical R Markdown formatting.
-
 You can reference tables like so: Table \@ref(tab:mytable). Some basic summaries of the dataset are below:
 
 ```{r mytable, out.width='80%'}
 knitr::kable(iris[1:10, 1:4], caption = 'Table caption.',align = 'c',"html") %>%
   kable_styling(font_size = 20)
+
+
+
 ```
 
 Figure \@ref(fig:standard-plot), and Figure \@ref(fig:morefigs) below show the patterns in our dataset. Make sure that all the details in your plots will be legible when printed (legend text, axis text, and any labels)
@@ -170,14 +174,11 @@ ggplotly(p)
 
 We plan to conduct further analysis using:
 
--   Variable discombobulation [^3]
--   Expand our minds with explosive machine learning [^4].
+-   Functional Principal Component Analysis [^3]
 
 [^3]: Massey et al. 2005 doi: 15.36.413
 
-[^4]: Smith et al. 1991 doi: 12.36.486
-
-We will use the `plasticanalysis` package for this.
+We will use the `fpca` and `fda` package for this.
 
 # GitHub
 
