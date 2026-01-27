@@ -163,7 +163,14 @@ knitr::include_graphics('cond3_permt')
 
 #### 
 # Conclusions
-git config pull.rebase true
+
+
+We conclude that we observe a significant difference between case and control, as seen in Figure (fig. \@ref(fig:fig3)). This is indicated by the observed statistic displaying a larger test statistic than the pointwise 0.05 critical value.
+
+
+
+In Figure (fig. \@ref(fig:fig3)), 
+** hypothesise that clicking and sound suppresses response in a healthy brain and not in schizophrenics therefore we see a significant change. 
 
 
 # Next Project Steps
