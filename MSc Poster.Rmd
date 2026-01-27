@@ -98,7 +98,7 @@ Previous EEG studies reported altered frontal activity and reduced frontal coher
 
 ```{r fig1, echo = FALSE, out.width="100%", fig.cap = "Nodes Cap"}
 
-knitr::include_graphics("nodespic.png")
+knitr::include_graphics("nodes.png")
 
 ```
 
@@ -111,7 +111,7 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 ***Raw data***
 
-```{r fig1, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
+```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('raw_data')
 
@@ -128,7 +128,7 @@ knitr::include_graphics('raw_data')
 
 •	This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
 
-```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
+```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('mean.fd')
 
@@ -147,16 +147,16 @@ knitr::include_graphics('mean.fd')
 
 •	Non-parametric: no normality or equal variance between groups assumptions.
 
-```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
+```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('cond1_permt')
 ```
 
-```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 2: Cases vs Controls"}
+```{r fig5, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 2: Cases vs Controls"}
 knitr::include_graphics('cond2_permt')
 ```
 
-```{r fig5, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
+```{r fig6, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
 knitr::include_graphics('cond3_permt')
 ```
 
