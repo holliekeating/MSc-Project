@@ -162,6 +162,9 @@ knitr::include_graphics('cond3_permt')
 
 
 #### 
+# Conclusions
+git config pull.rebase true
+
 
 # Next Project Steps
 
