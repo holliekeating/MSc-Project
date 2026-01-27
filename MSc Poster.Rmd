@@ -83,8 +83,11 @@ We will examine the auditory N100 brainwave (occuring ~100ms after stimulus), wh
 ## Objectives of Project
 
 ***Hypothesis***
+We want to determine whether individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during the task conditions.
 
-We hypothesize that individuals with schizophrenia would exhibit statistically different EEG signals compared to healthy controls during the task conditions at the N100 brainwave.
+We hypothesize that there will be a statistically significant difference between the cases and controls at the N100 around 100 ms after the sound.
+
+We hypothesize that condition 1 will be the most different due to impaired sensory gating in schizophrenics.
 
 We will investigate this difference using functional data analysis where FP1 will be taken as a representative frontal electrode.
 
@@ -99,12 +102,6 @@ Previous EEG studies reported altered frontal activity and reduced frontal coher
 <!-- ![Image to display the position of chosen FP1 node on EEG receptor cap.](nodesimage.png) -->
 
 <!-- ``` -->
-
-1.  Explain the statistical issue or research question in health data science to be investigated.
-
-2.  Explore a method of analysis.
-
-3.  Apply any methods to selected datasets.
 
 # Data Sources and Datasets
 
