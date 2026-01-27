@@ -120,7 +120,7 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 •	Second-derivative penalty applied: controls the model from fitting sudden, drastic fluctuations in the data and therefore prevents the model from fitting to noise and individual level variability. 
 
-•	This method facilitates the comparison of meaningful differences between the brain wave patterns of controls and cases while supressing noise.
+•	This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
 
 ```{r echo = FALSE, out.width = '100%'}
 
@@ -144,9 +144,14 @@ knitr::include_graphics('mean.fd')
 ```{r echo = FALSE, out.width = '100%'}
 
 knitr::include_graphics('cond1_permt')
-knitr::include_graphics('cond2_permt')
-knitr::include_graphics('cond3_permt')
+```
 
+```{r echo = FALSE, out.width = '100%'}
+knitr::include_graphics('cond2_permt')
+```
+
+```{r echo = FALSE, out.width = '100%'}
+knitr::include_graphics('cond3_permt')
 ```
 
 #### 
