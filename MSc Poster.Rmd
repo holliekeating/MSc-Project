@@ -110,11 +110,12 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 ***Raw data***
 
-```{r echo = FALSE, out.width = '100%'}
+```{r fig1, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('raw_data')
 
 ```
+
 
 ***Smoothing Process***
 
@@ -126,7 +127,7 @@ knitr::include_graphics('raw_data')
 
 •	This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while supressing noise.
 
-```{r echo = FALSE, out.width = '100%'}
+```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('mean.fd')
 
@@ -145,18 +146,19 @@ knitr::include_graphics('mean.fd')
 
 •	Non-parametric: no normality or equal variance between groups assumptions.
 
-```{r echo = FALSE, out.width = '100%'}
+```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('cond1_permt')
 ```
 
-```{r echo = FALSE, out.width = '100%'}
+```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 2: Cases vs Controls"}
 knitr::include_graphics('cond2_permt')
 ```
 
-```{r echo = FALSE, out.width = '100%'}
+```{r fig5, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
 knitr::include_graphics('cond3_permt')
 ```
+
 
 #### 
 
