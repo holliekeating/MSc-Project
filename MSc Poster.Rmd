@@ -190,7 +190,7 @@ knitr::include_graphics('cond3_permt')
 
 Our hypothesis is proven visually by the Figures produced by our t-test.
 
--   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the N400 time window.
+-   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the 400 ms.
 
 -   Figures \@ref(fig:fig5) and \@ref(fig:fig6) show weaker differences for Conditions 2 and 3.
 
