@@ -39,6 +39,11 @@ div.poster_title{
 .section h4 {
     break-after: column;
 }
+
+.section h1 {
+  font-size: 40pt;
+}
+
 div.footnotes {
     font-size: 18pt;
 }
@@ -77,9 +82,11 @@ In our data, 36 subjects were exposed to three conditions (25 controls, 11 cases
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
 
-<!-- We will examine the auditory N100 brainwave (occuring \~100ms after stimulus), which indicates the early attention-triggering and allocation process, to determine whether sensory gating is occurring. -->
+```{r button, echo = FALSE, out.width="50%", fig.cap = "Condition Visualisation"}
 
-<!-- You can add references by inserting the following ^[reference details here] -->
+knitr::include_graphics("buttonpic.png")
+
+```
 ### Data
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
@@ -172,8 +179,9 @@ Our hypothesis is proven visually by the Figures produced by our t-test. This su
 We plan to conduct further analysis:
 
 1.  Test for population / sensor clustering
+2.  Repeated tests using other nodes e.g. FP2, FCZ
 2.  Functional Principal Component Analysis
-3.  Repeated tests using other nodes e.g. FP2, FCZ
+3.  Predictive modelling using features derived from FPCA scores
 
 We will use the `fpca` and `fda` package for this.
 
