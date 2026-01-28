@@ -12,7 +12,7 @@ logoleft_name: https&#58;//sport.universityofgalway.ie/assets/img/logo2.png
 
 poster_height: "594mm"
 poster_width: "841mm"
-column_numbers: 5
+column_numbers: 4
 column_margins: "0.5in"	
 primary_colour:	"#a80050"	# Secondary colour use for poster design.
 secondary_colour:	"#84003d"	# Main colour used for poster design.
@@ -64,13 +64,14 @@ library(kableExtra)
 
 <!-- Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking. -->
 
-The brain typically suppresses its response to expected stimuli. This is known as sensory gating. Schizophrenia is associated with impaired sensory gating[^1].
+The brain typically suppresses its response to expected stimuli (sensory gating).
+Schizophrenia is associated with impaired sensory gating[^1].
 
 [^1]: Boutros et al., 2009, doi: <https://doi.org/10.1016/j.schres.2009.05.019>
 
 <!-- [^1]: Boutros, N. N., Brockhaus-Dumke, A., Gjini, K., Vedeniapin, A., Elfakhani, M., Burroughs, S., & Keshavan, M. (2009). Sensory-gating deficit of the N100 mid-latency auditory evoked potential in medicated schizophrenia patients. Schizophrenia research, 113(2-3), 339–346. <https://doi.org/10.1016/j.schres.2009.05.019> -->
 
-In our data, three sensory tasks were conducted on cases and controls:
+In our data, 36 subjects were exposed to three conditions (25 controls, 11 cases):
 
 1.  Subjects press a button to immediately produce a sound
 2.  Subjects passively listen to the same sound without pressing a button
@@ -79,39 +80,28 @@ In our data, three sensory tasks were conducted on cases and controls:
 <!-- We will examine the auditory N100 brainwave (occuring \~100ms after stimulus), which indicates the early attention-triggering and allocation process, to determine whether sensory gating is occurring. -->
 
 <!-- You can add references by inserting the following ^[reference details here] -->
+### Data
+Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-## Objectives of Project
+### Objectives of Project
 
+-   ***Hypothesis:*** Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during conditions ~100ms and ~200ms
 
-***Hypothesis***
+- ***How:*** Functional Data Analysis (FDA) was applied to investigate the difference in EEG signals in the FP1 node.  
 
-We hypothesise that:
-
--   Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during task conditions
-
--   There will be statistically different EEG signals between cases and controls around 100 ms after a sound. Condition 1 to have most significance due to schizophrenia sensory gating.
-
-We will investigate this difference using Functional Data Analysis (FDA) where FP1 will be taken as a representative frontal electrode.
-
-***Why FP1?***
-
-Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
+- ***Why FP1:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
 
 [^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
-```{r fig1, echo = FALSE, out.width="100%", fig.cap = "Nodes Cap"}
+```{r fig1, echo = FALSE, out.width="60%", fig.cap = "Nodes Cap"}
 
 knitr::include_graphics("nodes.png")
 
 ```
 
-# Data Sources and Datasets
+# Results
 
-Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
-
-# Early Results
-
-***Raw data***
+### Raw Data
 
 
 ```{r fig2, echo = FALSE, out.width = '100%', fig.cap = "Raw Data Plot, Condition 1: Cases vs Controls"}
@@ -121,11 +111,11 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 ```
 
 
-***Smoothing Process***
+### Smoothing Process
 
 Spline smoothing applied to remove noise from data:
 
--   100 cubic B-spline functions between [0, 1638]ms
+-   100 cubic B-spline functions between [0, 1638]ms  
 
 -    Second derivative penalty applied
 
@@ -142,13 +132,13 @@ Spline smoothing applied to remove noise from data:
     -->
 ```
 
-```{r fig3, echo = FALSE, out.width = '100%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
+```{r fig3, echo = FALSE, out.width = '90%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('mean.fd')
 
 ```
 
-***Permutation T-Test***
+### Permutation T-Test
 
 -   Testing $H_0$, no significant difference between cases and controls via FDA
 
@@ -156,26 +146,13 @@ knitr::include_graphics('mean.fd')
 
 -   Comparison of the permutation null distribution and observed data following random reshuffling, the observed difference signifies evidence of a difference between the groups
 
-```{=html}
-<!-- 
-    
-    • FDA method which tests $H_0$ that there is no difference between the two groups and therefore the group labels are arbitrary.
-
-• Resampling technique which randomly assigns group labels to each group each permutation and computes a test statistic comparing the mean functions.
-
-• A null distribution is constructed from the permutation test statistics, and the test statistic of the observed data is then compared with this distribution.
-
-• If the observed difference is unlikely following the random reshuffling, there is evidence of a difference between the groups.
-
-• Non-parametric: no normality or equal variance between groups assumptions.
-    -->
-```
 
 ```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
 knitr::include_graphics('cond1_permt')
 ```
 
+-   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the 400 ms.
 ```{r fig5, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 2: Cases vs Controls"}
 knitr::include_graphics('cond2_permt')
 ```
@@ -183,20 +160,14 @@ knitr::include_graphics('cond2_permt')
 ```{r fig6, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
 knitr::include_graphics('cond3_permt')
 ```
-
+-   Figures \@ref(fig:fig5) and \@ref(fig:fig6) show weaker differences for Conditions 2 and 3.
 
 
 # Conclusions
 
-Our hypothesis is proven visually by the Figures produced by our t-test.
+Our hypothesis is proven visually by the Figures produced by our t-test. This suggests that combined auditory and motor stimulation is required to trigger a significant EEG response in schizophrenia.
 
--   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the 400 ms.
-
--   Figures \@ref(fig:fig5) and \@ref(fig:fig6) show weaker differences for Conditions 2 and 3.
-
-This suggests that combined auditory and motor stimulation is required to trigger a significant EEG response in schizophrenia.
-
-# Next Project Steps
+# Next Steps
 
 We plan to conduct further analysis:
 
