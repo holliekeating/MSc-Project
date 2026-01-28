@@ -20,7 +20,7 @@ accent_colour:	"#e6007e"	# A third colour option.
 author_textcol: "white"
 title_textsize: "90pt"
 author_textsize: "60pt"
-body_textsize: "25pt"
+body_textsize: "20pt"
 output: 
   posterdown::posterdown_html:
     self_contained: true
@@ -93,7 +93,7 @@ Our data were taken from the National Institute of Mental Health (NIMH project n
 
 [^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
-```{r fig1, echo = FALSE, out.width="60%", fig.cap = "Nodes Cap"}
+```{r fig1, echo = FALSE, out.width="65%", fig.cap = "Nodes Cap"}
 
 knitr::include_graphics("nodes.png")
 
