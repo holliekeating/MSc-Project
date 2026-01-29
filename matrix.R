@@ -60,12 +60,22 @@ plot1 <- ggplot(p_df, aes(x = time_ms, y = fp1,
 
 ggplotly(plot1)
 
+p_df <- p_df %>% filter(subject != 5) # remove noisey subject
+
 plot2 <- ggplot(p_df, aes(x = time_ms, y = fp1, 
                           group = subject,
-                          colour = as.factor(schizophrenia)))+geom_line(size = 0.1, se=F)+
-                          facet_wrap(~ condition, ncol = 3)
-
-ggplotly(plot2)
+                          colour = schizophrenia)
+                         
+                          )+geom_line(size = 0.05, alpha = 0.5)+
+                          theme_bw()
+                      #+facet_wrap(~ condition, ncol = 3)
+ plot2 <- plot2+  
+   scale_colour_manual(
+     values = c("0" = "blue", "1" = "red"),
+     labels = c("Control", "Case")
+   )
+          
+plot(plot2)
 
 p_df <- p_df %>%
   arrange(subject, condition, time_ms)
@@ -156,11 +166,11 @@ mean_cond1_s0 <- mean.fd(sm_cond1_s0)
 mean_cond1_s1 <- mean.fd(sm_cond1_s1)
 
 # Plot both mean curves together
-mean.fd <- plot(mean_cond1_s1, 
-     col = "blue", lwd = 2,
-     xlab = "Time", ylab = "Value",
-     main = "Mean Smoothed Curves: Cases vs Controls",
-     ylim = c(-20, 40))
+plot(mean_cond1_s1, 
+                col = "blue", lwd = 2,
+                xlab = "Time", ylab = "Value",
+                main = "Mean Smoothed Curves: Cases vs Controls",
+                ylim = c(-20, 40))
 
 lines(mean_cond1_s0, col = "green", lwd = 2)
 abline(v = 100, lty = 2, col = "red", lwd = 2) # threshold line at 100ms when stimulus occurs
@@ -170,7 +180,7 @@ legend("topright",
        col = c("blue", "green"),
        lwd = 2)
 
-mean.fd
+
 
 
 
@@ -272,16 +282,20 @@ plot(sm_cond3_s1)
 # Permutation t test for comparing condition 1 control vs case 
 
 tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+
 tperm_cond1
 
 # Permutation t test for comparing condition 2 control vs case 
 
 tperm_cond2 <- tperm.fd(sm_cond2_s0, sm_cond2_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
 tperm_cond2
 
 # Permutation t test for comparing condition 3 control vs case 
 
 tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
 tperm_cond3
 
 
