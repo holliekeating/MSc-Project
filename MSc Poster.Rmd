@@ -190,3 +190,12 @@ We will use the `fpca` and `fda` package for this.
 The code and datasets for this project can be viewed at our GitHub repository here: [GitHub](https://github.com/maeve-susan/MSc-Project)
 
 # References
+
+
+
+
+```{r cartoon, echo = FALSE, out.width="65%", fig.cap = "EEG"}
+
+knitr::include_graphics("cartoon.jpg")
+
+```
