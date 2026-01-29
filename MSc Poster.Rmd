@@ -70,11 +70,15 @@ library(kableExtra)
 <!-- Schizophrenia is a mental disorder that is present in \<1% of people worldwide, characterised by hallucinations, delusions and disorganised thinking. -->
 
 The brain typically suppresses its response to expected stimuli (sensory gating).
+
 Schizophrenia is associated with impaired sensory gating[^1].
 
 [^1]: Boutros et al., 2009, doi: <https://doi.org/10.1016/j.schres.2009.05.019>
 
 <!-- [^1]: Boutros, N. N., Brockhaus-Dumke, A., Gjini, K., Vedeniapin, A., Elfakhani, M., Burroughs, S., & Keshavan, M. (2009). Sensory-gating deficit of the N100 mid-latency auditory evoked potential in medicated schizophrenia patients. Schizophrenia research, 113(2-3), 339–346. <https://doi.org/10.1016/j.schres.2009.05.019> -->
+
+### Data
+Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
 In our data, 36 subjects were exposed to three conditions (25 controls, 11 cases):
 
@@ -87,16 +91,14 @@ In our data, 36 subjects were exposed to three conditions (25 controls, 11 cases
 knitr::include_graphics("buttonpic.png")
 
 ```
-### Data
-Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
 ### Objectives of Project
 
 -   ***Hypothesis:*** Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during conditions ~100ms and ~200ms
 
-- ***How:*** Functional Data Analysis (FDA) was applied to investigate the difference in EEG signals in the FP1 node.  
+- ***How?:*** Functional Data Analysis (FDA) was applied to investigate the difference in EEG signals in the FP1 node.  
 
-- ***Why FP1:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
+- ***Why FP1?:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
 
 [^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
@@ -172,7 +174,7 @@ knitr::include_graphics('cond3_permt1.png')
 
 # Conclusions
 
-Our hypothesis is proven visually by the Figures produced by our t-test. This suggests that combined auditory and motor stimulation is required to trigger a significant EEG response in schizophrenia.
+There is evidence to suggest our hypothesis based on the Figures produced by our t-test. This suggests that combined auditory and motor stimulation is required to trigger a significant EEG response in schizophrenia.
 
 # Next Steps
 
@@ -183,7 +185,9 @@ We plan to conduct further analysis:
 2.  Functional Principal Component Analysis
 3.  Predictive modelling using features derived from FPCA scores
 
-We will use the `fpca` and `fda` package for this.
+We will use the `fdapace` and `fda` packages [^3] for this.
+
+[^3]: Ramsay, J. O., Hooker, G., & Graves, S. (2009). Functional data analysis with R and MATLAB. Springer.
 
 # GitHub
 
