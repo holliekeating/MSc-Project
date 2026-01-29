@@ -141,7 +141,7 @@ Spline smoothing applied to remove noise from data:
 
 ```{r fig3, echo = FALSE, out.width = '90%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
-knitr::include_graphics('mean.fd')
+knitr::include_graphics('mean.fd1')
 
 ```
 
@@ -156,7 +156,7 @@ knitr::include_graphics('mean.fd')
 
 ```{r fig4, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 1: Cases vs Controls"}
 
-knitr::include_graphics('cond1_permt')
+knitr::include_graphics('cond1_permt1.png')
 ```
 
 -   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the 400 ms.
