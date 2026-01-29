@@ -77,6 +77,15 @@ Schizophrenia is associated with impaired sensory gating[^1].
 
 <!-- [^1]: Boutros, N. N., Brockhaus-Dumke, A., Gjini, K., Vedeniapin, A., Elfakhani, M., Burroughs, S., & Keshavan, M. (2009). Sensory-gating deficit of the N100 mid-latency auditory evoked potential in medicated schizophrenia patients. Schizophrenia research, 113(2-3), 339–346. <https://doi.org/10.1016/j.schres.2009.05.019> -->
 
+```{r cartoon, echo = FALSE, out.width="70%", fig.cap = "EEG illustration[^2]"}
+
+knitr::include_graphics("cartoon.jpg")
+
+```
+
+[^2]: Morozov 2023, Available at: https://www.istockphoto.com/vector/female-patient-do-eeg-scan-in-clinic-gm1474307021-504208695
+ (Accessed: 29 January 2026).
+
 ### Data
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
@@ -96,17 +105,13 @@ knitr::include_graphics("buttonpic.png")
 
 -   ***Hypothesis:*** Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during conditions ~100ms and ~200ms
 
-<<<<<<< HEAD
 - ***How?:*** Functional Data Analysis (FDA) was applied to investigate the difference in EEG signals in the FP1 node.  
-=======
-- ***How?:*** Functional Data Analysis (FDA) [^3] was applied to investigate the difference in EEG signals in the FP1 node.  
->>>>>>> 3cc0519a86ed1854865727a515412c6074ee9e50
 
-- ***Why FP1?:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
+- ***Why FP1?:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^3]
 
-[^2]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
+[^3]: Tauscher 1998, doi: 10.1016/S0006-3223(97)00428-9
 
-```{r fig1, echo = FALSE, out.width="60%", fig.cap = "Nodes Cap"}
+```{r fig1, echo = FALSE, out.width="70%", fig.cap = "Nodes Cap"}
 
 knitr::include_graphics("nodes.png")
 
@@ -132,18 +137,6 @@ Spline smoothing applied to remove noise from data:
 
 -    Second derivative penalty applied
 
-```{=html}
-<!-- 
-    
-    • Spline smoothing was applied to remove noise from the data.
-
-• Curves represented by 100 cubic B-spline basis functions along the x-axis between 0 and 1638ms allowing enough flexibility to capture local changes in slope characteristic of brain wave data.
-
-• Second-derivative penalty applied: controls the model from fitting sudden, drastic fluctuations in the data and therefore prevents the model from fitting to noise and individual level variability.
-
-• This method facilitates the comparison of meaningful differences between EEG signals of controls & cases while suppressing noise.
-    -->
-```
 
 ```{r fig3, echo = FALSE, out.width = '90%', fig.cap = "Mean Smoothed Curves Plot, Condition 1: Cases vs Controls"}
 
@@ -170,7 +163,7 @@ knitr::include_graphics('cond1_permt1.png')
 knitr::include_graphics('cond2_permt1.png')
 ```
 
-```{r fig6, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
+```{r fig6, echo = FALSE, out.width = '90%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
 knitr::include_graphics('cond3_permt1.png')
 ```
 -   Figures \@ref(fig:fig5) and \@ref(fig:fig6) show weaker differences for Conditions 2 and 3.
@@ -189,9 +182,9 @@ We plan to conduct further analysis:
 2.  Functional Principal Component Analysis
 3.  Predictive modelling using features derived from FPCA scores
 
-We will use the `fdapace` and `fda` packages [^3] for this.
+We will use the `fdapace` and `fda` packages [^4] for this.
 
-[^3]: Ramsay, J. O., Hooker, G., & Graves, S. (2009). Functional data analysis with R and MATLAB. Springer.
+[^4]: Ramsay, J. O., Hooker, G., & Graves, S. (2009). Functional data analysis with R and MATLAB. Springer.
 
 # GitHub
 
@@ -199,11 +192,3 @@ The code and datasets for this project can be viewed at our GitHub repository he
 
 # References
 
-
-
-
-```{r cartoon, echo = FALSE, out.width="65%", fig.cap = "EEG"}
-
-knitr::include_graphics("cartoon.jpg")
-
-```
