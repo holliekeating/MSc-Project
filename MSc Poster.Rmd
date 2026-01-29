@@ -1,5 +1,5 @@
 ---
-title: EEG Signals of Schizophrenics
+title: Exploring the EEG signals of Schizophrenia
 author:
   - name: Hollie Keating
   - name: Sarah Conway
