@@ -161,11 +161,11 @@ knitr::include_graphics('cond1_permt1.png')
 
 -   Figure \@ref(fig:fig4) shows a significant difference between cases and controls around the 400 ms.
 ```{r fig5, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 2: Cases vs Controls"}
-knitr::include_graphics('cond2_permt')
+knitr::include_graphics('cond2_permt1.png')
 ```
 
 ```{r fig6, echo = FALSE, out.width = '100%', fig.cap = "Permutation T Test Plot, Condition 3: Cases vs Controls"}
-knitr::include_graphics('cond3_permt')
+knitr::include_graphics('cond3_permt1.png')
 ```
 -   Figures \@ref(fig:fig5) and \@ref(fig:fig6) show weaker differences for Conditions 2 and 3.
 
