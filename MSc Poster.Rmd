@@ -96,7 +96,11 @@ knitr::include_graphics("buttonpic.png")
 
 -   ***Hypothesis:*** Individuals with schizophrenia exhibit statistically different EEG signals compared to healthy controls during conditions ~100ms and ~200ms
 
+<<<<<<< HEAD
 - ***How?:*** Functional Data Analysis (FDA) was applied to investigate the difference in EEG signals in the FP1 node.  
+=======
+- ***How?:*** Functional Data Analysis (FDA) [^3] was applied to investigate the difference in EEG signals in the FP1 node.  
+>>>>>>> 3cc0519a86ed1854865727a515412c6074ee9e50
 
 - ***Why FP1?:*** Previous EEG studies reported altered frontal activity and reduced frontal coherence in relation to schizophrenia research. [^2]
 
@@ -194,3 +198,12 @@ We will use the `fdapace` and `fda` packages [^3] for this.
 The code and datasets for this project can be viewed at our GitHub repository here: [GitHub](https://github.com/maeve-susan/MSc-Project)
 
 # References
+
+
+
+
+```{r cartoon, echo = FALSE, out.width="65%", fig.cap = "EEG"}
+
+knitr::include_graphics("cartoon.jpg")
+
+```
