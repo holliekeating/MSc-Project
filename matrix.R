@@ -298,9 +298,10 @@ tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=200, q=0.05, argvals=NUL
 abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
 tperm_cond3
 
-
+#===============================================================================
 #FPCA
-
+#===============================================================================
+##Method 1
 coef_all <- cbind(sm_cond1_s0$coefs,
                   sm_cond1_s1$coefs)
 
@@ -318,11 +319,48 @@ plot(fpca_cond1)
 
 # extracting scores
 
-Fpca_cond1$scores
+fpca_cond1$scores
 
+#===============================================================================
+#How many rows of data are there for each condition for each person?
+# times <- p_df%>%
+#   filter(condition ==1) %>%
+#   filter(subject == 1)%>%
+#   nrow()
 
+#1638
+#===============================================================================
 
-p_df %>%
-  nrow()
+## 2. FPCA through conditional expectation (PACE) - irregular data allowed
+library(fdapace)
 
+p_df_c1 <- p_df %>% 
+  filter(condition == 1) 
 
+# FPCA via PACE (does not require prior smoothing - done by function internally)
+dfresponse <- data.frame(ID = sort((p_df_c1$subject)),
+                         time = p_df_c1$time_ms,
+                         eeg = as.numeric(p_df_c1$fp1)) #only 100 rows in smoothed data?
+
+# make a list containing dataframes with rows grouped by ID
+list_format <- split(dfresponse, dfresponse$ID)
+
+# create lists of time and response (eeg)
+list_t <- lapply(list_format,
+                 dplyr::select, time)
+list_eeg <- lapply(list_format,
+                   dplyr::select, eeg)
+
+# unlist
+list_t <- lapply(list_t,
+                 unlist, use.names = F)
+list_eeg <- lapply(list_eeg,
+                   unlist, use.names = F)
+
+# apply PACE (with fdapace)
+resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Sparse')) 
+
+# FPC results
+plot(resMEAN)
+resMEAN$xiEst #FPCA scores
