@@ -6,7 +6,7 @@ library(plotly)
 library(fda)
 library(gridExtra)
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
@@ -69,7 +69,7 @@ plot2 <- ggplot(p_df, aes(x = time_ms, y = fp1,
                           )+geom_line(size = 0.05, alpha = 0.5)+
                           theme_bw()
                       #+facet_wrap(~ condition, ncol = 3)
- plot2 <- plot2+  
+ plot2 <- plot2 + 
    scale_colour_manual(
      values = c("0" = "blue", "1" = "red"),
      labels = c("Control", "Case")
@@ -299,5 +299,30 @@ abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
 tperm_cond3
 
 
+#FPCA
+
+coef_all <- cbind(sm_cond1_s0$coefs,
+                  sm_cond1_s1$coefs)
+
+sm_cond1_all <- fd(coef_all, sm_cond1_s0$basis)
+
+class(sm_cond1_all)
+
+
+
+# FPCA for condition 1
+
+fpca_cond1 <- pca.fd(sm_cond1_all, nharm = 5) #nharm = no of PC
+
+plot(fpca_cond1)
+
+# extracting scores
+
+Fpca_cond1$scores
+
+
+
+p_df %>%
+  nrow()
 
 
