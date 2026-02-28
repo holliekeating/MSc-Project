@@ -395,17 +395,12 @@ resMEAN$xiEst #FPCA scores
 ```
 
 # Plots 
+# FPCA 1 scores
 
 ```{r}
-# FPCA scores using method 1 matrix
+# FPCA scores
 
-fpca_cond1$scores # fpca scores 
-
-
-head(sm_cond1_all)
-class(sm_cond1_all)
-
-
+# AS email.....
 # ## smooth the data
 # smoothed_gait <- smooth.basis(seq(0.025, 0.975, length.out=20),
 #                       kneegait, 
@@ -414,6 +409,70 @@ class(sm_cond1_all)
 # 
 # ## extract smooths
 # predict(smoothed_gait)
+
+
+
+# FPC results
+resMEAN$xiEst #FPCA scores
+
+fpca_scores_c1 <- as.data.frame(resMEAN$xiEst) %>% 
+  mutate(ID = row_number(), .before = 1)             # add an ID row, first column
+
+head(fpca_scores_c1)
+nrow(fpca_scores_c1)
+colnames(fpca_scores_c1) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
+
+
+names(fpca_scores_c1)
+colnames(dfresponse)
+
+dfresponse <- dfresponse %>% mutate(ID = as.numeric(ID))
+
+nrow(dfresponse)
+names(dfresponse)
+head(dfresponse)
+
+# Plots - merge FCP scores with df response 
+fpca_scores_c1_merged <- dfresponse %>% left_join(fpca_scores_c1, by = "ID")
+head(fpca_scores_c1_merged)
+
+names(fpca_scores_c1_merged)
+nrow(fpca_scores_c1_merged)
+
+# Extract top 5 fpca 1 scores
+# Top 5: 1638*5= 8190
+top_5 <- fpca_scores_c1_merged %>%
+  arrange(desc(fpca_1)) %>%
+  slice(1:8190) %>%
+  pull(ID)
+
+
+# Extract bottom 5 fpca 1 scores
+bottom_5 <- fpca_scores_c1_merged %>%
+  arrange(fpca_1) %>%              # default ascending
+  slice(1:8190) %>%
+  pull(ID)
+
+# df of top & bottom 
+group_ids <- bind_rows(
+  data.frame(ID = top_5, group = "Top 5"),
+  data.frame(ID = bottom_5, group = "Bottom 5")
+)
+
+
+nrow(group_ids)
+
+plot_data <- fpca_scores_c1_merged %>%
+  semi_join(group_ids, by = "ID") %>%      # keeps rows that IDs are in both dfs
+  left_join(group_ids, by = "ID")          # adds the group label
+
+plot_data %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
+       colour = "Group")
+  
+  
 
 
 
