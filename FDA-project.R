@@ -145,7 +145,7 @@ matrix_cond1_s0 <- matrix(cond1_s0$fp1, nrow = 1638, ncol = 25, byrow= FALSE)
 matrix_cond1_s0
 
 
-matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 11, byrow= FALSE)
+matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 8, byrow= FALSE)
 matrix_cond1_s1
 
 matrix_cond1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 31, byrow= FALSE)
