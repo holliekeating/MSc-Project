@@ -410,3 +410,42 @@ fviz_cluster(kmeans_c1, data = features_x,
 #having pipeling do c2, c3 - compare
 #coerce smooth data into df
 
+
+
+# ======================================
+# Using FPCA tutorial, getting smoothed values as a matirx, then dataframe
+# Condition 1, control
+# V1, V2, ... columns = subjects
+# Rows = time points
+# so, Row 1 = smoothed FP1 at time point 1 for all subjects
+
+# using predict() smooth on specified index grid (1638 rows per subject(8))
+time_index <- seq_len(1638)
+smooth_mat <- predict(sm_cond1_s1, time_index)
+
+smooth_df <- as.data.frame(smooth_mat)
+smooth_df$time_index <- time_index
+
+smooth_long <- smooth_df %>%
+  pivot_longer(
+    cols = -time_index,
+    names_to = "ID",
+    values_to = "smooth"
+  )
+
+df_long <- dfresponse %>%
+  group_by(ID) %>%
+  mutate(time_index = row_number()) %>%
+  ungroup() %>%
+  left_join(smooth_long, by = c("time_index")) 
+
+## Adding FPCA scores
+
+# FPCA scores as a data frame
+pc_df <- as.data.frame(resMEAN$xiEst)
+
+
+
+view(df_long)
+view(smooth_long)
+
