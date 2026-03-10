@@ -1,0 +1,350 @@
+---
+title: "Condition Pipeline"
+author: "Hollie Keating, Sarah Conway & Maeve Samali"
+date: "2026-03-10"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document contains the pipeline which can be applied to any of the three conditions. Included:
+
+ - Smoothing 
+ - Generate FPCA scores
+ - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
+ 
+ 
+ 
+```{r include = FALSE, warning=FALSE, message=FALSE}
+library(data.table)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(fda)
+library(gridExtra)
+library(fdapace)
+
+
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+```
+
+```{r}
+c = 1 # condition 1 
+t = 1 # trial 1 
+r_len = 1638 # timepoints in condition c
+c_len = 32 # subjects 
+node <- "fp1"
+
+```
+ 
+ 
+ 
+```{r}
+# Loop which reads in separate excel file for each patient and compiles all data into a dataframe
+# Merges time data and demogrpahic data which contains whether patients are controls or cases
+missing = c(5, 8, 9, 26, 31, 35, 38)
+
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+
+times = fread("archive/time.csv")
+demographic <- fread("archive/demographic.csv")
+  
+filenames = list.files("archive/patients/")
+
+p_list <- list()
+
+for(i in 1:length(filenames)){
+  
+  pathtomyfile = paste0("archive/patients/", filenames[i])
+  temp <- fread(pathtomyfile, sep = ",", header = "auto")
+  temp <- temp[ ,1:12]
+  colnames(temp)<- c("subject", "trial", "condition", "sample", "fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
+  temp <- merge(temp, times, by ="sample")
+  temp <- merge(temp, demographic, by = "subject")
+  temp<- temp%>%
+    filter (time_ms > -100)%>%   # time from -100ms to remove unnecessary data while including some pre beep curve info (100ms is where the beep occurs
+    # ifelse(subject %in% missing, trial==15, trial==1) %>% # Only one trial out of 100 choosen. Trial 1 so patient hasn't learnt the test/timing/ keep up concealment
+    filter(trial==t)
+  temp<- rename(temp, schizophrenia = group)
+  
+  
+  
+  p_list[[i]] <- temp
+  
+}
+
+p_df <- do.call(rbind, p_list)
+
+
+
+
+p_df<- p_df%>%
+  mutate(
+    subject = as.factor(subject),
+    schizophrenia = as.factor(schizophrenia)
+  )
+
+
+```
+ 
+```{r}
+## Smooth the data 
+## Create a B-spline basis (mybasis) - building blocks to represent the curves
+K = 100 # basis functions. More = more flexible
+#?create.bspline.basis
+
+d = 3 # basis degree e.g. 3 = cubic
+mybasis = create.bspline.basis(rangeval = c(0,1638), # x-axis range for curves 0-1638 timepoints
+                               nbasis = K, 
+                               norder = d+1) # cubic is an order 4 polynomial 
+
+
+
+## Smoothing parameter object
+
+## create an fd object - functional data object
+
+penalty_order = 2 # 2nd derivative ie penalizes wigglier
+penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
+fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
+                  Lfdobj = penalty_order, 
+                  lambda = penalty)
+#?fdPar
+```
+
+ 
+ 
+ 
+```{r}
+# Smooth the data 
+cond <- p_df %>%
+  filter(condition == c)
+
+
+matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
+
+
+
+## smooth the data - cond
+# smooth.basis(x, y, fdParObj)
+sm_cond <- smooth.basis(seq(1, r_len, length.out = r_len), # x
+                            matrix_sm_all, # y
+                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+
+plot(sm_cond,
+     main = "Smoothed Curves")
+
+# Colour by case vs control 
+# one case/control value per curve
+value_curve <- cond$schizophrenia[seq(1, nrow(cond), by = r_len)]
+
+colours <- ifelse(value_curve == 1, "darkgreen", "orange")
+
+
+plot(sm_cond$fd, col = colours, lwd = 2,
+     main = "Smoothed Curves Case vs Controls")
+
+legend("topleft",
+       legend = c("Control (0)", "Case (1)"),
+       col = c("orange", "darkgreen"),
+       lwd = 2)
+
+
+#length(value_curve)
+# ncol(matrix_sm_all)
+
+```
+
+ 
+ 
+ ## FPCA Scores
+ 
+```{r}
+## FPCA through conditional expectation (PACE) - irregular data allowed
+# FPCA via PACE 
+# applied to sm_cond: condition c smoothed data 
+
+
+dfresponse <- data.frame(ID = sort((cond$subject)),
+                         time = cond$time_ms,
+                         eeg = as.numeric(sm_cond$y)) #only 100 rows in smoothed data?
+
+# make a list containing dataframes with rows grouped by ID
+list_format <- split(dfresponse, dfresponse$ID)
+
+# create lists of time and response (eeg)
+list_t <- lapply(list_format,
+                 dplyr::select, time)
+list_eeg <- lapply(list_format,
+                   dplyr::select, eeg)
+
+# unlist
+list_t <- lapply(list_t,
+                 unlist, use.names = F)
+list_eeg <- lapply(list_eeg,
+                   unlist, use.names = F)
+
+# apply PACE (with fdapace)
+resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Sparse')) 
+
+# FPC results
+plot(resMEAN)
+# resMEAN$xiEst #FPCA scores
+```
+ 
+ 
+# FPCA 1
+ 
+```{r}
+# FPCA scores
+
+# FPC result
+# resMEAN$xiEst #FPCA scores
+
+fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
+  mutate(ID = row_number(), .before = 1)             # add an ID row, first column
+
+colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
+
+
+dfresponse <- dfresponse %>% mutate(ID = as.numeric(ID))
+
+
+# Plots - merge FCP scores with df response 
+fpca_scores_merged <- dfresponse %>% left_join(fpca_scores, by = "ID")
+
+
+# Extract top 5 fpca 1 scores
+# Top 5: 1638*5= 8190
+top_5_fpca1 <- fpca_scores_merged %>%
+  arrange(desc(fpca_1)) %>%
+  slice(1:8190) %>%
+  pull(ID)
+
+
+# Extract bottom 5 fpca 1 scores
+bottom_5_fpca1 <- fpca_scores_merged %>%
+  arrange(fpca_1) %>%              # default ascending
+  slice(1:8190) %>%
+  pull(ID)
+
+# df of top & bottom 
+group_ids_fpca1 <- bind_rows(
+  data.frame(ID = top_5_fpca1, group = "Top 5"),
+  data.frame(ID = bottom_5_fpca1, group = "Bottom 5")
+)
+
+
+plot_data_fpca1 <- fpca_scores_merged %>%
+  semi_join(group_ids_fpca1, by = "ID") %>%      # keeps rows that IDs are in both dfs
+  left_join(group_ids_fpca1, by = "ID")          # adds the group label
+
+plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
+       colour = "Group")
+  
+
+
+
+
+```
+ 
+ # FPCA 2 
+
+```{r}
+# Extract top 5 fpca 1 scores
+# Top 5: 1638*5= 8190
+top_5_fpca2 <- fpca_scores_merged %>%
+  arrange(desc(fpca_2)) %>%
+  slice(1:8190) %>%
+  pull(ID)
+
+
+# Extract bottom 5 fpca 1 scores
+bottom_5_fpca2 <- fpca_scores_merged %>%
+  arrange(fpca_2) %>%              # default ascending
+  slice(1:8190) %>%
+  pull(ID)
+
+# df of top & bottom 
+group_ids_fpca2 <- bind_rows(
+  data.frame(ID = top_5_fpca2, group = "Top 5"),
+  data.frame(ID = bottom_5_fpca2, group = "Bottom 5")
+)
+
+
+plot_data_fpca2 <- fpca_scores_merged %>%
+  semi_join(group_ids_fpca2, by = "ID") %>%      # keeps rows that IDs are in both dfs
+  left_join(group_ids_fpca2, by = "ID")          # adds the group label
+
+plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  labs(title = "Top vs Bottom 5 Curves FPCA 2 Scores",
+       colour = "Group")
+  
+  
+
+
+
+
+
+```
+
+
+# FPCA 3 
+
+```{r}
+# Extract top 5 fpca 1 scores
+# Top 5: 1638*5= 8190
+top_5_fpca3 <- fpca_scores_merged %>%
+  arrange(desc(fpca_3)) %>%
+  slice(1:8190) %>%
+  pull(ID)
+
+
+# Extract bottom 5 fpca 1 scores
+bottom_5_fpca3 <- fpca_scores_merged %>%
+  arrange(fpca_3) %>%              # default ascending
+  slice(1:8190) %>%
+  pull(ID)
+
+# df of top & bottom 
+group_ids_fpca3 <- bind_rows(
+  data.frame(ID = top_5_fpca3, group = "Top 5"),
+  data.frame(ID = bottom_5_fpca3, group = "Bottom 5")
+)
+
+
+plot_data_fpca3 <- fpca_scores_merged %>%
+  semi_join(group_ids_fpca3, by = "ID") %>%      # keeps rows that IDs are in both dfs
+  left_join(group_ids_fpca3, by = "ID")          # adds the group label
+
+plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+  geom_line(linewidth = 0.5) +
+  theme_bw() +
+  labs(title = "Top vs Bottom 5 Curves FPCA 3 Scores",
+       colour = "Group")
+  
+
+
+
+
+
+```
+
+ 
+ 
+ 
+ 
+ 
+ 
