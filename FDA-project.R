@@ -145,7 +145,9 @@ matrix_cond1_s0 <- matrix(cond1_s0$fp1, nrow = 1638, ncol = 21, byrow= FALSE)
 matrix_cond1_s0
 
 
+
 matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 10, byrow= FALSE)
+matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 8, byrow= FALSE)
 matrix_cond1_s1
 
 matrix_cond1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 31, byrow= FALSE)
@@ -413,3 +415,43 @@ km <- as.data.frame(kmeans_c1$cluster)
 
 
 cluster_data <- data.frame(p_df_c1, kmeans_c1$cluster)
+
+
+# ======================================
+# Using FPCA tutorial, getting smoothed values as a matirx, then dataframe
+# Condition 1, control
+# V1, V2, ... columns = subjects
+# Rows = time points
+# so, Row 1 = smoothed FP1 at time point 1 for all subjects
+
+# using predict() smooth on specified index grid (1638 rows per subject(8))
+time_index <- seq_len(1638)
+smooth_mat <- predict(sm_cond1_s1, time_index)
+
+smooth_df <- as.data.frame(smooth_mat)
+smooth_df$time_index <- time_index
+
+smooth_long <- smooth_df %>%
+  pivot_longer(
+    cols = -time_index,
+    names_to = "ID",
+    values_to = "smooth"
+  )
+
+df_long <- dfresponse %>%
+  group_by(ID) %>%
+  mutate(time_index = row_number()) %>%
+  ungroup() %>%
+  left_join(smooth_long, by = c("time_index")) 
+
+## Adding FPCA scores
+
+# FPCA scores as a data frame
+pc_df <- as.data.frame(resMEAN$xiEst)
+
+
+
+view(df_long)
+view(smooth_long)
+
+>>>>>>> 8728f4193de63cf79369e5585eab404de370433e
