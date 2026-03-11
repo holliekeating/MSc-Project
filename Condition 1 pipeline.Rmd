@@ -410,8 +410,6 @@ resMEAN$xiEst #FPCA scores
 # ## extract smooths
 # predict(smoothed_gait)
 
-
-
 # FPC results
 resMEAN$xiEst #FPCA scores
 
@@ -471,12 +469,6 @@ plot_data %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
        colour = "Group")
-  
-  
-
-
-
-
 
 ```
 

@@ -13,8 +13,7 @@ library(cluster)
 setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
-# Merges time data and demogrpahic data which contains whether patients are controls or cases
-
+# Merges time data and demogrpahic data which contains whether patients are controls or case
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -108,8 +107,6 @@ penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
 fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
                   Lfdobj = penalty_order, 
                   lambda = penalty)
-#?fdPar
-
 
 # ============================================================================
 # Comparison of cases vs controls for each condition (1,2,3)
@@ -130,29 +127,32 @@ cond1_s1 <- p_df %>%
 cond1 <- p_df %>% 
   filter(condition == 1)
 
+length(unique(cond1$subject))
+
 # Matrix to compare condition 1 - cases vs controls
 
   # 1638 - no of rows for patient 1 (timepoints)
   # 25 controls (ncols)
   # 11 patients with schizophrenia (ncols)
+
 length(unique(cond1$subject))
 # length(unique(p_df$subject))
 # length(unique(cond1_s0$subject))
 # length(unique(cond1_s1$subject))
 
 #these cols need to be changed
-matrix_cond1_s0 <- matrix(cond1_s0$fp1, nrow = 1638, ncol = 25, byrow= FALSE)
+matrix_cond1_s0 <- matrix(cond1_s0$fp1, nrow = 1638, ncol = 21, byrow= FALSE)
 matrix_cond1_s0
 
 
-matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 11, byrow= FALSE)
+matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 10, byrow= FALSE)
 matrix_cond1_s1
 
 matrix_cond1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 31, byrow= FALSE)
 
 sm_cond1 <- smooth.basis(seq(1, 1638, length.out = 1638),
                             matrix_cond1, 
-                            fdParObj)$fd
+                            fdParObj)
 
 ## smooth the data - cond 1 S 0 (control)
 sm_cond1_s0 <- smooth.basis(seq(1, 1638, length.out = 1638),
@@ -164,8 +164,8 @@ plot(sm_cond1_s0)
 # smooth.basis(x, y, fdParObj)
 sm_cond1_s1 <- smooth.basis(seq(1, 1638, length.out = 1638), # x
                             matrix_cond1_s1, # y
-                            fdParObj)$fd     # extracts the smoothed functional data (fd) object ie the curves
-plot(sm_cond1_s1)
+                            fdParObj)$fd    # extracts the smoothed functional data (fd) object ie the curves
+plot(sm_cond1$fd)
 
 
 #=============================================================================
@@ -190,10 +190,6 @@ legend("topright",
        legend = c("Controls", "Cases"),
        col = c("blue", "green"),
        lwd = 2)
-
-
-
-
 
 # ============================================================================
   
@@ -284,7 +280,7 @@ plot(sm_cond3_s1)
 
 # Permutation t test for comparing condition 1 control vs case 
 
-tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=1000, q=0.05, argvals=NULL, plotres= TRUE)
 abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
 
 tperm_cond1
@@ -340,13 +336,15 @@ library(fdapace)
 p_df_c1 <- p_df %>% 
   filter(condition == 1) 
 
+sm_cond1
+
 # FPCA via PACE (does not require prior smoothing - done by function internally)
-dfresponse <- data.frame(ID = sort((p_df_c1$subject)),
+dfresponse <- data.frame(subject = sort((p_df_c1$subject)),
                          time = p_df_c1$time_ms,
-                         eeg = as.numeric(p_df_c1$fp1)) #only 100 rows in smoothed data?
+                         eeg = as.numeric(sm_cond1$y)) #only 100 rows in smoothed data?
 
 # make a list containing dataframes with rows grouped by ID
-list_format <- split(dfresponse, dfresponse$ID)
+list_format <- split(dfresponse, dfresponse$subject)
 
 # create lists of time and response (eeg)
 list_t <- lapply(list_format,
@@ -410,3 +408,8 @@ fviz_cluster(kmeans_c1, data = features_x,
 #having pipeling do c2, c3 - compare
 #coerce smooth data into df
 
+km <- as.data.frame(kmeans_c1$cluster)
+
+
+
+cluster_data <- data.frame(p_df_c1, kmeans_c1$cluster)
