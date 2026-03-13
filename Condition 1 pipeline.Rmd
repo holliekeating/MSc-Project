@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 
@@ -18,10 +20,11 @@ library(dplyr)
 library(plotly)
 library(fda)
 library(gridExtra)
+library(cluster)
+library(factoextra)
 
-
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 
@@ -30,7 +33,7 @@ setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 missing = c(5, 8, 9, 26, 31, 35, 38)
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -71,56 +74,17 @@ p_df<- p_df%>%
   )
 ```
 
-
-
-
-```{r}
-# Plot showing fp1 over time for conditions 1,2 and 3 colored by cases/controls
-
-# str(p_df$subject)
-# plot1 <- ggplot(p_df, aes(x = time_ms, y = fp1, 
-#                           group = subject,
-#                           colour = as.factor(condition)))+geom_line(size = 0.1)+
-#   facet_wrap(~schizophrenia, ncol = 3)
-# 
-# ggplotly(plot1)
-# 
-# p_df <- p_df %>% filter(subject != 5) # remove noisey subject
-# 
-# plot2 <- ggplot(p_df, aes(x = time_ms, y = fp1, 
-#                           group = subject,
-#                           colour = schizophrenia)
-#                          
-#                           )+geom_line(size = 0.05, alpha = 0.5)+
-#                           theme_bw()
-#                       #+facet_wrap(~ condition, ncol = 3)
-#  plot2 <- plot2 + 
-#    scale_colour_manual(
-#      values = c("0" = "blue", "1" = "red"),
-#      labels = c("Control", "Case")
-#    )
-#           
-# #plot(plot2)
-# 
-# p_df <- p_df %>%
-#   arrange(subject, condition, time_ms)
-
-```
-
-
 ```{r}
 ## Smooth the data 
+cond1 <- p_df %>% 
+  filter(condition == 1)
 
 ## Create a B-spline basis (mybasis) - building blocks to represent the curves
 K = 100 # basis functions. More = more flexible
-#?create.bspline.basis
-
 d = 3 # basis degree e.g. 3 = cubic
 mybasis = create.bspline.basis(rangeval = c(0,1638), # x-axis range for curves 0-1638 timepoints
                                nbasis = K, 
                                norder = d+1) # cubic is an order 4 polynomial 
-
-
 
 ## Smoothing parameter object
 
@@ -131,253 +95,121 @@ penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
 fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
                   Lfdobj = penalty_order, 
                   lambda = penalty)
-#?fdPar
-```
 
+#smoothing matrix
+len <- length(unique(cond1$subject))
 
-```{r}
-# ============================================================================
-# Comparison of cases vs controls for each condition (1,2,3)
-#=============================================================================
+matrix_cond <- matrix(cond1$fp1, nrow = 1638, ncol = len, byrow= FALSE)
 
-# # Condition 1 - cases vs controls
-# 
-# # Control
-# cond1_s0 <- p_df %>% 
-#   filter(condition == 1) %>% 
-#   filter(schizophrenia == 0)
-# 
-# # Schizophrenia
-# cond1_s1 <- p_df %>% 
-#   filter(condition == 1) %>%
-#   filter(schizophrenia == 1)
-# 
-# 
-# # Matrix to compare condition 1 - cases vs controls
-# 
-#   # 1638 - no of rows for patient 1 (timepoints)
-#   # 25 controls (ncols)
-#   # 11 patients with schizophrenia (ncols)
-# 
-# matrix_cond1_s0 <- matrix(cond1_s0$fp1, nrow = 1638, ncol = 25, byrow= FALSE)
-# matrix_cond1_s0
-# 
-# 
-# matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 11, byrow= FALSE)
-# matrix_cond1_s1
-# 
-# 
-# ## smooth the data - cond 1 S 0 (control)
-# sm_cond1_s0 <- smooth.basis(seq(1, 1638, length.out = 1638),
-#                                   matrix_cond1_s0, 
-#                                   fdParObj)$fd
-# #plot(sm_cond1_s0)
-# 
-# ## smooth the data - cond 1 s 1
-# # smooth.basis(x, y, fdParObj)
-# sm_cond1_s1 <- smooth.basis(seq(1, 1638, length.out = 1638), # x
-#                             matrix_cond1_s1, # y
-#                             fdParObj)$fd     # extracts the smoothed functional data (fd) object ie the curves
-# #plot(sm_cond1_s1)
-# 
-# 
-# #=============================================================================
-# # Condition 1 - Plot one mean line for each group cases and controls for comparison
-# # Expecting cond 1 to be most statistically different 
-# # Plot cases mean function and then add the controls mean function
-# 
-# mean_cond1_s0 <- mean.fd(sm_cond1_s0)
-# mean_cond1_s1 <- mean.fd(sm_cond1_s1)
-# 
-# # Plot both mean curves together
-# plot(mean_cond1_s1, 
-#                 col = "blue", lwd = 2,
-#                 xlab = "Time", ylab = "Value",
-#                 main = "Mean Smoothed Curves: Cases vs Controls",
-#                 ylim = c(-20, 40))
-# 
-# lines(mean_cond1_s0, col = "green", lwd = 2)
-# abline(v = 100, lty = 2, col = "red", lwd = 2) # threshold line at 100ms when stimulus occurs
-# 
-# legend("topright",
-#        legend = c("Controls", "Cases"),
-#        col = c("blue", "green"),
-#        lwd = 2)
-# 
-# 
-# 
-# 
-# 
-# # ============================================================================
-#   
-# # Condition 2 - cases vs controls
-#   
-# # Control
-#   cond2_s0 <- p_df %>% 
-#   filter(condition == 2) %>% 
-#   filter(schizophrenia == 0)
-# 
-# # Schizophrenia
-# cond2_s1 <- p_df %>% 
-#   filter(condition == 2) %>%
-#   filter(schizophrenia == 1)
-# 
-# 
-# 
-# # Matrix to compare condition 2 - cases vs controls
-# 
-# matrix_cond2_s0 <- matrix(cond2_s0$fp1, nrow = 1638, ncol = 25, byrow= FALSE)
-# matrix_cond2_s0
-# 
-# 
-# matrix_cond2_s1 <- matrix(cond2_s1$fp1, nrow = 1638, ncol = 11, byrow= FALSE)
-# matrix_cond2_s1
-# 
-# 
-# 
-# ## smooth the data - cond 2 s 0
-# sm_cond2_s0 <- smooth.basis(seq(1, 1638, length.out = 1638),
-#                             matrix_cond2_s0, 
-#                             fdParObj)$fd
-# #plot(sm_cond2_s0)
-# 
-# ## smooth the data - cond 2 s 1
-# sm_cond2_s1 <- smooth.basis(seq(1, 1638, length.out = 1638),
-#                             matrix_cond2_s1, 
-#                             fdParObj)$fd
-# #plot(sm_cond2_s1)
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# 
-# #===========================================================================
-# # Condition 3 - cases vs controls
-# 
-# # Control
-# cond3_s0 <- p_df %>% 
-#   filter(condition == 3) %>% 
-#   filter(schizophrenia == 0)
-# 
-# # Schizophrenia
-# cond3_s1 <- p_df %>% 
-#   filter(condition == 3) %>%
-#   filter(schizophrenia == 1)
-# 
-# 
-# # Matrix to compare condition 3 - cases vs controls
-# 
-# matrix_cond3_s0 <- matrix(cond3_s0$fp1, nrow = 1638, ncol = 25, byrow= FALSE)
-# matrix_cond3_s0
-# 
-# 
-# matrix_cond3_s1 <- matrix(cond3_s1$fp1, nrow = 1638, ncol = 11, byrow= FALSE)
-# matrix_cond3_s1
-# 
-# 
-# 
-# ## smooth the data - cond 3 s 0
-# sm_cond3_s0 <- smooth.basis(seq(1, 1638, length.out = 1638),
-#                             matrix_cond3_s0, 
-#                             fdParObj)$fd
-# plot(sm_cond3_s0)
-# 
-# ## smooth the data - cond 3 s 1
-# sm_cond3_s1 <- smooth.basis(seq(1, 1638, length.out = 1638),
-#                             matrix_cond3_s1, 
-#                             fdParObj)$fd
-# #plot(sm_cond3_s1)
+sm_cond <- smooth.basis(seq(1, 1638, length.out = 1638),
+                            matrix_cond, 
+                            fdParObj)
+
 ```
 
 
 # Permutation Ttests
 
 ```{r}
-# ===========================================================================
-# Permutation T tests
-
-# ===========================================================================
-# Permutation t tests compares entire curves between two groups as oppose to single data points
-# n=200 permutations/resamplings
-# 0.05 significance level
-
-
-# Permutation t test for comparing condition 1 control vs case 
-
-tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
-
-tperm_cond1
-
-# Permutation t test for comparing condition 2 control vs case 
-
-tperm_cond2 <- tperm.fd(sm_cond2_s0, sm_cond2_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
-tperm_cond2
-
-# Permutation t test for comparing condition 3 control vs case 
-
-tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
-tperm_cond3
+# # ===========================================================================
+# # Permutation T tests
+# 
+# # ===========================================================================
+# # Permutation t tests compares entire curves between two groups as oppose to single data points
+# # n=200 permutations/resamplings
+# # 0.05 significance level
+# 
+# 
+# # Permutation t test for comparing condition 1 control vs case 
+# 
+# tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+# abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+# 
+# tperm_cond1
+# 
+# # Permutation t test for comparing condition 2 control vs case 
+# 
+# tperm_cond2 <- tperm.fd(sm_cond2_s0, sm_cond2_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+# abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+# tperm_cond2
+# 
+# # Permutation t test for comparing condition 3 control vs case 
+# 
+# tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
+# abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+# tperm_cond3
 ```
 
 # FPCA 
-
-## Method 1
-
-```{r}
-#===============================================================================
-#FPCA
-#===============================================================================
-##Method 1
-coef_all <- cbind(sm_cond1_s0$coefs,
-                  sm_cond1_s1$coefs)
-
-sm_cond1_all <- fd(coef_all, sm_cond1_s0$basis)
-
-class(sm_cond1_all)
-
-
-
-# FPCA for condition 1
-
-fpca_cond1 <- pca.fd(sm_cond1_all, nharm = 5) #nharm = no of PC
-
-plot(fpca_cond1)
-
-# extracting scores
-
-fpca_cond1$scores
-
-```
-
 ## Method 2
 ```{r}
 ## 2. FPCA through conditional expectation (PACE) - irregular data allowed
 library(fdapace)
 
-p_df_c1 <- p_df %>% 
-  filter(condition == 1) 
+# # FPCA via PACE (does not require prior smoothing - done by function internally)
+dfresponse <- data.frame(ID = sort((cond1$subject)),
+                         time = cond1$time_ms,
+                         eeg = as.numeric(cond1$fp1)) #only 100 rows in smoothed data?
 
-# FPCA via PACE (does not require prior smoothing - done by function internally)
-dfresponse <- data.frame(ID = sort((p_df_c1$subject)),
-                         time = p_df_c1$time_ms,
-                         eeg = as.numeric(p_df_c1$fp1)) #only 100 rows in smoothed data?
+# 
+# # make a list containing dataframes with rows grouped by ID
+# list_format <- split(dfresponse, dfresponse$ID)
+# 
+# # create lists of time and response (eeg)
+# list_t <- lapply(list_format,
+#                  dplyr::select, time)
+# list_eeg <- lapply(list_format,
+#                    dplyr::select, eeg)
+# 
+# # unlist
+# list_t <- lapply(list_t,
+#                  unlist, use.names = F)
+# list_eeg <- lapply(list_eeg,
+#                    unlist, use.names = F)
+# 
+# # apply PACE (with fdapace)
+# resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+#                 optns = list(dataType = 'Sparse')) 
+# 
+# # FPC results
+# plot(resMEAN)
+# resMEAN$xiEst #FPCA scores
+```
+
+
+```{r}
+## 2. FPCA through conditional expectation (PACE) - irregular data allowed
+library(fdapace)
+
+time_index <- seq_len(1638)
+smooth_mat <- predict(sm_cond, time_index)
+
+smooth_df <- as.data.frame(smooth_mat)
+smooth_df$time_index <- time_index
+colnames(smooth_df) <- c(unique(cond1$subject), "time_index")
+
+smooth_long <- smooth_df %>%
+  pivot_longer(
+    cols = -time_index,
+    names_to = "subject",
+    values_to = "smooth"
+  ) %>% 
+  arrange(subject, time_index)
+
+# df_long <- dfresponse %>%
+#   group_by(ID) %>%
+#   mutate(time_index = row_number()) %>%
+#   ungroup() %>%
+#   left_join(smooth_long, by = c("time_index"))
 
 # make a list containing dataframes with rows grouped by ID
-list_format <- split(dfresponse, dfresponse$ID)
+list_format <- split(smooth_long, smooth_long$subject)
 
 # create lists of time and response (eeg)
 list_t <- lapply(list_format,
-                 dplyr::select, time)
+                 dplyr::select, time_index)
 list_eeg <- lapply(list_format,
-                   dplyr::select, eeg)
+                   dplyr::select, smooth)
 
 # unlist
 list_t <- lapply(list_t,
@@ -391,7 +223,7 @@ resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
 
 # FPC results
 plot(resMEAN)
-resMEAN$xiEst #FPCA scores
+scores <- resMEAN$xiEst #FPCA scores
 ```
 
 # Plots 
@@ -399,8 +231,6 @@ resMEAN$xiEst #FPCA scores
 
 ```{r}
 # FPCA scores
-
-# AS email.....
 # ## smooth the data
 # smoothed_gait <- smooth.basis(seq(0.025, 0.975, length.out=20),
 #                       kneegait, 
@@ -410,11 +240,8 @@ resMEAN$xiEst #FPCA scores
 # ## extract smooths
 # predict(smoothed_gait)
 
-# FPC results
-resMEAN$xiEst #FPCA scores
-
-fpca_scores_c1 <- as.data.frame(resMEAN$xiEst) %>% 
-  mutate(ID = row_number(), .before = 1)             # add an ID row, first column
+fpca_scores_c1 <- as.data.frame(scores) %>% 
+  mutate(ID = row_number(), .before = 1)   # add an ID row, first column
 
 head(fpca_scores_c1)
 nrow(fpca_scores_c1)
@@ -464,11 +291,66 @@ plot_data <- fpca_scores_c1_merged %>%
   semi_join(group_ids, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids, by = "ID")          # adds the group label
 
-plot_data %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
-  geom_line(linewidth = 0.5) +
-  theme_bw() +
-  labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
-       colour = "Group")
+# plot_data %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+#   geom_line(lwd = 0.5) +
+#   theme_bw() +
+#   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
+#        colour = "Group")
+
+```
+
+
+```{r}
+##KMEANS CLUSTERING
+scores <- resMEAN$xiEst
+
+set.seed(1)
+#change to df
+scores <- data.frame(scores)
+#scores <- na.omit(scores)
+rownames(scores)
+
+id <- unique(sort(cond1$subject))#c(c(1:24), c(66:81))[-c(20,35)] #missing ids
+length(id) #does it match?
+
+scores <- na.omit(scores) %>% 
+  mutate(subject = id)
+
+scores <- merge(scores, demographic, by = "subject") %>% 
+  arrange(subject)
+#scores <- na.omit(scores)
+
+target_y <- scores$group
+
+features_x <- scores[c(2,3,4)]
+
+kmeans <- kmeans(features_x, centers = 4, nstart = 10)
+
+#CONFUSION MATRIX
+table(scores$group, kmeans$cluster)
+
+#mean(scores$group == kmeans_c1$cluster)
+fviz_cluster(kmeans, data = features_x, 
+             main = "K-Means Clusters")
+```
+
+```{r}
+##PLOTTING THE CLUSTERS
+km <- data.frame(subject = id, 
+                 cluster = kmeans$cluster)
+
+#smoothed_all <- merge(smooth_long, cond1,  by = "subject")
+
+df_cluster <- merge(km, cond1, by= "subject") #%>% 
+  #arrange(subject, time_ms)
+
+#plotting the cluster by schizophrenia
+df_cluster %>% 
+  ggplot(aes(x = time_ms, y = fp1, group = subject, colour = schizophrenia)) +
+  geom_line(lwd = 0.5)+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signmals by cluster, coloured by schizophrenia")
+
 
 ```
 
