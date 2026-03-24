@@ -1,4 +1,3 @@
----
 title: "Condition Pipeline"
 author: "Hollie Keating, Sarah Conway & Maeve Samali"
 date: "2026-03-10"
@@ -11,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-This document contains the pipeline which can be applied to any of the three conditions. Included:
+This document contains the pipeline which can be applied to any of the conditions and nodes. Included:
 
  - Smoothing 
  - Generate FPCA scores
@@ -28,10 +27,11 @@ library(plotly)
 library(fda)
 library(gridExtra)
 library(fdapace)
+library(cluster)
+library(factoextra)
 
-
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+ setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 ```{r}
@@ -50,7 +50,8 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 missing = c(5, 8, 9, 26, 31, 35, 38)
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -90,7 +91,6 @@ p_df<- p_df%>%
     schizophrenia = as.factor(schizophrenia)
   )
 
-
 ```
  
 ```{r}
@@ -115,17 +115,14 @@ penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
 fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
                   Lfdobj = penalty_order, 
                   lambda = penalty)
-#?fdPar
 ```
 
- 
- 
  
 ```{r}
 # Smooth the data 
 cond <- p_df %>%
   filter(condition == c)
-
+str(cond$subject)
 
 matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
 
@@ -159,11 +156,10 @@ legend("topleft",
 #length(value_curve)
 # ncol(matrix_sm_all)
 
-```
 
+```
  
- 
- ## FPCA Scores
+## FPCA Scores
  
 ```{r}
 ## FPCA through conditional expectation (PACE) - irregular data allowed
@@ -171,9 +167,24 @@ legend("topleft",
 # applied to sm_cond: condition c smoothed data 
 
 
-dfresponse <- data.frame(ID = sort((cond$subject)),
+dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
                          time = cond$time_ms,
-                         eeg = as.numeric(sm_cond$y)) #only 100 rows in smoothed data?
+                         eeg = as.numeric(sm_cond$y)) %>% 
+                          arrange(ID)
+
+####################
+myIDS = unique((dfresponse$ID))
+test = as.numeric(predict(sm_cond))
+dfresponse$eeg_smooth = test
+
+dfresponse %>%
+  filter(ID==1) %>%
+  ggplot(aes(x=time, y = eeg)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
+########################
+
+
+dfresponse
+
 
 # make a list containing dataframes with rows grouped by ID
 list_format <- split(dfresponse, dfresponse$ID)
@@ -198,7 +209,56 @@ resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
 plot(resMEAN)
 # resMEAN$xiEst #FPCA scores
 ```
- 
+#Smoothed FPCA Scores
+
+```{r}
+library(fdapace)
+
+time_index <- seq_len(1638)
+smooth_mat <- predict(sm_cond, time_index)
+
+smooth_df <- as.data.frame(smooth_mat)
+smooth_df$time_index <- time_index
+colnames(smooth_df) <- c("subject", "time_index")
+
+smooth_long <- smooth_df %>%
+  pivot_longer(
+    cols = -time_index,
+    names_to = "subject",
+    values_to = "smooth"
+  ) %>% 
+  arrange(subject, time_index)
+
+# df_long <- dfresponse %>%
+#   group_by(ID) %>%
+#   mutate(time_index = row_number()) %>%
+#   ungroup() %>%
+#   left_join(smooth_long, by = c("time_index"))
+
+# make a list containing dataframes with rows grouped by ID
+list_format <- split(smooth_long, smooth_long$subject)
+
+# create lists of time and response (eeg)
+list_t <- lapply(list_format,
+                 dplyr::select, time_index)
+list_eeg <- lapply(list_format,
+                   dplyr::select, smooth)
+
+# unlist
+list_t <- lapply(list_t,
+                 unlist, use.names = F)
+list_eeg <- lapply(list_eeg,
+                   unlist, use.names = F)
+
+# apply PACE (with fdapace)
+resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Sparse')) 
+
+# FPC results
+plot(resMEAN)
+scores <- resMEAN$xiEst #FPCA scores
+```
+
  
 # FPCA 1
  
@@ -208,8 +268,8 @@ plot(resMEAN)
 # FPC result
 # resMEAN$xiEst #FPCA scores
 
-fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
-  mutate(ID = row_number(), .before = 1)             # add an ID row, first column
+fpca_scores <- as.data.frame(scores) %>% 
+  mutate(ID =myIDS, .before = 1)             # add an ID row, first column
 
 colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
 
@@ -251,14 +311,9 @@ plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
        colour = "Group")
-  
-
-
-
-
 ```
  
- # FPCA 2 
+# FPCA 2 
 
 ```{r}
 # Extract top 5 fpca 1 scores
@@ -291,11 +346,6 @@ plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 2 Scores",
        colour = "Group")
-  
-  
-
-
-
 
 
 ```
@@ -344,7 +394,57 @@ plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
 
  
  
+ - this plot shows xxx
  
  
- 
+```{r}
+##KMEANS CLUSTERING
+
+set.seed(1)
+#change to df
+scores <- data.frame(scores)
+#scores <- na.omit(scores)
+
+
+scores <- scores %>% 
+  mutate(subject = myIDS)
+
+scores <- merge(scores, demographic, by = "subject")
+#scores <- na.omit(scores)
+
+target_y <- scores$group
+
+features_x <- scores[c(2,3,4)]
+
+kmeans <- kmeans(features_x, centers = 4, nstart = 10)
+
+#CONFUSION MATRIX
+table(scores$group, kmeans$cluster)
+
+#mean(scores$group == kmeans_c1$cluster)
+fviz_cluster(kmeans, data = features_x, 
+             main = "K-Means Clusters")
+```
+
+```{r}
+##PLOTTING THE CLUSTERS
+km <- data.frame(subject = myIDS, 
+                 cluster = kmeans$cluster)
+
+#smoothed_all <- merge(smooth_long, cond1,  by = "subject")
+
+df_cluster <- merge(km, smooth_df, by= "subject") #%>% 
+  #arrange(subject, time_ms)
+
+#plotting the cluster by schizophrenia
+df_cluster %>% 
+  ggplot(aes(x = time_ms, y = fp1, group = subject, colour = schizophrenia)) +
+  geom_line(lwd = 0.5)+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signmals by cluster, coloured by schizophrenia")
+
+
+```
+
+
  

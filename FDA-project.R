@@ -150,7 +150,7 @@ matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 10, byrow= FALSE)
 matrix_cond1_s1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 8, byrow= FALSE)
 matrix_cond1_s1
 
-matrix_cond1 <- matrix(cond1_s1$fp1, nrow = 1638, ncol = 31, byrow= FALSE)
+matrix_cond1 <- matrix(cond1$fp1, nrow = 1638, ncol = 31, byrow= FALSE)
 
 sm_cond1 <- smooth.basis(seq(1, 1638, length.out = 1638),
                             matrix_cond1, 
@@ -443,7 +443,6 @@ df_long <- dfresponse %>%
   mutate(time_index = row_number()) %>%
   ungroup() %>%
   left_join(smooth_long, by = c("time_index")) 
-
 ## Adding FPCA scores
 
 # FPCA scores as a data frame
@@ -454,4 +453,3 @@ pc_df <- as.data.frame(resMEAN$xiEst)
 view(df_long)
 view(smooth_long)
 
->>>>>>> 8728f4193de63cf79369e5585eab404de370433e
