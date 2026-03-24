@@ -17,7 +17,6 @@ This document contains the pipeline which can be applied to any of the condition
  - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
  
  
- 
 ```{r include = FALSE, warning=FALSE, message=FALSE}
 library(data.table)
 library(ggplot2)
@@ -219,7 +218,8 @@ smooth_mat <- predict(sm_cond, time_index)
 
 smooth_df <- as.data.frame(smooth_mat)
 smooth_df$time_index <- time_index
-colnames(smooth_df) <- c("subject", "time_index")
+
+colnames(smooth_df)[1:32] <- myIDS
 
 smooth_long <- smooth_df %>%
   pivot_longer(
@@ -228,6 +228,8 @@ smooth_long <- smooth_df %>%
     values_to = "smooth"
   ) %>% 
   arrange(subject, time_index)
+
+
 
 # df_long <- dfresponse %>%
 #   group_by(ID) %>%
@@ -447,4 +449,18 @@ df_cluster %>%
 ```
 
 
- 
+```{r}
+#Reshape data for multi node glm 
+
+
+nodes <- c("fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
+
+nodes_df <- p_df %>% pivot_longer(
+  cols = all_of(nodes),
+  names_to = "node",
+  values_to = "EEG"
+) %>% dplyr::select(subject, time_ms, schizophrenia, node, EEG) %>% 
+  arrange(subject, node, time_ms)
+
+```
+
