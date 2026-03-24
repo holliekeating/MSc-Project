@@ -464,6 +464,39 @@ nodes_df <- p_df %>% pivot_longer(
 
 ```
 
+
+```{r creating dataframe}
+myIDS = unique((dfresponse$ID))
+test = as.numeric(predict(sm_cond))
+dfresponse$eeg_smooth = test
+
+dfresponse %>%
+  filter(ID==1) %>%
+  ggplot(aes(x=time, y = eeg)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
+
+# labelling each row to the correct ID
+
+fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
+  mutate(ID = myIDS, .before = 1)  
+
+# correctly labeling columns for fp1, fp2, fp3
+
+colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
+
+# joining together smoothed eeg dataframe and fpca df
+
+dfresponse_fpca <- dfresponse %>% left_join(fpca_scores, by = "ID")
+
+# renaming "subject" column in demographic to "ID"
+
+demographic <- demographic %>%
+  rename(ID = subject)
+
+
+full_merged_df <- dfresponse_fpca %>% left_join(demographic, by = "ID")
+```
+
+
 ```{r  glm}
 
 subject_df <- full_merged_df %>%
@@ -471,7 +504,6 @@ subject_df <- full_merged_df %>%
 
 subject_df$group <- factor(subject_df$group)
 subject_df$gender <- factor(subject_df$gender)
-
 
 
 
@@ -558,6 +590,9 @@ ggplot(subject_df, aes(x = education)) +
 table(subject_df$group, subject_df$education)
 
 
+
+
+
 ```
 
 ### Education Model
@@ -576,4 +611,5 @@ The distribution of gender was similar across the control and schizophrenia grou
 ### FPCA Model
 
 FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
+ 
  
