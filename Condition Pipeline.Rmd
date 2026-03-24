@@ -464,3 +464,116 @@ nodes_df <- p_df %>% pivot_longer(
 
 ```
 
+```{r  glm}
+
+subject_df <- full_merged_df %>%
+  distinct(ID, group, gender, age, education, fpca_1, fpca_2, fpca_3)
+
+subject_df$group <- factor(subject_df$group)
+subject_df$gender <- factor(subject_df$gender)
+
+
+
+
+#=================
+# Gender Model 
+# ================
+
+log_gender <- glm(group ~ gender + age + education + fpca_1 + fpca_2 + fpca_3,
+             data = subject_df,
+             family = binomial)
+
+summary(log_gender)
+
+# summary table
+tab_model( log_gender, transform = "exp")
+
+# Sound checking gender in dataset
+
+ggplot(subject_df, aes(x = gender, fill = group)) +
+  geom_bar(position = "dodge") +
+  labs(x = "Gender", y = "Count", fill = "Group")
+
+
+# large discrepency between males and females within condition 1 group (more males, majority in control group)
+
+
+
+
+# ====================================
+# Education Model
+# ====================================
+
+model_edu <- glm(group ~ education,
+                 data = subject_df,
+                 family = binomial)
+
+summary(model_edu)
+
+# summary table
+tab_model(model_edu, transform = "exp")
+
+
+# creating a boxplot 
+
+ggplot(subject_df, aes(x = factor(group), y = education)) +
+  geom_boxplot() +
+  labs(x = "Group", y = "Education")
+
+
+
+# =====================
+# FPCA Model 
+# =====================
+
+
+model_eeg <- glm(group ~ fpca_1 + fpca_2 + fpca_3,
+                 data = subject_df,
+                 family = binomial)
+
+summary(model_eeg)
+
+# summary table
+
+tab_model(model_eeg, transform = "exp")
+
+
+ggplot(subject_df, aes(x = factor(group), y = fpca_1)) +
+  geom_boxplot() +
+  labs(x = "Group", y = "FPCA 1")
+
+plot_model(model_eeg, type = "pred", terms = "fpca_1")
+plot_model(model_eeg, type = "pred", terms = "fpca_2")
+plot_model(model_eeg, type = "pred", terms = "fpca_3")
+
+# ===============
+# Checking Education in Dataset
+# ===============
+
+ggplot(subject_df, aes(x = education)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(x = "Years of Education", y = "Count") +
+  facet_wrap(subject_df$group)
+
+table(subject_df$group, subject_df$education)
+
+
+```
+
+### Education Model
+
+Education was significantly associated with schizophrenia diagnosis, with higher education linked to lower log-odds (OR = 0.57, p = 0.018), indicating a decrease in odds of approximately 43% per additional year of education.
+
+By analysing the grouped bar chart for education, individuals with schizophrenia tended to have lower levels of education compared to controls - however this association may reflect the impact of earlier illness onset or other cofounding factors.
+
+
+### Gender Model
+
+Gender was not significant within association with schizophrenia presence (OR = 0.15, p = 0.213). 
+The distribution of gender was similar across the control and schizophrenia groups, with a higher proportion of males in both groups which supports our above result. However, the sample was predominantly male which may limit our ability to detect gender differences. 
+
+
+### FPCA Model
+
+FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
+ 
