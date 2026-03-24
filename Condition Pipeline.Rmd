@@ -1,3 +1,4 @@
+---
 title: "Condition Pipeline"
 author: "Hollie Keating, Sarah Conway & Maeve Samali"
 date: "2026-03-10"
@@ -17,6 +18,7 @@ This document contains the pipeline which can be applied to any of the condition
  - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
  
  
+ 
 ```{r include = FALSE, warning=FALSE, message=FALSE}
 library(data.table)
 library(ggplot2)
@@ -26,11 +28,14 @@ library(plotly)
 library(fda)
 library(gridExtra)
 library(fdapace)
-library(cluster)
+library(tidyr)
+library(table1)
 library(factoextra)
+library(cluster)
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
- setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 ```{r}
@@ -49,8 +54,7 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 missing = c(5, 8, 9, 26, 31, 35, 38)
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -90,6 +94,7 @@ p_df<- p_df%>%
     schizophrenia = as.factor(schizophrenia)
   )
 
+
 ```
  
 ```{r}
@@ -114,14 +119,18 @@ penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
 fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
                   Lfdobj = penalty_order, 
                   lambda = penalty)
+#?fdPar
 ```
 
+ 
+ 
  
 ```{r}
 # Smooth the data 
 cond <- p_df %>%
   filter(condition == c)
-str(cond$subject)
+
+
 
 matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
 
@@ -133,57 +142,141 @@ sm_cond <- smooth.basis(seq(1, r_len, length.out = r_len), # x
                             matrix_sm_all, # y
                             fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
 
+
 plot(sm_cond,
      main = "Smoothed Curves")
 
-# Colour by case vs control 
-# one case/control value per curve
-value_curve <- cond$schizophrenia[seq(1, nrow(cond), by = r_len)]
-
-colours <- ifelse(value_curve == 1, "darkgreen", "orange")
-
-
-plot(sm_cond$fd, col = colours, lwd = 2,
-     main = "Smoothed Curves Case vs Controls")
-
-legend("topleft",
-       legend = c("Control (0)", "Case (1)"),
-       col = c("orange", "darkgreen"),
-       lwd = 2)
-
-
-#length(value_curve)
-# ncol(matrix_sm_all)
 
 
 ```
+
+
+
+
+```{r fig.width=9, fig.asp=1.5}
+# Plots 
+# dfresponse - raw eeg, smoothed eeg, merged demographic 
  
-## FPCA Scores
+# sm_cond$y is raw eeg signals
+# smoothed is predict(sm_cond) 
+# fd is basis and coeff
+
+dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
+                         time = cond$time_ms,
+                         eeg_raw = as.numeric(sm_cond$y),
+                         eeg_smooth = as.numeric(predict(sm_cond))) %>%   # smoothed predictions
+                          arrange(ID)
+
+
+demographic <- read.csv("demographic.csv") %>%
+  rename(ID = subject) %>%
+  mutate(
+    group = recode(group, `0` = "Control", `1` = "Case"),
+    gender = recode(gender, " M" = "Male", " F" = "Female"),
+    group = factor(group, levels = c("Control", "Case")),
+    gender = factor(gender, levels = c("Male", "Female")))
+
+# table(demographic$group) # 25 controls, 11 cases
+# table(demographic$gender) # 30 males. 6 females
+
+myIDS = unique((dfresponse$ID))
+#test = as.numeric(predict(sm_cond)) # smoothed predictions
+#dfresponse$eeg_smooth = test
+
+
+dfresponse_merged <- dfresponse %>% left_join(demographic, by = "ID")
+
+
+# plot color = cases vs controls 
+# group = ID: draw one seperate line for each patient ID
+group_plot <- dfresponse_merged %>%
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves Case vs Controls",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")
+
+#group_plot
+
+
+gender_plot <- dfresponse_merged %>%
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves Case vs Controls",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~gender)
+
+#gender_plot
+
+
+# plot by age > 40 or < 40     its not the age they werre diagnosed at its just the age they are now.................
+age_plot <- dfresponse_merged %>% 
+  mutate(age_grouped = ifelse(age < 40, "<40", ">=40")) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves by Age",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~age_grouped)
+
+#age_plot
+
+# years in education 
+# primary plus secondary is ~14 years 
+edu_plot <- dfresponse_merged %>% 
+  mutate(education_grouped = ifelse(education < 15, "<15", ">=15")) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves by Years in Education",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~education_grouped)
+
+#edu_plot
+
+
+
+grid.arrange(group_plot, gender_plot, age_plot, edu_plot, ncol = 1)
+
+
+
+# table_data <- dfresponse_merged %>%
+#   distinct(ID, group, gender)      # one per patient
+# 
+# table1(~ gender | group,
+#        data = table_data)
+
+
+# demographic only has up to patient 77
+
+
+dfresponse %>%
+  filter(ID==1) %>%
+  ggplot(aes(x=time, y = eeg_raw)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
+
+
+
+
+```
+
+ 
+ 
+ ## FPCA Scores
  
 ```{r}
 ## FPCA through conditional expectation (PACE) - irregular data allowed
 # FPCA via PACE 
 # applied to sm_cond: condition c smoothed data 
-
-
-dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
-                         time = cond$time_ms,
-                         eeg = as.numeric(sm_cond$y)) %>% 
-                          arrange(ID)
-
-####################
-myIDS = unique((dfresponse$ID))
-test = as.numeric(predict(sm_cond))
-dfresponse$eeg_smooth = test
-
-dfresponse %>%
-  filter(ID==1) %>%
-  ggplot(aes(x=time, y = eeg)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
-########################
-
-
-dfresponse
-
 
 # make a list containing dataframes with rows grouped by ID
 list_format <- split(dfresponse, dfresponse$ID)
@@ -192,7 +285,7 @@ list_format <- split(dfresponse, dfresponse$ID)
 list_t <- lapply(list_format,
                  dplyr::select, time)
 list_eeg <- lapply(list_format,
-                   dplyr::select, eeg)
+                   dplyr::select, eeg_raw)
 
 # unlist
 list_t <- lapply(list_t,
@@ -206,61 +299,9 @@ resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
 
 # FPC results
 plot(resMEAN)
-# resMEAN$xiEst #FPCA scores
+#resMEAN$xiEst #FPCA scores
 ```
-#Smoothed FPCA Scores
-
-```{r}
-library(fdapace)
-
-time_index <- seq_len(1638)
-smooth_mat <- predict(sm_cond, time_index)
-
-smooth_df <- as.data.frame(smooth_mat)
-smooth_df$time_index <- time_index
-
-colnames(smooth_df)[1:32] <- myIDS
-
-smooth_long <- smooth_df %>%
-  pivot_longer(
-    cols = -time_index,
-    names_to = "subject",
-    values_to = "smooth"
-  ) %>% 
-  arrange(subject, time_index)
-
-
-
-# df_long <- dfresponse %>%
-#   group_by(ID) %>%
-#   mutate(time_index = row_number()) %>%
-#   ungroup() %>%
-#   left_join(smooth_long, by = c("time_index"))
-
-# make a list containing dataframes with rows grouped by ID
-list_format <- split(smooth_long, smooth_long$subject)
-
-# create lists of time and response (eeg)
-list_t <- lapply(list_format,
-                 dplyr::select, time_index)
-list_eeg <- lapply(list_format,
-                   dplyr::select, smooth)
-
-# unlist
-list_t <- lapply(list_t,
-                 unlist, use.names = F)
-list_eeg <- lapply(list_eeg,
-                   unlist, use.names = F)
-
-# apply PACE (with fdapace)
-resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) 
-
-# FPC results
-plot(resMEAN)
-scores <- resMEAN$xiEst #FPCA scores
-```
-
+ 
  
 # FPCA 1
  
@@ -270,7 +311,7 @@ scores <- resMEAN$xiEst #FPCA scores
 # FPC result
 # resMEAN$xiEst #FPCA scores
 
-fpca_scores <- as.data.frame(scores) %>% 
+fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
   mutate(ID =myIDS, .before = 1)             # add an ID row, first column
 
 colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
@@ -280,7 +321,7 @@ dfresponse <- dfresponse %>% mutate(ID = as.numeric(ID))
 
 
 # Plots - merge FCP scores with df response 
-fpca_scores_merged <- dfresponse %>% left_join(fpca_scores, by = "ID")
+fpca_scores_merged <- dfresponse_merged %>% left_join(fpca_scores, by = "ID")
 
 
 # Extract top 5 fpca 1 scores
@@ -308,14 +349,19 @@ plot_data_fpca1 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca1, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca1, by = "ID")          # adds the group label
 
-plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group)) +
   geom_line(linewidth = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
        colour = "Group")
+  
+
+
+
+
 ```
  
-# FPCA 2 
+ # FPCA 2 
 
 ```{r}
 # Extract top 5 fpca 1 scores
@@ -348,6 +394,11 @@ plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 2 Scores",
        colour = "Group")
+  
+  
+
+
+
 
 
 ```
@@ -399,112 +450,13 @@ plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
  - this plot shows xxx
  
  
+ 
 ```{r}
-##KMEANS CLUSTERING
-
-set.seed(1)
-#change to df
-scores <- data.frame(scores)
-#scores <- na.omit(scores)
-
-
-scores <- scores %>% 
-  mutate(subject = myIDS)
-
-scores <- merge(scores, demographic, by = "subject")
-#scores <- na.omit(scores)
-
-target_y <- scores$group
-
-features_x <- scores[c(2,3,4)]
-
-kmeans <- kmeans(features_x, centers = 4, nstart = 10)
-
-#CONFUSION MATRIX
-table(scores$group, kmeans$cluster)
-
-#mean(scores$group == kmeans_c1$cluster)
-fviz_cluster(kmeans, data = features_x, 
-             main = "K-Means Clusters")
-```
-
-```{r}
-##PLOTTING THE CLUSTERS
-km <- data.frame(subject = myIDS, 
-                 cluster = kmeans$cluster)
-
-#smoothed_all <- merge(smooth_long, cond1,  by = "subject")
-
-df_cluster <- merge(km, smooth_df, by= "subject") #%>% 
-  #arrange(subject, time_ms)
-
-#plotting the cluster by schizophrenia
-df_cluster %>% 
-  ggplot(aes(x = time_ms, y = fp1, group = subject, colour = schizophrenia)) +
-  geom_line(lwd = 0.5)+
-  facet_wrap(~ cluster) +
-  labs(title = "EEG signmals by cluster, coloured by schizophrenia")
-
-
-```
-
-
-```{r}
-#Reshape data for multi node glm 
-
-
-nodes <- c("fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
-
-nodes_df <- p_df %>% pivot_longer(
-  cols = all_of(nodes),
-  names_to = "node",
-  values_to = "EEG"
-) %>% dplyr::select(subject, time_ms, schizophrenia, node, EEG) %>% 
-  arrange(subject, node, time_ms)
-
-```
-
-
-```{r creating dataframe}
-myIDS = unique((dfresponse$ID))
-test = as.numeric(predict(sm_cond))
-dfresponse$eeg_smooth = test
-
-dfresponse %>%
-  filter(ID==1) %>%
-  ggplot(aes(x=time, y = eeg)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
-
-# labelling each row to the correct ID
-
-fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
-  mutate(ID = myIDS, .before = 1)  
-
-# correctly labeling columns for fp1, fp2, fp3
-
-colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
-
-# joining together smoothed eeg dataframe and fpca df
-
-dfresponse_fpca <- dfresponse %>% left_join(fpca_scores, by = "ID")
-
-# renaming "subject" column in demographic to "ID"
-
-demographic <- demographic %>%
-  rename(ID = subject)
-
-
-full_merged_df <- dfresponse_fpca %>% left_join(demographic, by = "ID")
-```
-
-
-```{r  glm}
-
-subject_df <- full_merged_df %>%
+subject_df <- fpca_scores_merged %>%
   distinct(ID, group, gender, age, education, fpca_1, fpca_2, fpca_3)
 
-subject_df$group <- factor(subject_df$group)
-subject_df$gender <- factor(subject_df$gender)
-
+# subject_df$group <- factor(subject_df$group)
+# subject_df$gender <- factor(subject_df$gender)
 
 
 #=================
@@ -517,17 +469,14 @@ log_gender <- glm(group ~ gender + age + education + fpca_1 + fpca_2 + fpca_3,
 
 summary(log_gender)
 
-# summary table
-tab_model( log_gender, transform = "exp")
 
-# Sound checking gender in dataset
+## converting coefficients into OR
 
-ggplot(subject_df, aes(x = gender, fill = group)) +
-  geom_bar(position = "dodge") +
-  labs(x = "Gender", y = "Count", fill = "Group")
+exp(coef(log_gender))
 
 
-# large discrepency between males and females within condition 1 group (more males, majority in control group)
+# from summary, FPCA1 shows most significance at p = 0.06.., genderM significance = 0.2131
+# gender coef = 0.1485062
 
 
 
@@ -541,18 +490,15 @@ model_edu <- glm(group ~ education,
                  family = binomial)
 
 summary(model_edu)
+exp(coef(model_edu))
 
-# summary table
-tab_model(model_edu, transform = "exp")
+## for each additional year of education, the odds of being in the schizophrenia group decrease by about 43%
 
-
-# creating a boxplot 
+## creating a boxplot 
 
 ggplot(subject_df, aes(x = factor(group), y = education)) +
   geom_boxplot() +
   labs(x = "Group", y = "Education")
-
-
 
 # =====================
 # FPCA Model 
@@ -565,35 +511,18 @@ model_eeg <- glm(group ~ fpca_1 + fpca_2 + fpca_3,
 
 summary(model_eeg)
 
-# summary table
+exp(coef(model_eeg))
 
-tab_model(model_eeg, transform = "exp")
-
+# 1st PC most significant, OR = 0.99.. so only marginally reduces odds of being in schizophrenia group with increase of PC1
 
 ggplot(subject_df, aes(x = factor(group), y = fpca_1)) +
   geom_boxplot() +
   labs(x = "Group", y = "FPCA 1")
 
-plot_model(model_eeg, type = "pred", terms = "fpca_1")
-plot_model(model_eeg, type = "pred", terms = "fpca_2")
-plot_model(model_eeg, type = "pred", terms = "fpca_3")
-
-# ===============
-# Checking Education in Dataset
-# ===============
-
-ggplot(subject_df, aes(x = education)) +
-  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
-  labs(x = "Years of Education", y = "Count") +
-  facet_wrap(subject_df$group)
-
-table(subject_df$group, subject_df$education)
-
-
-
-
-
 ```
+ 
+ 
+ 
 
 ### Education Model
 
@@ -612,4 +541,32 @@ The distribution of gender was similar across the control and schizophrenia grou
 
 FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
  
+ 
+```{r}
+#Reshape data for multi node glm 
+
+
+nodes <- c("fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
+
+nodes_df <- p_df %>% pivot_longer(
+  cols = all_of(nodes),
+  names_to = "node",
+  values_to = "EEG"
+) %>% dplyr::select(subject, time_ms, schizophrenia, node, EEG) %>% 
+  arrange(subject, node, time_ms)
+
+nodes_df %>% 
+  filter(subject == 1) %>% 
+  ggplot(aes(x = time_ms, y = EEG, group = node, colour = node)) +
+  geom_line()
+
+
+nodes_glm <- glm(schizophrenia ~ EEG:node,
+                 data = nodes_df,
+                 family = binomial)
+
+tab_model(nodes_glm)
+```
+
+
  
