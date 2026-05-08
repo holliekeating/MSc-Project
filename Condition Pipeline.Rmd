@@ -17,8 +17,6 @@ This document contains the pipeline which can be applied to any of the condition
  - Generate FPCA scores
  - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
  
- 
- 
 ```{r include = FALSE, warning=FALSE, message=FALSE}
 library(data.table)
 library(ggplot2)
@@ -32,29 +30,30 @@ library(tidyr)
 library(table1)
 library(factoextra)
 library(cluster)
+library(sjPlot)
 
-
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 ```{r}
 c = 1 # condition 1 
-t = 1 # trial 1 
-r_len = 1638 # timepoints in condition c
-c_len = 32 # subjects 
+t = 10 # 10 trials 
+t1 = 1 # selecting one trial
+# r_len = 1638 # timepoints in condition c
+# c_len = 32 # subjects 
 node <- "fp1"
 
 ```
- 
- 
+
  
 ```{r}
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 missing = c(5, 8, 9, 26, 31, 35, 38)
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/holli/OneDrive - Natramional University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -74,40 +73,32 @@ for(i in 1:length(filenames)){
   temp<- temp%>%
     filter (time_ms > -100)%>%   # time from -100ms to remove unnecessary data while including some pre beep curve info (100ms is where the beep occurs
     # ifelse(subject %in% missing, trial==15, trial==1) %>% # Only one trial out of 100 choosen. Trial 1 so patient hasn't learnt the test/timing/ keep up concealment
-    filter(trial==t)
+    filter(trial<=t)
   temp<- rename(temp, schizophrenia = group)
-  
-  
-  
+
   p_list[[i]] <- temp
   
 }
 
 p_df <- do.call(rbind, p_list)
 
-
-
-
 p_df<- p_df%>%
   mutate(
     subject = as.factor(subject),
     schizophrenia = as.factor(schizophrenia)
   )
-
-
 ```
+
  
 ```{r}
 ## Smooth the data 
 ## Create a B-spline basis (mybasis) - building blocks to represent the curves
 K = 100 # basis functions. More = more flexible
-#?create.bspline.basis
-
 d = 3 # basis degree e.g. 3 = cubic
+
 mybasis = create.bspline.basis(rangeval = c(0,1638), # x-axis range for curves 0-1638 timepoints
                                nbasis = K, 
                                norder = d+1) # cubic is an order 4 polynomial 
-
 
 
 ## Smoothing parameter object
@@ -119,41 +110,38 @@ penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
 fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
                   Lfdobj = penalty_order, 
                   lambda = penalty)
-#?fdPar
 ```
 
- 
- 
  
 ```{r}
 # Smooth the data 
 cond <- p_df %>%
-  filter(condition == c)
+  filter(condition == c) %>%
+  filter(trial == t1)
 
+#the subjects are not ordered correctly to fix this
+cond$subject <- as.numeric(as.character(cond$subject))
+cond <- cond %>% arrange(subject)
 
+r_len <- nrow(cond %>% filter(subject == 1))
+c_len <- length(unique(cond$subject))
 
 matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
-
-
 
 ## smooth the data - cond
 # smooth.basis(x, y, fdParObj)
 sm_cond <- smooth.basis(seq(1, r_len, length.out = r_len), # x
                             matrix_sm_all, # y
                             fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
-
-
 plot(sm_cond,
      main = "Smoothed Curves")
-
-
 
 ```
 
 
 
 
-```{r fig.width=9, fig.asp=1.5}
+```{r}
 # Plots 
 # dfresponse - raw eeg, smoothed eeg, merged demographic 
  
@@ -168,7 +156,7 @@ dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
                           arrange(ID)
 
 
-demographic <- read.csv("demographic.csv") %>%
+demographic <- demographic %>%
   rename(ID = subject) %>%
   mutate(
     group = recode(group, `0` = "Control", `1` = "Case"),
@@ -183,9 +171,10 @@ myIDS = unique((dfresponse$ID))
 #test = as.numeric(predict(sm_cond)) # smoothed predictions
 #dfresponse$eeg_smooth = test
 
-
 dfresponse_merged <- dfresponse %>% left_join(demographic, by = "ID")
+```
 
+```{r, fig.width=9, fig.asp=1.5}
 
 # plot color = cases vs controls 
 # group = ID: draw one seperate line for each patient ID
@@ -244,11 +233,7 @@ edu_plot <- dfresponse_merged %>%
 
 #edu_plot
 
-
-
 grid.arrange(group_plot, gender_plot, age_plot, edu_plot, ncol = 1)
-
-
 
 # table_data <- dfresponse_merged %>%
 #   distinct(ID, group, gender)      # one per patient
@@ -262,16 +247,14 @@ grid.arrange(group_plot, gender_plot, age_plot, edu_plot, ncol = 1)
 
 dfresponse %>%
   filter(ID==1) %>%
-  ggplot(aes(x=time, y = eeg_raw)) + geom_line() + geom_line(aes(y=eeg_smooth, color = "smooth"))
-
-
+  ggplot(aes(x=time, y = eeg_raw)) + geom_line() + geom_line(lwd = 1.5, aes(y=eeg_smooth, color = "smooth"))
 
 
 ```
 
  
  
- ## FPCA Scores
+## FPCA Scores
  
 ```{r}
 ## FPCA through conditional expectation (PACE) - irregular data allowed
@@ -295,8 +278,11 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) 
+                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
 
+##is the data dense?
+plot(FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Dense')))
 # FPC results
 plot(resMEAN)
 #resMEAN$xiEst #FPCA scores
@@ -323,7 +309,9 @@ dfresponse <- dfresponse %>% mutate(ID = as.numeric(ID))
 # Plots - merge FCP scores with df response 
 fpca_scores_merged <- dfresponse_merged %>% left_join(fpca_scores, by = "ID")
 
+```
 
+```{r}
 # Extract top 5 fpca 1 scores
 # Top 5: 1638*5= 8190
 top_5_fpca1 <- fpca_scores_merged %>%
@@ -349,7 +337,7 @@ plot_data_fpca1 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca1, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca1, by = "ID")          # adds the group label
 
-plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group)) +
+plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
   geom_line(linewidth = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
@@ -361,7 +349,7 @@ plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group
 
 ```
  
- # FPCA 2 
+# FPCA 2 
 
 ```{r}
 # Extract top 5 fpca 1 scores
@@ -389,17 +377,12 @@ plot_data_fpca2 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca2, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca2, by = "ID")          # adds the group label
 
-plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
-  geom_line(linewidth = 0.5) +
+plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
+  geom_line(lwd = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 2 Scores",
        colour = "Group")
   
-  
-
-
-
-
 
 ```
 
@@ -432,22 +415,59 @@ plot_data_fpca3 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca3, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca3, by = "ID")          # adds the group label
 
-plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg, group = ID, colour = group)) +
+plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
   geom_line(linewidth = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 3 Scores",
        colour = "Group")
-  
-
-
-
-
 
 ```
 
  
  
- - this plot shows xxx
+```{r}
+##KMEANS CLUSTERING
+set.seed(1)
+
+#scores <- na.omit(scores)
+rownames(fpca_scores)
+
+
+fpca_scores_demo <- merge(fpca_scores, demographic, by = "ID")
+
+target_y <- fpca_scores_demo$group
+
+features_x <- fpca_scores_demo[c(2,3,4)]
+
+kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
+
+#CONFUSION MATRIX
+table(fpca_scores_demo$group, kmeans_c1$cluster)
+
+#mean(scores$group == kmeans_c1$cluster)
+fviz_cluster(kmeans_c1, data = features_x, 
+             main = "K-Means Clusters")
+```
+
+```{r}
+##PLOTTING THE CLUSTERS
+km <- data.frame(ID = fpca_scores_demo$ID, 
+                 cluster = kmeans_c1$cluster)
+
+#smoothed_all <- merge(smooth_long, cond1,  by = "subject")
+
+df_cluster <- merge(km, fpca_scores_merged, by= "ID") #%>% 
+  #arrange(subject, time_ms)
+
+#plotting the cluster by schizophrenia
+df_cluster %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = group)) +
+  geom_line(lwd = 0.5)+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signmals by cluster, coloured by schizophrenia")
+```
+
+
  
  
  
@@ -504,7 +524,6 @@ ggplot(subject_df, aes(x = factor(group), y = education)) +
 # FPCA Model 
 # =====================
 
-
 model_eeg <- glm(group ~ fpca_1 + fpca_2 + fpca_3,
                  data = subject_df,
                  family = binomial)
@@ -520,9 +539,6 @@ ggplot(subject_df, aes(x = factor(group), y = fpca_1)) +
   labs(x = "Group", y = "FPCA 1")
 
 ```
- 
- 
- 
 
 ### Education Model
 
@@ -537,15 +553,82 @@ Gender was not significant within association with schizophrenia presence (OR = 
 The distribution of gender was similar across the control and schizophrenia groups, with a higher proportion of males in both groups which supports our above result. However, the sample was predominantly male which may limit our ability to detect gender differences. 
 
 
+
 ### FPCA Model
 
 FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
  
+# MFPCA Model 
  
+## Smoothing all 10 trials
+```{r}
+##smoothed data for 10 trials:
+cond_trials <- p_df %>% 
+  filter(condition == c) %>% 
+  arrange(trial)
+
+#the subjects are not ordered correctly to fix this
+cond_trials$subject <- as.numeric(as.character(cond_trials$subject))
+cond_trials <- cond_trials %>% arrange(subject)
+
+##number of time points for each curve
+r_lent <- nrow(cond_trials %>% filter(subject == 1) %>% filter(trial == 1))
+#number of individual curves
+c_lent <- nrow(cond_trials %>% distinct(subject, trial))
+
+##all trials for all people for fp1
+matrix_sm_trial <- matrix(cond_trials[[node]], nrow = r_lent, ncol = c_lent, byrow= FALSE)
+
+## smooth the data - cond
+# smooth.basis(x, y, fdParObj)
+sm_trials <- smooth.basis(seq(1, r_lent, length.out = r_lent), # x
+                            matrix_sm_trial, # y
+                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+plot(sm_trials,
+     main = "Smoothed Curves")
+```
+
+### Data in long format & plots
+```{r}
+##create a response df in long format
+dfresponse10 <- data.frame(ID = as.numeric(as.character(cond_trials$subject)),
+                         time = cond_trials$time_ms,
+                         trial = cond_trials$trial,
+                         eeg_raw = as.numeric(sm_trials$y),
+                         eeg_smooth = as.numeric(predict(sm_trials)),
+                         schizophrenia = cond_trials$schizophrenia) %>%   # smoothed predictions
+                         arrange(ID)
+
+##Plot all trials for each subject 
+dfresponse10  %>% filter(ID <= 10) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(trial))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 10 & ID <=20) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(trial))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 20 & ID <= 71) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(trial))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 71) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(trial))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+```
+## For multinode modelling
+
 ```{r}
 #Reshape data for multi node glm 
-
-
 nodes <- c("fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
 
 nodes_df <- p_df %>% pivot_longer(
@@ -555,18 +638,201 @@ nodes_df <- p_df %>% pivot_longer(
 ) %>% dplyr::select(subject, time_ms, schizophrenia, node, EEG) %>% 
   arrange(subject, node, time_ms)
 
-nodes_df %>% 
-  filter(subject == 1) %>% 
-  ggplot(aes(x = time_ms, y = EEG, group = node, colour = node)) +
-  geom_line()
-
-
-nodes_glm <- glm(schizophrenia ~ EEG:node,
-                 data = nodes_df,
-                 family = binomial)
-
-tab_model(nodes_glm)
 ```
 
 
+## mFPCA
+
+```{r}
+# df: Data in long format with columns, subject Id = Id, stride_id (wave_id) = visit, arg = time (seq(0, 1, length = 101), obs = y values
+#Output: each row is a curve with subject Id and wave id
+df_wide <- pivot_wider(dfresponse10[,-4], names_from = time, values_from = eeg_smooth)
+Y <- as.matrix(df_wide[, c(4:1641)]) # excluding column id, trial, schizophrenia
+
+#mfpca
+mlfpc <- mfpca.face(Y = Y, # matrix- each row is a curves
+                    id = df_wide$ID, # subject id: c(1,1,2,2,2,3,3 ...)
+                    visit = df_wide$trial, # wave id c(1,2,3,.., 1, 2,3, 4, ...)
+                    twoway = TRUE,
+                    #pve2 = 0.75, # pve for level 2
+                    pve = 0.95
+                    )
+
+```
+
+## Multlevel FPCs
+
+-   Level 1
+
+```{r}
+t <- unique(dfresponse10$time)
+egf1 <- data.frame(mlfpc$efunctions$level1)
+ggplot(egf1) +
+  geom_line(lwd =0.55, aes(x = t, y = egf1[, 1], color = " 1")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 2], color = " 2")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 3], color = " 3")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 4], color = " 4")) +
+  scale_color_manual(values = c(" 1" = "blue", " 2" = "green", " 3" = "red", " 4" = "purple")) +
+  labs(x = "Time", y = "value", color = "mFPC") +
+  theme_bw()
+
+```
+
+
+-   Level 2
+
+```{r}
+t <- unique(dfresponse10$time)
+egf2 <- data.frame(mlfpc$efunctions$level2)
+ggplot(egf2) +
+  geom_line(aes(x = t, y = egf2[, 1], color = " 1")) +
+  geom_line(aes(x = t, y = egf2[, 2], color = " 2")) +
+  geom_line(aes(x = t, y = egf2[, 3], color = " 3")) +
+  geom_line(aes(x = t, y = egf2[, 4], color = " 4")) +
+  scale_color_manual(values = c(" 1" = "blue", " 2" = "green", " 3" = "red", " 4" = "purple")) +
+  labs(x = "Time (proportion)", y = "value", color = "mFPC") +
+  theme_bw()
+
+```
+
+
+## Nature of the variability
+
+Level 1
+
+```{r}
+# add and subtract eigenfunction to the overall mean
+egf_l1 <- egf1 %>%  mutate(mu = mlfpc$mu,
+                     p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level1[1]),
+                     n1 = mlfpc$mu - X1*sqrt(mlfpc$evalues$level1[1]),
+                     
+                     p2 = mlfpc$mu  + X2*sqrt(mlfpc$evalues$level1[2]),
+                     n2 = mlfpc$mu - X2*sqrt(mlfpc$evalues$level1[2]),
+                     
+                     p3 = mlfpc$mu  + X3*sqrt(mlfpc$evalues$level1[3]),
+                     n3 = mlfpc$mu - X3*sqrt(mlfpc$evalues$level1[3]),
+                     
+                     p4 = mlfpc$mu  + X4*sqrt(mlfpc$evalues$level1[4]),
+                     n4 = mlfpc$mu - X4*sqrt(mlfpc$evalues$level1[4]))
+
+```
+
+
+
+# First and second modes
+```{r}
+# first mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n1), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +ggtitle("PC 1 (..%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Second mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p2), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n2), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") + ggtitle("PC 2 (...%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# third mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p3), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") + ggtitle("PC 3 (...%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+```
+
+
+ level 2
+
+First and second modes
+
+```{r}
+egf2 <- egf2 %>%  mutate(mu = mlfpc$mu,
+                       p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level2[1]),
+                       n1 = mlfpc$mu - X1*sqrt(mlfpc$evalues$level2[1]),
+                       
+                       p2 = mlfpc$mu  + X2*sqrt(mlfpc$evalues$level2[2]),
+                       n2 = mlfpc$mu - X2*sqrt(mlfpc$evalues$level2[2]),
+                       
+                       p3 = mlfpc$mu  + X3*sqrt(mlfpc$evalues$level2[3]),
+                       n3 = mlfpc$mu - X3*sqrt(mlfpc$evalues$level2[3]),
+                       
+                       p4 = mlfpc$mu  + X4*sqrt(mlfpc$evalues$level2[4]),
+                       n4 = mlfpc$mu - X4*sqrt(mlfpc$evalues$level2[4]))
+```
+
+
+```{r}
+# First mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n1), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 1 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Second mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p2), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n2), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 2 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Third mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line() +
+geom_point(aes(x = t, y = p3), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 3 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+```
+
+
+### Multilevel FPC scores
+
+#### Level 1
+
+
+```{r}
+level1_scores <- cbind(data.frame(mlfpc$scores$level1), subj_id = as.factor(unique(df_wide$ID)) )# subject level scores
+ggplot(level1_scores,aes(x = X1, y = X2, colour = subj_id)) + geom_point() +
+  labs(x = "mFPC1", y = "mFPC2", title = "..") + theme_bw()
+
+```
+
+#### Level 2
+
+wave level scores
+
+```{r}
+level2_scores <- cbind(data.frame(mlfpc$scores$level2), subj_id = factor(df_wide$ID), trial_id = df_wide$trial)
+
+ggplot(level2_scores, aes(x = trial_id, y = X1, group = subj_id, colour = subj_id)) + geom_line() + theme_bw() +
+  labs(y = "mFPC1", x = "trials order - longitudinal", title = "") 
  
+ggplot(level2_scores, aes(x = subj_id, y = X1, group = subj_id)) + geom_boxplot() + theme_bw() +
+  labs(y = "mFPC1", x = "Subject Id", title = "Score distribution") 
+ 
+
+```
+
+
+
+
+
+
