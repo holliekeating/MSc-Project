@@ -559,8 +559,13 @@ The distribution of gender was similar across the control and schizophrenia grou
 FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
  
 # MFPCA Model 
+
+So now we want to take into account that we have more than 1 function per person. People completed each sensory condition up to 100 times. Including more of these trials will improve our ability to predict whether an EEG is typical of schizophrenia or not.
  
 ## Smoothing all 10 trials
+
+As before we need to smooth the data, but this time for all the trials.
+
 ```{r}
 ##smoothed data for 10 trials:
 cond_trials <- p_df %>% 
@@ -589,6 +594,9 @@ plot(sm_trials,
 ```
 
 ### Data in long format & plots
+
+We create a dataframe of all the relevant measurements and we have plotted the smoothed data for each trial for each person below.
+
 ```{r}
 ##create a response df in long format
 dfresponse10 <- data.frame(ID = as.numeric(as.character(cond_trials$subject)),
@@ -643,6 +651,8 @@ nodes_df <- p_df %>% pivot_longer(
 
 ## mFPCA
 
+Now we perform multi-level modelling, where the first level is the individual subject level and the second level is the individual trial level. So we get a score for each person and for each curve (trial).
+
 ```{r}
 # df: Data in long format with columns, subject Id = Id, stride_id (wave_id) = visit, arg = time (seq(0, 1, length = 101), obs = y values
 #Output: each row is a curve with subject Id and wave id
@@ -652,7 +662,7 @@ Y <- as.matrix(df_wide[, c(4:1641)]) # excluding column id, trial, schizophrenia
 #mfpca
 mlfpc <- mfpca.face(Y = Y, # matrix- each row is a curves
                     id = df_wide$ID, # subject id: c(1,1,2,2,2,3,3 ...)
-                    visit = df_wide$trial, # wave id c(1,2,3,.., 1, 2,3, 4, ...)
+                    visit = df_wide$trial, # trial id c(1,2,3,.., 1, 2,3, 4, ...)
                     twoway = TRUE,
                     #pve2 = 0.75, # pve for level 2
                     pve = 0.95
@@ -807,6 +817,7 @@ geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
 
 #### Level 1
 
+Patient Level scores - 1 per person
 
 ```{r}
 level1_scores <- cbind(data.frame(mlfpc$scores$level1), subj_id = as.factor(unique(df_wide$ID)) )# subject level scores
@@ -817,7 +828,7 @@ ggplot(level1_scores,aes(x = X1, y = X2, colour = subj_id)) + geom_point() +
 
 #### Level 2
 
-wave level scores
+Individual Trial scores (i.e. 1 score per function/trial) -multiple per person
 
 ```{r}
 level2_scores <- cbind(data.frame(mlfpc$scores$level2), subj_id = factor(df_wide$ID), trial_id = df_wide$trial)
