@@ -17,7 +17,7 @@ This document contains the pipeline which can be applied to any of the condition
  - Generate FPCA scores
  - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
  
-```{r include = FALSE, warning=FALSE, message=FALSE}
+```{r, libraries, include = FALSE, warning=FALSE, message=FALSE}
 library(data.table)
 library(ggplot2)
 library(tidyverse)
@@ -31,12 +31,13 @@ library(table1)
 library(factoextra)
 library(cluster)
 library(sjPlot)
+library(refund)
 
 #setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
-```{r}
+```{r, pipeline parameters}
 c = 1 # condition 1 
 t = 10 # 10 trials 
 t1 = 1 # selecting one trial
@@ -47,10 +48,10 @@ node <- "fp1"
 ```
 
  
-```{r}
+```{r, read in files}
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
-missing = c(5, 8, 9, 26, 31, 35, 38)
+#missing = c(5, 8, 9, 26, 31, 35, 38)
 
 #setwd("C:/Users/holli/OneDrive - Natramional University of Ireland, Galway/Modules/Research Project")
 setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
@@ -90,7 +91,7 @@ p_df<- p_df%>%
 ```
 
  
-```{r}
+```{r, smoothing splines 1}
 ## Smooth the data 
 ## Create a B-spline basis (mybasis) - building blocks to represent the curves
 K = 100 # basis functions. More = more flexible
@@ -113,7 +114,7 @@ fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 
 ```
 
  
-```{r}
+```{r, smoothing splines 2}
 # Smooth the data 
 cond <- p_df %>%
   filter(condition == c) %>%
@@ -141,7 +142,7 @@ plot(sm_cond,
 
 
 
-```{r}
+```{r, df}
 # Plots 
 # dfresponse - raw eeg, smoothed eeg, merged demographic 
  
@@ -174,7 +175,7 @@ myIDS = unique((dfresponse$ID))
 dfresponse_merged <- dfresponse %>% left_join(demographic, by = "ID")
 ```
 
-```{r, fig.width=9, fig.asp=1.5}
+```{r, demographic plots, fig.width=9, fig.asp=1.5}
 
 # plot color = cases vs controls 
 # group = ID: draw one seperate line for each patient ID
@@ -256,7 +257,7 @@ dfresponse %>%
  
 ## FPCA Scores
  
-```{r}
+```{r, fpca scores}
 ## FPCA through conditional expectation (PACE) - irregular data allowed
 # FPCA via PACE 
 # applied to sm_cond: condition c smoothed data 
@@ -291,7 +292,7 @@ plot(resMEAN)
  
 # FPCA 1
  
-```{r}
+```{r, fpc1}
 # FPCA scores
 
 # FPC result
@@ -311,7 +312,7 @@ fpca_scores_merged <- dfresponse_merged %>% left_join(fpca_scores, by = "ID")
 
 ```
 
-```{r}
+```{r, fpc 1 plot}
 # Extract top 5 fpca 1 scores
 # Top 5: 1638*5= 8190
 top_5_fpca1 <- fpca_scores_merged %>%
@@ -328,8 +329,8 @@ bottom_5_fpca1 <- fpca_scores_merged %>%
 
 # df of top & bottom 
 group_ids_fpca1 <- bind_rows(
-  data.frame(ID = top_5_fpca1, group = "Top 5"),
-  data.frame(ID = bottom_5_fpca1, group = "Bottom 5")
+  data.frame(ID = unique(top_5_fpca1), top_bot = "Top 5"),
+  data.frame(ID = unique(bottom_5_fpca1), top_bot = "Bottom 5")
 )
 
 
@@ -337,21 +338,17 @@ plot_data_fpca1 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca1, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca1, by = "ID")          # adds the group label
 
-plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
+plot_data_fpca1 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = top_bot)) +
   geom_line(linewidth = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 1 Scores",
        colour = "Group")
-  
-
-
-
 
 ```
  
 # FPCA 2 
 
-```{r}
+```{r, fpc2}
 # Extract top 5 fpca 1 scores
 # Top 5: 1638*5= 8190
 top_5_fpca2 <- fpca_scores_merged %>%
@@ -368,8 +365,8 @@ bottom_5_fpca2 <- fpca_scores_merged %>%
 
 # df of top & bottom 
 group_ids_fpca2 <- bind_rows(
-  data.frame(ID = top_5_fpca2, group = "Top 5"),
-  data.frame(ID = bottom_5_fpca2, group = "Bottom 5")
+  data.frame(ID = unique(top_5_fpca2), top_bot = "Top 5"),
+  data.frame(ID = unique(bottom_5_fpca2), top_bot = "Bottom 5")
 )
 
 
@@ -377,7 +374,7 @@ plot_data_fpca2 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca2, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca2, by = "ID")          # adds the group label
 
-plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
+plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = top_bot)) +
   geom_line(lwd = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 2 Scores",
@@ -389,7 +386,7 @@ plot_data_fpca2 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group
 
 # FPCA 3 
 
-```{r}
+```{r, fpc3}
 # Extract top 5 fpca 1 scores
 # Top 5: 1638*5= 8190
 top_5_fpca3 <- fpca_scores_merged %>%
@@ -406,8 +403,8 @@ bottom_5_fpca3 <- fpca_scores_merged %>%
 
 # df of top & bottom 
 group_ids_fpca3 <- bind_rows(
-  data.frame(ID = top_5_fpca3, group = "Top 5"),
-  data.frame(ID = bottom_5_fpca3, group = "Bottom 5")
+  data.frame(ID = unique(top_5_fpca3), top_bot = "Top 5"),
+  data.frame(ID = unique(bottom_5_fpca3), top_bot = "Bottom 5")
 )
 
 
@@ -415,7 +412,7 @@ plot_data_fpca3 <- fpca_scores_merged %>%
   semi_join(group_ids_fpca3, by = "ID") %>%      # keeps rows that IDs are in both dfs
   left_join(group_ids_fpca3, by = "ID")          # adds the group label
 
-plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group.x)) +
+plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = top_bot)) +
   geom_line(linewidth = 0.5) +
   theme_bw() +
   labs(title = "Top vs Bottom 5 Curves FPCA 3 Scores",
@@ -425,18 +422,16 @@ plot_data_fpca3 %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = group
 
  
  
-```{r}
+```{r, kmeans}
 ##KMEANS CLUSTERING
 set.seed(1)
 
 #scores <- na.omit(scores)
 rownames(fpca_scores)
 
-
 fpca_scores_demo <- merge(fpca_scores, demographic, by = "ID")
 
 target_y <- fpca_scores_demo$group
-
 features_x <- fpca_scores_demo[c(2,3,4)]
 
 kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
@@ -449,7 +444,7 @@ fviz_cluster(kmeans_c1, data = features_x,
              main = "K-Means Clusters")
 ```
 
-```{r}
+```{r, plot kmeans}
 ##PLOTTING THE CLUSTERS
 km <- data.frame(ID = fpca_scores_demo$ID, 
                  cluster = kmeans_c1$cluster)
@@ -471,7 +466,7 @@ df_cluster %>%
  
  
  
-```{r}
+```{r, glms}
 subject_df <- fpca_scores_merged %>%
   distinct(ID, group, gender, age, education, fpca_1, fpca_2, fpca_3)
 
@@ -483,7 +478,7 @@ subject_df <- fpca_scores_merged %>%
 # Gender Model 
 # ================
 
-log_gender <- glm(group ~ gender + age + education + fpca_1 + fpca_2 + fpca_3,
+log_gender <- glm(group ~ age + education + fpca_1 + fpca_2 + fpca_3,
              data = subject_df,
              family = binomial)
 
@@ -497,8 +492,6 @@ exp(coef(log_gender))
 
 # from summary, FPCA1 shows most significance at p = 0.06.., genderM significance = 0.2131
 # gender coef = 0.1485062
-
-
 
 
 # ====================================
@@ -566,7 +559,7 @@ So now we want to take into account that we have more than 1 function per person
 
 As before we need to smooth the data, but this time for all the trials.
 
-```{r}
+```{r, mfpca smooth}
 ##smoothed data for 10 trials:
 cond_trials <- p_df %>% 
   filter(condition == c) %>% 
@@ -597,7 +590,7 @@ plot(sm_trials,
 
 We create a dataframe of all the relevant measurements and we have plotted the smoothed data for each trial for each person below.
 
-```{r}
+```{r, mfpca plots}
 ##create a response df in long format
 dfresponse10 <- data.frame(ID = as.numeric(as.character(cond_trials$subject)),
                          time = cond_trials$time_ms,
@@ -633,9 +626,10 @@ dfresponse10  %>% filter(ID > 71) %>%
   ggtitle("Multilevel functional observations")
 
 ```
+
 ## For multinode modelling
 
-```{r}
+```{r, multinode}
 #Reshape data for multi node glm 
 nodes <- c("fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
 
@@ -653,7 +647,7 @@ nodes_df <- p_df %>% pivot_longer(
 
 Now we perform multi-level modelling, where the first level is the individual subject level and the second level is the individual trial level. So we get a score for each person and for each curve (trial).
 
-```{r}
+```{r, mfpca}
 # df: Data in long format with columns, subject Id = Id, stride_id (wave_id) = visit, arg = time (seq(0, 1, length = 101), obs = y values
 #Output: each row is a curve with subject Id and wave id
 df_wide <- pivot_wider(dfresponse10[,-4], names_from = time, values_from = eeg_smooth)
@@ -674,7 +668,7 @@ mlfpc <- mfpca.face(Y = Y, # matrix- each row is a curves
 
 -   Level 1
 
-```{r}
+```{r, mfpca level 1}
 t <- unique(dfresponse10$time)
 egf1 <- data.frame(mlfpc$efunctions$level1)
 ggplot(egf1) +
@@ -691,7 +685,7 @@ ggplot(egf1) +
 
 -   Level 2
 
-```{r}
+```{r, mfpca level 2}
 t <- unique(dfresponse10$time)
 egf2 <- data.frame(mlfpc$efunctions$level2)
 ggplot(egf2) +
@@ -710,7 +704,7 @@ ggplot(egf2) +
 
 Level 1
 
-```{r}
+```{r, eigenfns 1}
 # add and subtract eigenfunction to the overall mean
 egf_l1 <- egf1 %>%  mutate(mu = mlfpc$mu,
                      p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level1[1]),
@@ -730,7 +724,7 @@ egf_l1 <- egf1 %>%  mutate(mu = mlfpc$mu,
 
 
 # First and second modes
-```{r}
+```{r, level 1 plot}
 # first mode
 ggplot(egf_l1, aes(x = t, y = mu)) + geom_line() +
 geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
@@ -764,7 +758,7 @@ geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
 
 First and second modes
 
-```{r}
+```{r, fpc level 2}
 egf2 <- egf2 %>%  mutate(mu = mlfpc$mu,
                        p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level2[1]),
                        n1 = mlfpc$mu - X1*sqrt(mlfpc$evalues$level2[1]),
@@ -780,7 +774,7 @@ egf2 <- egf2 %>%  mutate(mu = mlfpc$mu,
 ```
 
 
-```{r}
+```{r, fpc level 2 plots}
 # First mode
 ggplot(egf2, aes(x = t, y = mu)) + geom_line() +
 geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
@@ -819,7 +813,7 @@ geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
 
 Patient Level scores - 1 per person
 
-```{r}
+```{r, mfpc1}
 level1_scores <- cbind(data.frame(mlfpc$scores$level1), subj_id = as.factor(unique(df_wide$ID)) )# subject level scores
 ggplot(level1_scores,aes(x = X1, y = X2, colour = subj_id)) + geom_point() +
   labs(x = "mFPC1", y = "mFPC2", title = "..") + theme_bw()
@@ -830,7 +824,7 @@ ggplot(level1_scores,aes(x = X1, y = X2, colour = subj_id)) + geom_point() +
 
 Individual Trial scores (i.e. 1 score per function/trial) -multiple per person
 
-```{r}
+```{r, mfpc2}
 level2_scores <- cbind(data.frame(mlfpc$scores$level2), subj_id = factor(df_wide$ID), trial_id = df_wide$trial)
 
 ggplot(level2_scores, aes(x = trial_id, y = X1, group = subj_id, colour = subj_id)) + geom_line() + theme_bw() +
