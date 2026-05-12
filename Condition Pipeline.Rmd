@@ -33,8 +33,8 @@ library(cluster)
 library(sjPlot)
 library(refund)
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 ```
 
 ```{r, pipeline parameters}
@@ -53,8 +53,8 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 #missing = c(5, 8, 9, 26, 31, 35, 38)
 
-#setwd("C:/Users/holli/OneDrive - Natramional University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -839,5 +839,128 @@ ggplot(level2_scores, aes(x = subj_id, y = X1, group = subj_id)) + geom_boxplot(
 
 
 
+
+Elastic Net to see which predictors are useful in classifying outcome
+
+```{r}
+# Set up dataset: 9 scores per person, gender, 
+# 3 conditions x 3 fpca scores for each condition
+
+# Include nodes fp1, fp2 (prefrontal), f3, f4, fz (frontal)
+
+# all three conditions. one at a time and merge
+nodes_en <- c("fp1", "f3") # pre-frontal and frontal nodes
+t1 <- 1
+
+# Smooth the data 
+# en: elastic net 
+cond_en <- p_df %>%
+  filter(condition == 1) %>%
+  filter(trial == t1) %>% 
+  dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
+
+cond_en <- as.data.frame(cond_en)
+
+#the subjects are not ordered correctly to fix this
+cond_en$subject <- as.numeric(as.character(cond_en$subject))
+cond_en <- cond_en %>% arrange(subject)
+
+# dimensions
+r_len <- nrow(cond_en %>% filter(subject == unique(cond_en$subject)[1]))
+c_len <- length(unique(cond_en$subject))
+
+# make matrix
+matrix_sm_all <- matrix(as.matrix(cond_en[, nodes_en]), 
+                        nrow = r_len,
+                        ncol = c_len * length(nodes_en),
+                        byrow = FALSE)
+
+## smooth the data - cond
+# smooth.basis(x, y, fdParObj)
+sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len), # x
+                            matrix_sm_all, # y
+                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+plot(sm_cond_en,
+     main = "Smoothed Curves")
+
+
+
+
+# sm_cond$y is raw eeg signals
+# smoothed is predict(sm_cond) 
+# fd is basis and coeff
+
+dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
+                            condition = as.numeric(cond_en$condition),
+                         time = cond_en$time_ms,
+                         eeg_raw = as.numeric(sm_cond_en$y),
+                         eeg_smooth = as.numeric(predict(sm_cond_en))) %>%   # smoothed predictions
+                          arrange(ID)
+
+# table(demographic$group) # 25 controls, 11 cases
+# table(demographic$gender) # 30 males. 6 females
+
+myIDS = unique((dfresponse_en$ID))
+#test = as.numeric(predict(sm_cond)) # smoothed predictions
+#dfresponse$eeg_smooth = test
+
+dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
+
+```
+
+## FPCA Scores Condition 1
+ 
+```{r, fpca scores}
+## FPCA through conditional expectation (PACE) - irregular data allowed
+# FPCA via PACE 
+# Applied to smoothed data
+
+# make a list containing dataframes with rows grouped by ID
+list_format <- split(dfresponse_en, dfresponse_en$ID)
+
+# create lists of time and response (eeg)
+list_t <- lapply(list_format,
+                 dplyr::select, time)
+list_eeg <- lapply(list_format,
+                   dplyr::select, eeg_raw)
+
+# unlist
+list_t <- lapply(list_t,
+                 unlist, use.names = F)
+list_eeg <- lapply(list_eeg,
+                   unlist, use.names = F)
+
+# apply PACE (with fdapace)
+resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+
+# ##is the data dense?
+# plot(FPCA(Ly = list_eeg, Lt = list_t,
+#                 optns = list(dataType = 'Dense')))
+# # FPC results
+# plot(resMEAN)
+# #resMEAN$xiEst #FPCA scores
+```
+# FPCA 1 Condition 1
+ 
+```{r, fpc1}
+# FPCA scores
+
+# FPC result
+# resMEAN$xiEst #FPCA scores
+
+fpca_scores_en <- as.data.frame(resMEAN$xiEst) %>% 
+  mutate(ID =myIDS, .before = 1)             # add an ID row, first column
+
+colnames(fpca_scores_en) <- c("ID", "cond1_fpca_1", "cond1_fpca_2", "cond1_fpca_3")
+
+
+dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
+
+
+# Plots - merge FCP scores with df response 
+fpca_scores_merged <- dfresponse_merged %>% left_join(fpca_scores, by = "ID")
+
+```
 
 
