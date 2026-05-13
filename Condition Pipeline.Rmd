@@ -32,6 +32,10 @@ library(factoextra)
 library(cluster)
 library(sjPlot)
 library(refund)
+library(glmnet)
+library(pROC)  
+library(DescTools) 
+library(CalibrationCurves)
 
 setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 #setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
@@ -159,9 +163,11 @@ dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
 
 demographic <- demographic %>%
   rename(ID = subject) %>%
-  mutate(
+  mutate(group = as.character(group),
+         gender = stringr::str_trim(as.character(gender)), # to handle space
+    
     group = recode(group, `0` = "Control", `1` = "Case"),
-    gender = recode(gender, " M" = "Male", " F" = "Female"),
+    gender = recode(gender, "M" = "Male", "F" = "Female"),
     group = factor(group, levels = c("Control", "Case")),
     gender = factor(gender, levels = c("Male", "Female")))
 
@@ -173,6 +179,8 @@ myIDS = unique((dfresponse$ID))
 #dfresponse$eeg_smooth = test
 
 dfresponse_merged <- dfresponse %>% left_join(demographic, by = "ID")
+
+
 ```
 
 ```{r, demographic plots, fig.width=9, fig.asp=1.5}
@@ -840,9 +848,13 @@ ggplot(level2_scores, aes(x = subj_id, y = X1, group = subj_id)) + geom_boxplot(
 
 
 
-Elastic Net to see which predictors are useful in classifying outcome
+## Variable Selection - Elastic Net 
+
+Set up dataset to have three fpca scores per condition per node per person.
+eg cond1_fp1_fpca_1, cond2_fp1_fpca_1 etc
 
 Condition 1: fp1
+(for one trial only)
 
 ```{r}
 # Set up dataset: 9 scores per person, gender, 
@@ -852,14 +864,26 @@ Condition 1: fp1
 
 # all three conditions. one at a time and merge
 nodes_en <- c("fp1") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
+
+# To figure out which trail has the least missing data ie the most observations for both nodes
+# trial 4
+which_trial <- p_df %>% 
+  dplyr::select(trial, fp1, f3) %>% 
+  group_by(trial) %>%
+  summarise(n_rows = n(),
+            n_fp1 = sum(!is.na(fp1)),
+            n_f3  = sum(!is.na(f3)),
+            n_both = sum(!is.na(fp1) & !is.na(f3)),
+            .groups = "drop") %>%
+  arrange(desc(n_both))
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 1) %>%
-  filter(trial == t1) %>% 
-  dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
+  filter(trial == t) %>% 
+  dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
 
@@ -893,7 +917,6 @@ sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len), # x
 # fd is basis and coeff
 
 dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
-                            condition = as.numeric(cond_en$condition),
                          time = cond_en$time_ms,
                          eeg_raw = as.numeric(sm_cond_en$y),
                          eeg_smooth = as.numeric(predict(sm_cond_en))) %>%   # smoothed predictions
@@ -936,7 +959,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -979,13 +1003,13 @@ Condition 2: fp1
 
 # all three conditions. one at a time and merge
 nodes_en <- c("fp1") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 2) %>%
-  filter(trial == t1) %>% 
+  filter(trial == t) %>% 
   dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
@@ -1061,7 +1085,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -1103,13 +1128,13 @@ Condition 3: fp1
 
 # all three conditions. one at a time and merge
 nodes_en <- c("fp1") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 3) %>%
-  filter(trial == t1) %>% 
+  filter(trial == t) %>% 
   dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
@@ -1185,7 +1210,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -1226,13 +1252,13 @@ Condition 1: f3
 
 # all three conditions. one at a time and merge
 nodes_en <- c("f3") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 1) %>%
-  filter(trial == t1) %>% 
+  filter(trial == t) %>% 
   dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
@@ -1308,7 +1334,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -1351,13 +1378,13 @@ Condition 2: f3
 
 # all three conditions. one at a time and merge
 nodes_en <- c("f3") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 2) %>%
-  filter(trial == t1) %>% 
+  filter(trial == t) %>% 
   dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
@@ -1433,7 +1460,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -1474,13 +1502,13 @@ Condition 3: f3
 
 # all three conditions. one at a time and merge
 nodes_en <- c("f3") # pre-frontal and frontal nodes
-t1 <- 1
+t <- 4
 
 # Smooth the data 
 # en: elastic net 
 cond_en <- p_df %>%
   filter(condition == 3) %>%
-  filter(trial == t1) %>% 
+  filter(trial == t) %>% 
   dplyr::select(-sample, -af7, -af3, -f1, -f5, -f7, -ft7)
 
 cond_en <- as.data.frame(cond_en)
@@ -1556,7 +1584,8 @@ list_eeg <- lapply(list_eeg,
 
 # apply PACE (with fdapace)
 resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
-                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+                optns = list(dataType = 'Sparse', #Dense or p >> n (time pts > n patients)
+                             methodSelectK = 3)) # to keep only 3 fpca components
 
 # ##is the data dense?
 # plot(FPCA(Ly = list_eeg, Lt = list_t,
@@ -1589,15 +1618,26 @@ fpca_fp1_f3_merged_en3 <- fpca_fp1_f3_merged_en2 %>% left_join(fpca_f3_en3, by =
 
 ```
 
+
+
+
+
 Apply Elastic Net 
+drop_na() to temporarily deal with missing values.................
 
 
 ```{r}
 
-fpca_fp1_f3_allcond <- fpca_fp1_f3_merged_en3 %>% dplyr::select(-c(age, eeg_raw, eeg_smooth, time, gender)) %>% 
-  distinct(ID, .keep_all = TRUE) %>% # keeps one row per id. keeps all other cols
-  mutate(group = ifelse(group == "Case", 1, 0)) %>% 
+# Reduce dataset
+fpca_fp1_f3_allcond <- fpca_fp1_f3_merged_en3 %>% dplyr::select(-c(age, eeg_raw, eeg_smooth, time)) %>% 
+  mutate(n_missing = rowSums(is.na(.))) %>% # to get one row per ID. 
+  arrange(ID, n_missing) %>%                #rows with fewer NAs first
+  distinct(ID, .keep_all = TRUE) %>%        # keep one row per ID. least missing first
+  dplyr::select(-n_missing) %>%
+  mutate(group = ifelse(group == "Case", 1, 0),
+         gender = ifelse(gender == "Female", 1, 0)) %>% 
   drop_na() # TEMPORARY
+
 
 # Training and test sets
 set.seed(1020304050)
@@ -1618,7 +1658,7 @@ sch_test  <- fpca_fp1_f3_allcond[test, ]
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
-x <- model.matrix(group ~ .-ID - condition, data =fpca_fp1_f3_allcond)[, -1] # gets rid of intercept term
+x <- model.matrix(group ~ .-ID, data =fpca_fp1_f3_allcond)[, -1] # gets rid of intercept term
 y <- fpca_fp1_f3_allcond$group
 
 # elastic net: 0 < alpha < 1
