@@ -1795,153 +1795,6 @@ cond_en <- p_df %>%
   filter(condition == 1) %>%
   dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
 
-cond_en <- as.data.frame(cond_en1)
-
-#the subjects are not ordered correctly to fix this
-cond_en$subject <- as.numeric(as.character(cond_en$subject))
-cond_en <- cond_en %>% arrange(subject)
-
-# dimensions
-
-# changing r_len as subject 1 now has all trials together
-# rows = number of time points per curve 
-
-r_len <- length(unique(cond_en$time_ms))
-
-# columns, number of curves = subject x trial combinations
-
-c_len <- n_distinct(cond_en$subject, cond_en$trial)
-
-# make matrix
-matrix_sm_all_en <- matrix(as.matrix(cond_en[, nodes_en]), 
-                        nrow = r_len,
-                        ncol = c_len * length(nodes_en),
-                        byrow = FALSE)
-
-## smooth the data - cond
-# smooth.basis(x, y, fdParObj)
-sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len), # x
-                            matrix_sm_all_en, # y
-                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
-# plot(sm_cond_en,
-#      main = "Smoothed Curves")
-
-
-
-
-# sm_cond$y is raw eeg signals
-# smoothed is predict(sm_cond) 
-# fd is basis and coeff
-
-dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
-                             trial = as.numeric(as.character(cond_en$trial)),
-                         time = cond_en$time_ms,
-                         eeg_raw = as.numeric(sm_cond_en$y),
-                         eeg_smooth = as.numeric(predict(sm_cond_en))) %>%   # smoothed predictions
-                          arrange(ID)
-
-# table(demographic$group) # 25 controls, 11 cases
-# table(demographic$gender) # 30 males. 6 females
-
-myIDS = unique((dfresponse_en$ID))
-#test = as.numeric(predict(sm_cond)) # smoothed predictions
-#dfresponse$eeg_smooth = test
-
-dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
-
-
-
-
-
-
-# mFPCA scores condition 1 fp1
-
-
-# Now we perform multi-level modelling, where the first level is the individual subject level and the second level is the individual trial level. So we get a score for each person and for each curve (trial).
-
-# df: Data in long format with columns, subject Id = Id, stride_id (wave_id) = visit, arg = time (seq(0, 1, length = 101), obs = y values
-#Output: each row is a curve with subject Id and wave id
-
-df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
-
-Y_en <- as.matrix(df_wide_en[, -(1:2)]) # excluding column id, trial
-
-#mfpca
-
-mlfpc_en <- mfpca.face(Y = Y_en, # matrix- each row is a curves
-                    id = df_wide_en$ID, # subject id: c(1,1,2,2,2,3,3 ...)
-                    visit = df_wide_en$trial, # trial id c(1,2,3,.., 1, 2,3, 4, ...)
-                    twoway = TRUE,
-                    #pve2 = 0.75, # pve for level 2
-                    pve = 0.95
-                    )
-
-
-myIDS = unique((dfresponse_en$ID))
-
-
-
-
-# extracting level 1 and level 2 scores
-
-## level 1 (subject level)
-
-# mlfpc_en$score$level1 = mfpca level 1 scores
-
-
-level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
-  mutate(ID = myIDS, .before =1 ) # add an ID row, first column
-
-
-colnames(level1_en) <- c("ID", "cond1_fp1_L1_1", "cond1_fp1_L1_2", "cond1_fp1_L1_3", "cond1_fp1_L1_4", "cond1_fp1_L1_5",
-  "cond1_fp1_L1_6")
-
-
-## level 2 (trial level)
-
-level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
-  mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 ) # add an ID row, first column
-
-
-colnames(level2_en) <- c("ID", "trial", "cond1_fp1_L2_1") # only one score for level 2?
-
-
-dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
-
-
-# Plots - merge level scores 
-fpca_fp1_en1 <- level1_en %>%
-  left_join(level2_en, by = "ID")
-
-# here do we get mean level 2 score per ID for elastic net?
-
-dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
-
-
-# Plots - merge FCP scores with df response 
-fpca_fp1_merged_en1 <- dfresponse_merged_en %>% left_join(fpca_fp1_en1, by = "ID")
-
-```
-
-
-condition 2, fp1
-```{r cond2fp1}
-
-# Set up dataset: 9 scores per person, gender, 
-# 3 conditions x 3 fpca scores for each condition
-
-# Include nodes fp1, fp2 (prefrontal), f3, f4, fz (frontal)
-
-# all three conditions. one at a time and merge
-nodes_en <- c("fp1") # pre-frontal and frontal nodes
-
-
-# Smooth the data 
-# en: elastic net 
-cond_en <- p_df %>%
-  filter(condition == 2) %>%
-  dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
-
 cond_en <- as.data.frame(cond_en)
 
 #the subjects are not ordered correctly to fix this
@@ -1985,7 +1838,7 @@ dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
                          time = cond_en$time_ms,
                          eeg_raw = as.numeric(sm_cond_en$y),
                          eeg_smooth = as.numeric(predict(sm_cond_en))) %>%   # smoothed predictions
-                          arrange(ID)
+                          arrange(ID, trial)
 
 # table(demographic$group) # 25 controls, 11 cases
 # table(demographic$gender) # 30 males. 6 females
@@ -2024,7 +1877,7 @@ mlfpc_en <- mfpca.face(Y = Y_en, # matrix- each row is a curves
                     )
 
 
-myIDS = unique((dfresponse_en1$ID))
+myIDS = unique((dfresponse_en$ID))
 
 
 
@@ -2057,13 +1910,255 @@ dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
 
 
 # Plots - merge level scores 
+#average level 2 score across trials so there is one row per ID
+
+level2_en_mean <- level2_en %>%
+  group_by(ID) %>%
+  summarise(cond1_fp1_L2_1 = mean(cond1_fp1_L2_1))
+
+
+# merge level 1 and level 2 scores
+
+fpca_fp1_en1 <- level1_en %>%
+  left_join(level2_en_mean, by = "ID")
+
+
+fpca_fp1_merged_en1 <- demographic %>%
+  left_join(fpca_fp1_en1, by = "ID")
+
+```
+
+
+condition 2, fp1
+```{r cond2fp1}
+
+nodes_en <- c("fp1")
+
+cond_en <- p_df %>%
+  filter(condition == 2) %>%
+  dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
+
+cond_en <- as.data.frame(cond_en)
+
+cond_en$subject <- as.numeric(as.character(cond_en$subject))
+cond_en <- cond_en %>% arrange(subject)
+
+r_len <- length(unique(cond_en$time_ms))
+
+c_len <- n_distinct(cond_en$subject, cond_en$trial)
+
+matrix_sm_all_en <- matrix(as.matrix(cond_en[, nodes_en]), 
+                        nrow = r_len,
+                        ncol = c_len * length(nodes_en),
+                        byrow = FALSE)
+
+sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len),
+                            matrix_sm_all_en,
+                            fdParObj)
+
+dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
+                             trial = as.numeric(as.character(cond_en$trial)),
+                         time = cond_en$time_ms,
+                         eeg_raw = as.numeric(sm_cond_en$y),
+                         eeg_smooth = as.numeric(predict(sm_cond_en))) %>%
+                          arrange(ID, trial)
+
+myIDS = unique((dfresponse_en$ID))
+
+dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
+
+df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
+
+Y_en <- as.matrix(df_wide_en[, -(1:2)])
+
+mlfpc_en <- mfpca.face(Y = Y_en,
+                    id = df_wide_en$ID,
+                    visit = df_wide_en$trial,
+                    twoway = TRUE,
+                    pve = 0.95
+                    )
+
+myIDS = unique((dfresponse_en$ID))
+
+level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
+  mutate(ID = myIDS, .before =1 )
+
+colnames(level1_en) <- c("ID", "cond2_fp1_L1_1", "cond2_fp1_L1_2", "cond2_fp1_L1_3", "cond2_fp1_L1_4")
+
+level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
+  mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
+
+colnames(level2_en) <- c("ID", "trial", "cond2_fp1_L2_1", "cond2_fp1_L2_2")
+
+dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
+
+level2_en_mean <- level2_en %>%
+  group_by(ID) %>%
+  summarise(cond2_fp1_L2_1 = mean(cond2_fp1_L2_1),
+            cond2_fp1_L2_2 = mean(cond2_fp1_L2_2))
+
 fpca_fp1_en2 <- level1_en %>%
-  left_join(level2_en, by = "ID")
+  left_join(level2_en_mean, by = "ID")
 
-# merge
-fpca_fp1_merged_en2 <- fpca_fp1_merged_en1 %>% left_join(fpca_fp1_en2, by = "ID")
+fpca_fp1_merged_en2 <- fpca_fp1_merged_en1 %>%
+  left_join(fpca_fp1_en2, by = "ID")
 
-# here do we get mean level 2 score per ID for elastic net?
+```
+
+
+condition 3, fp1
+
+```{r cond3fp1}
+
+nodes_en <- c("fp1")
+
+cond_en <- p_df %>%
+  filter(condition == 3) %>%
+  dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
+
+cond_en <- as.data.frame(cond_en)
+
+cond_en$subject <- as.numeric(as.character(cond_en$subject))
+cond_en <- cond_en %>% arrange(subject)
+
+r_len <- length(unique(cond_en$time_ms))
+
+c_len <- n_distinct(cond_en$subject, cond_en$trial)
+
+matrix_sm_all_en <- matrix(as.matrix(cond_en[, nodes_en]), 
+                        nrow = r_len,
+                        ncol = c_len * length(nodes_en),
+                        byrow = FALSE)
+
+sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len),
+                            matrix_sm_all_en,
+                            fdParObj)
+
+dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
+                             trial = as.numeric(as.character(cond_en$trial)),
+                         time = cond_en$time_ms,
+                         eeg_raw = as.numeric(sm_cond_en$y),
+                         eeg_smooth = as.numeric(predict(sm_cond_en))) %>%
+                          arrange(ID, trial)
+
+myIDS = unique((dfresponse_en$ID))
+
+dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
+
+df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
+
+Y_en <- as.matrix(df_wide_en[, -(1:2)])
+
+mlfpc_en <- mfpca.face(Y = Y_en,
+                    id = df_wide_en$ID,
+                    visit = df_wide_en$trial,
+                    twoway = TRUE,
+                    pve = 0.95
+                    )
+
+myIDS = unique((dfresponse_en$ID))
+
+level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
+  mutate(ID = myIDS, .before =1 )
+
+colnames(level1_en) <- c("ID", "cond3_fp1_L1_1", "cond3_fp1_L1_2", "cond3_fp1_L1_3", "cond3_fp1_L1_4", "cond3_fp1_L1_5", "cond3_fp1_L1_6", "cond3_fp1_L1_7", "cond3_fp1_L1_8", "cond3_fp1_L1_9", "cond3_fp1_L1_10", "cond3_fp1_L1_11")
+
+level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
+  mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
+
+colnames(level2_en) <- c("ID", "trial", "cond3_fp1_L2_1", "cond3_fp1_L2_2")
+
+dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
+
+level2_en_mean <- level2_en %>%
+  group_by(ID) %>%
+  summarise(cond3_fp1_L2_1 = mean(cond3_fp1_L2_1),
+            cond3_fp1_L2_2 = mean(cond3_fp1_L2_2))
+
+fpca_fp1_en3 <- level1_en %>%
+  left_join(level2_en_mean, by = "ID")
+
+fpca_fp1_merged_en3 <- fpca_fp1_merged_en2 %>%
+  left_join(fpca_fp1_en3, by = "ID")
+
+
+```
+
+-- f3 --
+
+condition 1, f3
+
+```{r cond1f3}
+
+nodes_en <- c("f3")
+
+cond_en <- p_df %>%
+  filter(condition == 1) %>%
+  dplyr::select(-sample, -condition, -af7, -af3, -f1, -f5, -f7, -ft7)
+
+cond_en <- as.data.frame(cond_en)
+
+cond_en$subject <- as.numeric(as.character(cond_en$subject))
+cond_en <- cond_en %>% arrange(subject)
+
+r_len <- length(unique(cond_en$time_ms))
+
+c_len <- n_distinct(cond_en$subject, cond_en$trial)
+
+matrix_sm_all_en <- matrix(as.matrix(cond_en[, nodes_en]), 
+                        nrow = r_len,
+                        ncol = c_len * length(nodes_en),
+                        byrow = FALSE)
+
+sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len),
+                            matrix_sm_all_en,
+                            fdParObj)
+
+dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
+                             trial = as.numeric(as.character(cond_en$trial)),
+                         time = cond_en$time_ms,
+                         eeg_raw = as.numeric(sm_cond_en$y),
+                         eeg_smooth = as.numeric(predict(sm_cond_en))) %>%
+                          arrange(ID, trial)
+
+myIDS = unique((dfresponse_en$ID))
+
+dfresponse_merged_en <- dfresponse_en %>% left_join(demographic, by = "ID")
+
+df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
+
+Y_en <- as.matrix(df_wide_en[, -(1:2)])
+
+mlfpc_en <- mfpca.face(Y = Y_en,
+                    id = df_wide_en$ID,
+                    visit = df_wide_en$trial,
+                    twoway = TRUE,
+                    pve = 0.95
+                    )
+
+myIDS = unique((dfresponse_en$ID))
+
+level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
+  mutate(ID = myIDS, .before =1 )
+
+colnames(level1_en) <- c("ID", "cond1_f3_L1_1", "cond1_f3_L1_2", "cond1_f3_L1_3", "cond1_f3_L1_4", "cond1_f3_L1_5", "cond1_f3_L1_6", "cond1_f3_L1_7")
+
+level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
+  mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
+
+colnames(level2_en) <- c("ID", "trial", "cond1_f3_L2_1")
+
+dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
+
+level2_en_mean <- level2_en %>%
+  group_by(ID) %>%
+  summarise(cond1_f3_L2_1 = mean(cond1_f3_L2_1))
+
+fpca_f3_en1 <- level1_en %>%
+  left_join(level2_en_mean, by = "ID")
+
+fpca_fp1_f3_merged_en1 <- fpca_fp1_merged_en3 %>%
+  left_join(fpca_f3_en1, by = "ID")
 
 ```
 
