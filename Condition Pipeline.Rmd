@@ -1865,17 +1865,6 @@ Apply Elastic Net
 
 ```{r}
 
-# Reduce dataset
-# fpca_fp1_f3_allcond <- fpca_fp1_f3_merged_en3 %>% dplyr::select(-c(age, eeg_raw, eeg_smooth, time)) %>% 
-#   mutate(n_missing = rowSums(is.na(.))) %>% # to get one row per ID. 
-#   arrange(ID, n_missing) %>%                #rows with fewer NAs first
-#   distinct(ID, .keep_all = TRUE) %>%        # keep one row per ID. least missing first
-#   dplyr::select(-n_missing) %>%
-#   mutate(group = ifelse(group == "Case", 1, 0),
-#          gender = ifelse(gender == "Female", 1, 0)) %>% 
-#   drop_na() # TEMPORARY
-
-
 mfpca_allcond <- mfpca_matrix %>%
   distinct(ID, .keep_all = TRUE) %>% 
   mutate(group = ifelse(group == "Case", 1, 0),
@@ -1883,21 +1872,13 @@ mfpca_allcond <- mfpca_matrix %>%
   drop_na() # TEMPORARY
 
 
-# Training and test sets
-set.seed(1020304050)
 
-train <- sample(c(TRUE, FALSE), nrow(mfpca_allcond), # TRUE = in training set
-    replace = TRUE, prob = c(0.7, 0.3))  # Each row independently T or F.  70% TRUE, 30% FALSE
+data_split <- split_train_test(d = mfpca_allcond, outcome = group, percent_train = 0.8, seed = 1020304050, grouping_col = ID) # grouping_col variable identifying repeated within person observations
 
-test <- (!train)                                 # test data is the rest:non training
+names(data_split)
+sch_train <- data_split$train
+sch_test <- data_split$test
 
-
-prop.table(table(train))
-prop.table(table(test))
-
-# create data sets
-sch_train <- mfpca_allcond[train, ]
-sch_test  <- mfpca_allcond[test, ]
   
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
@@ -1905,13 +1886,29 @@ sch_test  <- mfpca_allcond[test, ]
 x <- model.matrix(group ~ .-ID, data = mfpca_allcond)[, -1] # gets rid of intercept term
 y <- mfpca_allcond$group
 
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_allcond$ID %in% train_ids
+test_index  <- mfpca_allcond$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+
+
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
 alpha_grid <- seq(0.1, 0.9, by = 0.1)
 
 cv_list <- lapply(alpha_grid, function(a) {
-  cv.glmnet(x[train, ], y[train], 
+  cv.glmnet(x_train, y_train, 
             alpha = a, 
             family = "binomial")})
 
@@ -1927,35 +1924,35 @@ best_alpha <- alpha_grid[best_index]
 bestlam <- best_cv$lambda.min
 selam <- best_cv$lambda.1se
 
-best_alpha
-bestlam
-selam
-
 
 # fit elastic net model
-enet <- glmnet(x[train, ], y[train],
+enet <- glmnet(x_train, y_train,
                alpha = best_alpha,
                family = "binomial")      # standardize = TRUE is the default 
 
 # predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
-enet_prob <- predict(enet, s = bestlam, newx = x[!train, ], type = "response")
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
 # 1se lam
-enet_prob_se <- predict(enet, s = selam, newx = x[!train, ], type = "response")
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 
 # convert to vector
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
+
+
+
+
 # calibration plots
-valProbggplot(enet_prob, sch_test$group)
-valProbggplot(enet_prob_se, sch_test$group)
+valProbggplot(enet_prob, y_test)
+valProbggplot(enet_prob_se, y_test)
 
 
 # Brier score on test set
-enet_brier <- BrierScore(sch_test$group, enet_prob_v)
+enet_brier <- BrierScore(y_test, enet_prob_v)
 
 # ROC + AUC on test set
-enet_roc_obj <- roc(sch_test$group, enet_prob_v)
+enet_roc_obj <- roc(y_test, enet_prob_v)
 enet_auc <- auc(enet_roc_obj)
 plot(enet_roc_obj, print.auc = TRUE)
 
@@ -1995,8 +1992,8 @@ abline(v = best_alpha, col = "darkgreen", lty = 2)
 # misclassification error
 enet_class <- ifelse(enet_prob_v > 0.5, 1, 0)
 # confusion matrix (predicted, outcome)
-table(enet_class, sch_test$group)
-enet_error <- mean(enet_class != sch_test$group)
+table(enet_class, y_test)
+enet_error <- mean(enet_class != y_test)
 
 
 enet_error
