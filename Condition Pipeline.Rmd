@@ -1373,14 +1373,14 @@ level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
 
 level1_en <- level1_en[, 1:5]
 
-colnames(level1_en) <- c("ID", "cond1_f3_L1_1", "cond1_f3_L1_2", "cond1_f3_L1_3", "cond1_f3_L1_4")
+colnames(level1_en) <- c("ID", "cond3_f3_L1_1", "cond3_f3_L1_2", "cond3_f3_L1_3", "cond3_f3_L1_4")
 
 level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
   mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
 
 level2_en <- level2_en[, 1:3]
 
-colnames(level2_en) <- c("ID", "trial", "cond1_f3_L2_1")
+colnames(level2_en) <- c("ID", "trial", "cond3_f3_L2_1")
 
 dfresponse_en <- dfresponse_en %>% mutate(ID = as.numeric(ID))
 
@@ -1897,15 +1897,21 @@ mfpca_allcond <- mfpca_matrix %>%
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
 
+# data_split <- split_train_test(d = mfpca_allcond, outcome = group, percent_train = 0.8, seed = 1020304050, grouping_col = ID) # grouping_col variable identifying repeated within person observations
+# 
+# names(data_split)
+# sch_train <- data_split$train
+# sch_test <- data_split$test
 
 
-data_split <- split_train_test(d = mfpca_allcond, outcome = group, percent_train = 0.8, seed = 1020304050, grouping_col = ID) # grouping_col variable identifying repeated within person observations
-
-names(data_split)
-sch_train <- data_split$train
-sch_test <- data_split$test
-
+data_split <- group_initial_split(
+  mfpca_allcond,
+  group = ID,
+  prop = 0.8
+)
   
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
