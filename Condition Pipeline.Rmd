@@ -37,6 +37,7 @@ library(pROC)
 library(DescTools) 
 library(CalibrationCurves)
 
+
 setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 #setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 #setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
@@ -1897,18 +1898,14 @@ mfpca_allcond <- mfpca_matrix %>%
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
 
-# data_split <- split_train_test(d = mfpca_allcond, outcome = group, percent_train = 0.8, seed = 1020304050, grouping_col = ID) # grouping_col variable identifying repeated within person observations
-# 
-# names(data_split)
-# sch_train <- data_split$train
-# sch_test <- data_split$test
-
+set.seed(1020304050)
 
 data_split <- group_initial_split(
   mfpca_allcond,
   group = ID,
-  prop = 0.8
+  prop = 0.7
 )
+
   
 sch_train <- training(data_split)
 sch_test <- testing(data_split)
@@ -1931,6 +1928,9 @@ x_test  <- x[test_index, ]
 y_train <- y[train_index]
 y_test  <- y[test_index]
 
+
+# table(sch_train$group)
+# table(sch_test$group)
 
 
 
@@ -1972,21 +1972,19 @@ enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
 
-
-
-
 # calibration plots
-valProbggplot(enet_prob, y_test)
-valProbggplot(enet_prob_se, y_test)
+# valProbggplot(enet_prob_v, y_test)
+# valProbggplot(enet_prob_se_v, y_test)
 
 
-# Brier score on test set
-enet_brier <- BrierScore(y_test, enet_prob_v)
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
 
 # ROC + AUC on test set
-enet_roc_obj <- roc(y_test, enet_prob_v)
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
 enet_auc <- auc(enet_roc_obj)
 plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
 
 # Plots 
 plot(enet, xvar = "lambda")
@@ -2000,13 +1998,8 @@ legend("topleft",
        bty = "n")
 title("Coefficients - Elastic Net", line = 3)
 
-plot(best_cv, type = "b", pch = 19,
-     main = "")   # remove default title so no overlap
-
-title("Tuning Lambda - Elastic Net", line = 3)
-
 # CV plot
-plot(best_cv, main = "")
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
 title("Tuning Lambda - Elastic Net", line = 3)
 
 # plot - best alpha 
@@ -2022,18 +2015,18 @@ abline(v = best_alpha, col = "darkgreen", lty = 2)
 
 
 # misclassification error
-enet_class <- ifelse(enet_prob_v > 0.5, 1, 0)
+enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
 # confusion matrix (predicted, outcome)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
 
 
-enet_error
-enet_brier
-enet_auc
+enet_error # closer to zero is better. 0.5 = random guessing
+enet_brier # closer to zero is better. >0.25 is poor
+enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
-# To see which predictor was shrunk to zero (bestlam)
-rownames(coef(enet, s = bestlam))[as.vector(coef(enet, s = bestlam)) == 0]
+# To see which predictor was shrunk to zero (selam)
+rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
 
 
 
