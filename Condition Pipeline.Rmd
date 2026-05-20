@@ -1904,5 +1904,15 @@ enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 # To see which predictor was shrunk to zero (selam)
 rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
 
+coef_selam <- coef(enet, s = selam)
+
+coef_df <- data.frame(predictor = rownames(coef_selam),
+                      coefficient = as.vector(coef_selam))
+
+non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
+non_zero_coeffs
+
+zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
 ```
 
