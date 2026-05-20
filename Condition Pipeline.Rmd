@@ -39,8 +39,8 @@ library(CalibrationCurves)
 library(rsample)
 
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 #setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
 ```
 
@@ -57,8 +57,8 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -1618,7 +1618,7 @@ r_len <- length(unique(cond_en$time_ms))
 
 c_len <- n_distinct(cond_en$subject, cond_en$trial)
 
-matrix_sm_all_en <- matrix(as.matrix(cond_en[, nodes_en]), 
+matrix_sm_all_en <- matrix(cond_en[[ nodes_en]], 
                         nrow = r_len,
                         ncol = c_len * length(nodes_en),
                         byrow = FALSE)
@@ -1770,7 +1770,6 @@ Apply Elastic Net
 ```{r}
 
 mfpca_allcond <- mfpca_matrix %>%
-  distinct(ID, .keep_all = TRUE) %>% 
   mutate(group = ifelse(group == "Case", 1, 0),
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
@@ -1780,6 +1779,7 @@ set.seed(1020304050)
 data_split <- group_initial_split(
   mfpca_allcond,
   group = ID,
+  strata = group,
   prop = 0.7
 )
 
