@@ -41,7 +41,7 @@ library(rsample)
 
 setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 #setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
-#setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
+setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
 ```
 
 ```{r, pipeline parameters}
@@ -398,7 +398,8 @@ df_cluster %>%
   ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = group)) +
   geom_line(lwd = 0.5)+
   facet_wrap(~ cluster) +
-  labs(title = "EEG signmals by cluster, coloured by schizophrenia")
+  labs(title = "EEG signals by cluster, coloured by schizophrenia") %>%
+  show()
 ```
 
 
@@ -1749,7 +1750,7 @@ myIDS = unique((dfresponse_en$ID))
 level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
   mutate(ID = myIDS, .before =1 )
 
-level1_en <- level1_en[, 1:9]
+level1_en <- level1_en[, 1:7]
 
 colnames(level1_en) <- c("ID", "cond3_af7_L1_1", "cond3_af7_L1_2", "cond3_af7_L1_3", "cond3_af7_L1_4", "cond3_af7_L1_5", "cond3_af7_L1_6", "cond3_af7_L1_7", "cond3_af7_L1_8")
 
@@ -1929,6 +1930,427 @@ non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs
 
 zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
+```
+
+
+
+# Creating condition-specific matrix
+
+
+
+```{r cond matrix}
+
+# Condition 1 matrix
+mfpca_cond1 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond1"))
+
+# Condition 2 matrix
+mfpca_cond2 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond2"))
+
+# Condition 3 matrix
+mfpca_cond3 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond3"))
+
+
+```
+
+```{r Evaluating cond 1 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond1,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercept term
+y <- mfpca_cond1$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond1$ID %in% train_ids
+test_index  <- mfpca_cond1$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+```{r Evaluating cond 2 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond2,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] # gets rid of intercept term
+y <- mfpca_cond2$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond2$ID %in% train_ids
+test_index  <- mfpca_cond2$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+
+
+```{r Evaluating cond 3 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond3,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] # gets rid of intercept term
+y <- mfpca_cond3$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond3$ID %in% train_ids
+test_index  <- mfpca_cond3$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+
+# Cluster L1 for mFPCA 
+
+Clustering L1 scores from mFPCA to compare with FPCA. 
+
+
+```{r mFPCA level1 clustering}
+
+##KMEANS CLUSTERING - LEVEL 1 mFPCA
+set.seed(1)
+
+level1_scores <- as.data.frame(mlfpc$score$level1)
+
+level1_scores <- level1_scores %>%
+  mutate(ID = unique(df_wide$ID), .before = 1)
+
+rownames(level1_scores)
+
+level1_scores_demo <- merge(level1_scores, demographic, by = "ID")
+
+target_y <- level1_scores_demo$group
+features_x <- level1_scores_demo[c(2,3,4)]
+
+kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
+
+#CONFUSION MATRIX
+table(level1_scores_demo$group, kmeans_c1$cluster)
+
+fviz_cluster(kmeans_c1, data = features_x, 
+             main = "K-Means Clusters - Level 1 mFPCA")
+```
+
+```{r plotting mfpca1 clusters}
+##PLOTTING THE CLUSTERS
+km <- data.frame(ID = level1_scores_demo$ID, 
+                 cluster = kmeans_c1$cluster)
+
+df_cluster <- merge(km, dfresponse10, by= "ID")
+
+df_cluster %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = schizophrenia)) +
+  geom_line(lwd = 0.5)+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") %>%
+  show()
 
 ```
 
