@@ -39,9 +39,9 @@ library(CalibrationCurves)
 library(rsample)
 
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
 #setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
-setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
+#setwd("C:/Users/Sarah Conway/OneDrive/part 2/OneDrive/MSc-Project")
 ```
 
 ```{r, pipeline parameters}
@@ -57,8 +57,8 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -361,7 +361,7 @@ fpca_plots(fpc = fpca_3)
 ```
  
  
-```{r, kmeans, include = F}
+```{r, kmeans}
 ##KMEANS CLUSTERING
 set.seed(1)
 
@@ -383,7 +383,7 @@ fviz_cluster(kmeans_c1, data = features_x,
              main = "K-Means Clusters")
 ```
 
-```{r, plot kmeans, include=FALSE}
+```{r, plot kmeans}
 ##PLOTTING THE CLUSTERS
 km <- data.frame(ID = fpca_scores_demo$ID, 
                  cluster = kmeans_c1$cluster)
@@ -1750,14 +1750,10 @@ myIDS = unique((dfresponse_en$ID))
 level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
   mutate(ID = myIDS, .before =1 )
 
-level1_en <- level1_en[, 1:7]
-
 colnames(level1_en) <- c("ID", "cond3_af7_L1_1", "cond3_af7_L1_2", "cond3_af7_L1_3", "cond3_af7_L1_4", "cond3_af7_L1_5", "cond3_af7_L1_6", "cond3_af7_L1_7", "cond3_af7_L1_8")
 
 level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
   mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
-
-level2_en <- level2_en[, 1:16]
 
 colnames(level2_en) <- c("ID", "trial", "cond3_af7_L2_1", "cond3_af7_L2_2", "cond3_af7_L2_3", "cond3_af7_L2_4", "cond3_af7_L2_5", "cond3_af7_L2_6", "cond3_af7_L2_7", "cond3_af7_L2_8", "cond3_af7_L2_9", "cond3_af7_L2_10", "cond3_af7_L2_11", "cond3_af7_L2_12", "cond3_af7_L2_13", "cond3_af7_L2_14")
 
@@ -2327,13 +2323,50 @@ rownames(level1_scores)
 level1_scores_demo <- merge(level1_scores, demographic, by = "ID")
 
 target_y <- level1_scores_demo$group
-features_x <- level1_scores_demo[c(2,3,4)]
+features_x <- level1_scores_demo[c(2:5)]
+```
+```{r, identify the optimal number of clusters}
+# Decide how many clusters to look at
+n_clusters <- 10
 
-kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
+# Initialize total within sum of squares error: wss
+wss <- numeric(n_clusters)
+
+set.seed(1)
+
+# Look over 1 to n possible clusters
+for (i in 1:n_clusters) {
+  # Fit the model: km.out
+  km.out <- kmeans(features_x, centers = i, nstart = 20)
+  # Save the within cluster sum of squares
+  wss[i] <- km.out$tot.withinss
+}
+
+# Produce a scree plot
+wss_df <- tibble(clusters = 1:n_clusters, wss = wss)
+ 
+scree_plot <- ggplot(wss_df, aes(x = clusters, y = wss, group = 1)) +
+    geom_point(size = 4)+
+    geom_line() +
+    scale_x_continuous(breaks = c(2, 4, 6, 8, 10)) +
+    xlab('Number of clusters')
+scree_plot
+
+scree_plot +
+    geom_hline(
+        yintercept = wss, 
+        linetype = 'dashed', 
+        col = c(rep('#000000',4),'#FF0000', rep('#000000', 5))
+    )
+```
+```{r}
+set.seed(1)
+kmeans_c1 <- kmeans(features_x, centers = 5, nstart = 10)
 
 #CONFUSION MATRIX
 table(level1_scores_demo$group, kmeans_c1$cluster)
 
+#Visualise Clusters
 fviz_cluster(kmeans_c1, data = features_x, 
              main = "K-Means Clusters - Level 1 mFPCA")
 ```
@@ -2346,11 +2379,10 @@ km <- data.frame(ID = level1_scores_demo$ID,
 df_cluster <- merge(km, dfresponse10, by= "ID")
 
 df_cluster %>% 
-  ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = schizophrenia)) +
-  geom_line(lwd = 0.5)+
+  ggplot(aes(x = time, y = eeg_smooth, group = interaction(ID, trial), color = schizophrenia)) +
+  geom_line()+
   facet_wrap(~ cluster) +
-  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") %>%
-  show()
+  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") 
 
 ```
 
