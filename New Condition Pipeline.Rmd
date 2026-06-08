@@ -814,8 +814,6 @@ level1_scores <- cbind(data.frame(mlfpc$scores$level1), subj_id = as.factor(uniq
 
 ggplot(level1_scores,aes(x = X1, y = X2, color = schizophrenia)) + geom_point() +
   labs(x = "mFPC1", y = "mFPC2", title = "..") + theme_bw()
-
-data.frame(predicted_scores[1])
 ```
 
 #### Level 2
@@ -1015,10 +1013,10 @@ mfpca_fnc <- function(df, cond, nodes_en){
   l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
   colnames(level2_en) <- c("ID", "trial", c(paste("cond", cond, "_", nodes_en, "_L2_", 1:l2, sep = "")))
   
-  return(list(level1_en, level2_en, ))
+  return(list(level1_en, level2_en, mlfpc_en, Y_en, df_wide_en))
 }
 ```
-
+ 
 #######checked until here
 
 ```{r, apply mfpca for all conditions and nodes}
