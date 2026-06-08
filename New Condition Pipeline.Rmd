@@ -1,0 +1,1716 @@
+---
+title: "Condition Pipeline"
+author: "Hollie Keating, Sarah Conway & Maeve Samali"
+date: "2026-03-10"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document contains the pipeline which can be applied to any of the conditions and nodes. Included:
+
+ - Smoothing 
+ - Generate FPCA scores
+ - Plot top 5 and bottom 5 of FPCA scores 1, 2, and 3 
+ 
+```{r, libraries, include = FALSE, warning=FALSE, message=FALSE}
+library(data.table)
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+library(plotly)
+library(fda)
+library(gridExtra)
+library(fdapace)
+library(tidyr)
+library(table1)
+library(factoextra)
+library(cluster)
+library(sjPlot)
+library(refund)
+library(glmnet)
+library(pROC)  
+library(DescTools) 
+library(CalibrationCurves)
+library(rsample)
+```
+
+```{r, pipeline parameters}
+c = 1 # condition 1 
+t = 50 # 10 trials 
+t1 = 1 # selecting one trial
+node <- "fp1"
+```
+
+ 
+```{r, read in files}
+# Loop which reads in separate excel file for each patient and compiles all data into a dataframe
+# Merges time data and demogrpahic data which contains whether patients are controls or cases
+
+
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+
+times = fread("archive/time.csv")
+demographic <- fread("archive/demographic.csv")
+  
+filenames = list.files("archive/patients/")
+
+p_list <- list()
+
+for(i in 1:length(filenames)){
+  
+  pathtomyfile = paste0("archive/patients/", filenames[i])
+  temp <- fread(pathtomyfile, sep = ",", header = "auto")
+  temp <- temp[ ,1:12]
+  colnames(temp)<- c("subject", "trial", "condition", "sample", "fp1", "af7", "af3", "f1", "f3", "f5", "f7", "ft7")
+  temp <- merge(temp, times, by ="sample")
+  temp <- merge(temp, demographic, by = "subject")
+  temp<- temp%>%
+    filter (time_ms > -100)%>%   # time from -100ms to remove unnecessary data while including some pre beep curve info (100ms is where the beep occurs
+    # ifelse(subject %in% missing, trial==15, trial==1) %>% # Only one trial out of 100 choosen. Trial 1 so patient hasn't learnt the test/timing/ keep up concealment
+    filter(trial<=t)
+  temp<- rename(temp, schizophrenia = group)
+
+  p_list[[i]] <- temp
+  
+}
+
+p_df <- do.call(rbind, p_list)
+
+p_df<- p_df%>%
+  mutate(
+    subject = as.factor(subject),
+    schizophrenia = as.factor(schizophrenia)
+  )
+```
+
+
+```{r, test train split}
+set.seed(1)
+
+data_split <- group_initial_split(
+  p_df,
+  group = subject,
+  strata = schizophrenia,
+  prop = 0.7
+)
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+train_ids <- as.numeric(as.character(unique(sch_train$subject))) %>% sort()
+test_ids  <- as.numeric(as.character(unique(sch_test$subject))) %>% sort()
+
+train_index <- p_df$subject %in% train_ids
+test_index  <- p_df$subject %in% test_ids
+
+train_pdf <- p_df[train_index, ] %>%  arrange(subject, condition, trial)
+test_pdf  <- p_df[test_index, ] %>%  arrange(subject, condition, trial)
+
+```
+
+ 
+ 
+```{r, smoothing splines 1}
+## Smooth the data 
+## Create a B-spline basis (mybasis) - building blocks to represent the curves
+K = 100 # basis functions. More = more flexible
+d = 3 # basis degree e.g. 3 = cubic
+
+mybasis = create.bspline.basis(rangeval = c(0,1638), # x-axis range for curves 0-1638 timepoints
+                               nbasis = K, 
+                               norder = d+1) # cubic is an order 4 polynomial 
+## Smoothing parameter object
+
+## create an fd object - functional data object
+
+penalty_order = 2 # 2nd derivative ie penalizes wigglier
+penalty = 0.05 #amount of smoothing to be applied. Larger penalty = smoother.
+fdParObj <- fdPar(fd(matrix(0, K, 1), mybasis), # fd object with k=100 coeff, 1 curve
+                  Lfdobj = penalty_order, 
+                  lambda = penalty)
+```
+
+
+```{r, smoothing splines 2}
+# Smooth the data 
+cond <- train_pdf %>%
+  filter(condition == c) %>%
+  filter(trial == t1)
+
+#the subjects are not ordered correctly to fix this
+cond$subject <- as.numeric(as.character(cond$subject))
+cond <- cond %>% arrange(subject)
+
+r_len <- nrow(cond %>% filter(subject == 1))
+c_len <- length(unique(cond$subject))
+
+matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
+
+## smooth the data - cond
+# smooth.basis(x, y, fdParObj)
+sm_cond <- smooth.basis(seq(1, r_len, length.out = r_len), # x
+                            matrix_sm_all, # y
+                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+plot(sm_cond,
+     main = "Smoothed Curves")
+
+```
+
+
+
+
+```{r, df}
+# Plots 
+# dfresponse - raw eeg, smoothed eeg, merged demographic 
+ 
+# sm_cond$y is raw eeg signals
+# smoothed is predict(sm_cond) 
+# fd is basis and coeff
+
+dfresponse <- data.frame(ID = as.numeric(as.character(cond$subject)),
+                         time = cond$time_ms,
+                         eeg_raw = as.numeric(sm_cond$y),
+                         eeg_smooth = as.numeric(predict(sm_cond))) %>%   # smoothed predictions
+                          arrange(ID)
+
+
+demographic <- demographic %>%
+  rename(ID = subject) %>%
+  mutate(group = as.character(group),
+         gender = stringr::str_trim(as.character(gender)), # to handle space
+    group = recode(group, `0` = "Control", `1` = "Case"),
+    gender = recode(gender, "M" = "Male", "F" = "Female"),
+    group = factor(group, levels = c("Control", "Case")),
+    gender = factor(gender, levels = c("Male", "Female")))
+
+# table(demographic$group) # 25 controls, 11 cases
+# table(demographic$gender) # 30 males. 6 females
+
+myIDS = unique((dfresponse$ID))
+#test = as.numeric(predict(sm_cond)) # smoothed predictions
+#dfresponse$eeg_smooth = test
+
+dfresponse_merged <- dfresponse %>% left_join(demographic, by = "ID")
+
+
+```
+
+```{r, demographic plots, fig.width=9, fig.asp=1.5}
+
+# plot color = cases vs controls 
+# group = ID: draw one seperate line for each patient ID
+group_plot <- dfresponse_merged %>%
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves Case vs Controls",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")
+
+#group_plot
+
+
+gender_plot <- dfresponse_merged %>%
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves Case vs Controls",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~gender)
+
+#gender_plot
+
+
+# plot by age > 40 or < 40     its not the age they werre diagnosed at its just the age they are now.................
+age_plot <- dfresponse_merged %>% 
+  mutate(age_grouped = ifelse(age < 40, "<40", ">=40")) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves by Age",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~age_grouped)
+
+#age_plot
+
+# years in education 
+# primary plus secondary is ~14 years 
+edu_plot <- dfresponse_merged %>% 
+  mutate(education_grouped = ifelse(education < 15, "<15", ">=15")) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, color = group)) +
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("Control" = "orange", "Case" = "darkgreen")) +
+  theme_bw()+
+  labs(title = "Smoothed Curves by Years in Education",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+facet_wrap(~education_grouped)
+
+#edu_plot
+
+grid.arrange(group_plot, gender_plot, age_plot, edu_plot, ncol = 1)
+
+# table_data <- dfresponse_merged %>%
+#   distinct(ID, group, gender)      # one per patient
+# 
+# table1(~ gender | group,
+#        data = table_data)
+
+
+# demographic only has up to patient 77
+
+
+dfresponse %>%
+  filter(ID==1) %>%
+  ggplot(aes(x=time, y = eeg_raw)) + geom_line() + geom_line(lwd = 1.5, aes(y=eeg_smooth, color = "smooth"))
+
+
+```
+
+ 
+ 
+## FPCA Scores
+ 
+```{r, fpca scores}
+## FPCA through conditional expectation (PACE) - irregular data allowed
+# FPCA via PACE 
+# applied to sm_cond: condition c smoothed data 
+
+# make a list containing dataframes with rows grouped by ID
+list_format <- split(dfresponse, dfresponse$ID)
+
+# create lists of time and response (eeg)
+list_t <- lapply(list_format,
+                 dplyr::select, time)
+list_eeg <- lapply(list_format,
+                   dplyr::select, eeg_raw)
+
+# unlist
+list_t <- lapply(list_t,
+                 unlist, use.names = F)
+list_eeg <- lapply(list_eeg,
+                   unlist, use.names = F)
+
+# apply PACE (with fdapace)
+resMEAN <- FPCA(Ly = list_eeg, Lt = list_t,
+                optns = list(dataType = 'Sparse')) #Dense or p >> n (time pts > n patients)
+
+##is the data dense?
+# plot(FPCA(Ly = list_eeg, Lt = list_t,
+#                 optns = list(dataType = 'Dense')))
+# FPC results
+plot(resMEAN)
+#resMEAN$xiEst #FPCA scores
+```
+ 
+ 
+## Highest & Lowest Scores 
+ 
+```{r, fpc df}
+# FPCA scores
+
+# FPC result
+# resMEAN$xiEst #FPCA scores
+
+fpca_scores <- as.data.frame(resMEAN$xiEst) %>% 
+  mutate(ID =myIDS, .before = 1)             # add an ID row, first column
+
+colnames(fpca_scores) <- c("ID", "fpca_1", "fpca_2", "fpca_3")
+
+dfresponse <- dfresponse %>% mutate(ID = as.numeric(ID))
+
+# Plots - merge FCP scores with df response 
+fpca_scores_merged <- dfresponse_merged %>% left_join(fpca_scores, by = "ID")
+```
+
+```{r, fpc plots function }
+# Extract top 5 fpc scores
+# Top 5: 1638*5= 8190
+top_bot_5 <- r_len*5
+
+fpca_plots <- function(df = fpca_scores_merged, fpc){
+  
+  fpca_name <- as.character(substitute(fpc))
+  
+  top_5_fpc <- fpca_scores_merged %>%
+  arrange(desc({{fpc}})) %>%
+  slice(1:top_bot_5) %>%
+  pull(ID)
+
+  # Extract bottom 5 fpca 1 scores
+  bottom_5_fpc <- fpca_scores_merged %>%
+    arrange({{fpc}}) %>%              # default ascending
+    slice(1:top_bot_5) %>%
+    pull(ID)
+  
+  # df of top & bottom 
+  group_ids_fpc <- bind_rows(
+    data.frame(ID = unique(top_5_fpc), top_bot = "Top 5"),
+    data.frame(ID = unique(bottom_5_fpc), top_bot = "Bottom 5")
+  )
+  
+  plot_data_fpc <- fpca_scores_merged %>%
+    semi_join(group_ids_fpc, by = "ID") %>%      # keeps rows that IDs are in both dfs
+    left_join(group_ids_fpc, by = "ID")          # adds the group label
+  
+  plot_data_fpc %>% ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = top_bot)) +
+    geom_line(linewidth = 0.5) +
+    theme_bw() +
+    labs(title = paste("Top vs Bottom 5 Curves Scores:", fpca_name),
+         colour = "Group")
+}
+```
+ 
+```{r, fpca plots}
+#smoothed curves not raw data
+fpca_plots(fpc = fpca_1)
+fpca_plots(fpc = fpca_2)
+fpca_plots(fpc = fpca_3)
+```
+ 
+ 
+```{r, kmeans}
+##KMEANS CLUSTERING
+set.seed(1)
+
+#scores <- na.omit(scores)
+rownames(fpca_scores)
+
+fpca_scores_demo <- merge(fpca_scores, demographic, by = "ID")
+
+target_y <- fpca_scores_demo$group
+features_x <- fpca_scores_demo[c(2,3,4)]
+
+```
+
+```{r, optimal clusters}
+
+# Decide how many clusters to look at
+n_clusters <- 10
+
+# Initialize total within sum of squares error: wss
+wss <- numeric(n_clusters)
+
+set.seed(1)
+
+# Look over 1 to n possible clusters
+for (i in 1:n_clusters) {
+  # Fit the model: km.out
+  km.out <- kmeans(features_x, centers = i, nstart = 20)
+  # Save the within cluster sum of squares
+  wss[i] <- km.out$tot.withinss
+}
+
+# Produce a scree plot
+wss_df <- tibble(clusters = 1:n_clusters, wss = wss)
+ 
+scree_plot <- ggplot(wss_df, aes(x = clusters, y = wss, group = 1)) +
+    geom_point(size = 4)+
+    geom_line() +
+    scale_x_continuous(breaks = c(2, 4, 6, 8, 10)) +
+    xlab('Number of clusters')
+scree_plot
+
+scree_plot +
+    geom_hline(
+        yintercept = wss, 
+        linetype = 'dashed', 
+        col = c(rep('#000000',3),'#FF0000', rep('#000000', 6))
+    )
+```
+```{r, plot kmeans}
+
+kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
+
+#CONFUSION MATRIX
+table(fpca_scores_demo$group, kmeans_c1$cluster)
+
+#mean(scores$group == kmeans_c1$cluster)
+fviz_cluster(kmeans_c1, data = features_x, 
+             main = "K-Means Clusters")
+
+##PLOTTING THE CLUSTERS
+km <- data.frame(ID = fpca_scores_demo$ID, 
+                 cluster = kmeans_c1$cluster)
+
+#smoothed_all <- merge(smooth_long, cond1,  by = "subject")
+
+df_cluster <- merge(km, fpca_scores_merged, by= "ID") #%>% 
+  #arrange(subject, time_ms)
+
+#plotting the cluster by schizophrenia
+df_cluster %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = group)) +
+  geom_line(lwd = 0.5)+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signals by cluster, coloured by schizophrenia") %>%
+  show()
+
+```
+
+
+```{r, glms}
+subject_df <- fpca_scores_merged %>%
+  distinct(ID, group, gender, age, education, fpca_1, fpca_2, fpca_3)
+
+# subject_df$group <- factor(subject_df$group)
+# subject_df$gender <- factor(subject_df$gender)
+
+
+#=================
+# Gender Model 
+# ================
+
+log_gender <- glm(group ~ age + education + fpca_1 + fpca_2 + fpca_3,
+             data = subject_df,
+             family = binomial)
+
+summary(log_gender)
+
+
+## converting coefficients into OR
+
+exp(coef(log_gender))
+
+
+# from summary, FPCA1 shows most significance at p = 0.06.., genderM significance = 0.2131
+# gender coef = 0.1485062
+
+
+# ====================================
+# Education Model
+# ====================================
+
+model_edu <- glm(group ~ education,
+                 data = subject_df,
+                 family = binomial)
+
+summary(model_edu)
+exp(coef(model_edu))
+
+## for each additional year of education, the odds of being in the schizophrenia group decrease by about 57%
+
+## creating a boxplot 
+
+ggplot(subject_df, aes(x = factor(group), y = education, color = factor(group))) +
+  geom_boxplot() +
+  labs(x = "Group", y = "Education")
+
+# =====================
+# FPCA Model 
+# ====================
+
+model_eeg <- glm(group ~ fpca_1 + fpca_2 + fpca_3,
+                 data = subject_df,
+                 family = binomial)
+
+summary(model_eeg)
+
+exp(coef(model_eeg))
+
+# 1st PC most significant, OR = 0.99.. so only marginally reduces odds of being in schizophrenia group with increase of PC1
+
+ggplot(subject_df, aes(x = factor(group), y = fpca_1, color = factor(group))) +
+  geom_boxplot() +
+  labs(x = "Group", y = "FPCA 1")
+
+```
+
+### Education Model
+
+Education was significantly associated with schizophrenia diagnosis, with higher education linked to lower log-odds (OR = 0.57, p = 0.018), indicating a decrease in odds of approximately 43% per additional year of education.
+
+By analysing the grouped bar chart for education, individuals with schizophrenia tended to have lower levels of education compared to controls - however this association may reflect the impact of earlier illness onset or other cofounding factors.
+
+
+### Gender Model
+
+Gender was not significant within association with schizophrenia presence (OR = 0.15, p = 0.213). 
+The distribution of gender was similar across the control and schizophrenia groups, with a higher proportion of males in both groups which supports our above result. However, the sample was predominantly male which may limit our ability to detect gender differences. 
+
+### FPCA Model
+
+FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), although the the odds ratio was quite small (OR \approx 1.00). FPCA 2 showed no association, and FPCA 3 showed a weak non-significant trend.  
+
+ 
+# MFPCA Model 
+
+So now we want to take into account that we have more than 1 function per person. People completed each sensory condition up to 100 times. Including more of these trials will improve our ability to predict whether an EEG is typical of schizophrenia or not.
+ 
+## Smoothing multiple trials
+
+As before we need to smooth the data, but this time for all the trials.
+
+```{r, smoothing function}
+smooth_trial_data <- function(df, cond_num, node){
+  
+  # Smooth the data 
+  cond <- df %>%
+    filter(condition == cond_num)  %>% 
+    arrange(trial)
+  
+  #the subjects are not ordered correctly to fix this
+  cond$subject <- as.numeric(as.character(cond$subject))
+  cond <- cond %>% arrange(subject)
+  
+  sub <- unique(cond$subject)[1] #1st subject in df
+  ##r_len = number of time points for each curve
+  r_len <- nrow(cond %>% filter(subject == sub) %>% filter(trial == 1))
+  #number of curves per person
+  #number of individual curves
+  c_len <- nrow(cond %>% distinct(subject, trial))
+  
+  matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
+  
+  ## smooth the data - cond
+  # smooth.basis(x, y, fdParObj)
+  sm_trials <- smooth.basis(seq(1, r_len, length.out = r_len), # x
+                              matrix_sm_all, # y
+                              fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+ x <- list(cond, sm_trials)
+  return(x)
+}
+
+```
+
+
+```{r, plot mfpca smoothed}
+sm_trials <- smooth_trial_data(df = train_pdf, cond_num = 1, node = "fp1")[[2]]
+cond_trials <- smooth_trial_data(df = train_pdf, cond_num = 1, node = "fp1")[[1]]
+plot(sm_trials,
+      main = "Smoothed Curves")
+```
+
+### Data in long format & plots
+
+We create a dataframe of all the relevant measurements and we have plotted the smoothed data for each trial for each person below.
+
+```{r, mfpca plots}
+##create a response df in long format
+dfresponse10 <- data.frame(ID = as.numeric(as.character(cond_trials$subject)),
+                         time = cond_trials$time_ms,
+                         trial = cond_trials$trial,
+                         eeg_raw = as.numeric(sm_trials$y),
+                         eeg_smooth = as.numeric(predict(sm_trials)),
+                         schizophrenia = cond_trials$schizophrenia) %>%   # smoothed predictions
+                         arrange(ID)
+
+##Plot all trials for each subject 
+dfresponse10  %>% filter(ID <= 10) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(schizophrenia))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 10 & ID <=20) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(schizophrenia))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 20 & ID <= 71) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(schizophrenia))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+dfresponse10  %>% filter(ID > 71) %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = factor(trial), color = factor(schizophrenia))) +
+  geom_line() +
+  facet_wrap(~ ID, nrow = 2) +
+  ggtitle("Multilevel functional observations")
+
+```
+
+
+## mFPCA
+
+Now we perform multi-level modelling, where the first level is the individual subject level and the second level is the individual trial level. So we get a score for each person and for each curve (trial).
+
+```{r, mfpca}
+# df: Data in long format with columns, subject Id = Id, stride_id (wave_id) = visit, arg = time (seq(0, 1, length = 101), obs = y values
+#Output: each row is a curve with subject Id and wave id
+df_wide <- pivot_wider(dfresponse10[,-4], #exclude the raw eeg column
+                       names_from = time,
+                       values_from = eeg_smooth)
+n <- ncol(df_wide)
+Y <- as.matrix(df_wide[, c(4:n)]) # excluding column id, trial, schizophrenia
+
+#mfpca
+mlfpc <- mfpca.face(Y = Y, # matrix- each row is a curves
+                    id = df_wide$ID, # subject id: c(1,1,2,2,2,3,3 ...)
+                    visit = df_wide$trial, # trial id c(1,2,3,.., 1, 2,3, 4, ...)
+                    twoway = TRUE,
+                    #pve2 = 0.75, # pve for level 2
+                    pve = 0.95
+                    )
+
+```
+
+
+## Multilevel FPCs
+
+-   Level 1
+
+```{r, mfpca level 1}
+t <- unique(dfresponse10$time)
+egf1 <- data.frame(mlfpc$efunctions$level1)
+ggplot(egf1) +
+  geom_line(lwd =0.55, aes(x = t, y = egf1[, 1], color = " 1")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 2], color = " 2")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 3], color = " 3")) +
+  geom_line(lwd =0.55,aes(x = t, y = egf1[, 4], color = " 4")) +
+  scale_color_manual(values = c(" 1" = "blue", " 2" = "green", " 3" = "red", " 4" = "purple")) +
+  labs(x = "Time", y = "value", color = "mFPC") +
+  theme_bw()
+
+```
+
+
+-   Level 2
+
+```{r, mfpca level 2}
+t <- unique(dfresponse10$time)
+egf2 <- data.frame(mlfpc$efunctions$level2)
+ggplot(egf2) +
+  geom_line(aes(x = t, y = egf2[, 1], color = " 1")) +
+  geom_line(aes(x = t, y = egf2[, 2], color = " 2")) +
+  geom_line(aes(x = t, y = egf2[, 3], color = " 3")) +
+  geom_line(aes(x = t, y = egf2[, 4], color = " 4")) +
+  scale_color_manual(values = c(" 1" = "blue", " 2" = "green", " 3" = "red", " 4" = "purple")) +
+  labs(x = "Time (proportion)", y = "value", color = "mFPC") +
+  theme_bw()
+
+```
+
+
+## Nature of the variability
+
+Level 1
+
+```{r, eigenfns 1}
+# add and subtract eigenfunction to the overall mean
+egf_l1 <- egf1 %>%  mutate(mu = mlfpc$mu,
+                     p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level1[1]),
+                     n1 = mlfpc$mu - X1*sqrt(mlfpc$evalues$level1[1]),
+                     
+                     p2 = mlfpc$mu  + X2*sqrt(mlfpc$evalues$level1[2]),
+                     n2 = mlfpc$mu - X2*sqrt(mlfpc$evalues$level1[2]),
+                     
+                     p3 = mlfpc$mu  + X3*sqrt(mlfpc$evalues$level1[3]),
+                     n3 = mlfpc$mu - X3*sqrt(mlfpc$evalues$level1[3]),
+                     
+                     p4 = mlfpc$mu  + X4*sqrt(mlfpc$evalues$level1[4]),
+                     n4 = mlfpc$mu - X4*sqrt(mlfpc$evalues$level1[4]))
+
+```
+
+
+
+# First and second modes
+```{r, level 1 plot}
+# first mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n1), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +ggtitle("PC 1 (..%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Second mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p2), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n2), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") + ggtitle("PC 2 (...%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# third mode
+ggplot(egf_l1, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p3), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") + ggtitle("PC 3 (...%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+```
+
+
+ level 2
+
+First and second modes
+
+```{r, fpc level 2}
+egf2 <- egf2 %>%  mutate(mu = mlfpc$mu,
+                       p1 = mlfpc$mu  + X1*sqrt(mlfpc$evalues$level2[1]),
+                       n1 = mlfpc$mu - X1*sqrt(mlfpc$evalues$level2[1]),
+                       
+                       p2 = mlfpc$mu  + X2*sqrt(mlfpc$evalues$level2[2]),
+                       n2 = mlfpc$mu - X2*sqrt(mlfpc$evalues$level2[2]),
+                       
+                       p3 = mlfpc$mu  + X3*sqrt(mlfpc$evalues$level2[3]),
+                       n3 = mlfpc$mu - X3*sqrt(mlfpc$evalues$level2[3]),
+                       
+                       p4 = mlfpc$mu  + X4*sqrt(mlfpc$evalues$level2[4]),
+                       n4 = mlfpc$mu - X4*sqrt(mlfpc$evalues$level2[4]))
+```
+
+
+```{r, fpc level 2 plots}
+# First mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p1), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n1), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 1 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Second mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p2), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n2), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 2 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+
+# Third mode
+ggplot(egf2, aes(x = t, y = mu)) + geom_line(color = "red", lwd = 0.8) +
+geom_point(aes(x = t, y = p3), shape = "+", size = 3) + 
+geom_point(aes(x = t, y = n3), shape = "-", size = 3)  +
+  labs(y ="Y", x = "Time (proportion)") +
+   ggtitle("PC 3 (....%)") + 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),plot.title.position = "panel"
+  )
+```
+
+
+### Multilevel FPC scores
+
+#### Level 1
+
+Patient Level scores - 1 per person
+
+```{r, mfpc1}
+level1_scores <- cbind(data.frame(mlfpc$scores$level1), subj_id = as.factor(unique(df_wide$ID)), schizophrenia = df_wide$schizophrenia[match(unique(df_wide$ID), df_wide$ID)])# subject level scores
+
+ggplot(level1_scores,aes(x = X1, y = X2, color = schizophrenia)) + geom_point() +
+  labs(x = "mFPC1", y = "mFPC2", title = "..") + theme_bw()
+```
+
+#### Level 2
+
+Individual Trial scores (i.e. 1 score per function/trial) -multiple per person
+
+```{r, mfpc2}
+level2_scores <- cbind(data.frame(mlfpc$scores$level2), subj_id = factor(df_wide$ID), trial_id = df_wide$trial, schizophrenia = df_wide$schizophrenia)
+
+ggplot(level2_scores, aes(x = trial_id, y = X1, group = subj_id, color = schizophrenia)) +
+  geom_line() + geom_point() + theme_bw() +
+  labs(y = "mFPC1", x = "trials order - longitudinal", title = "") 
+ 
+ggplot(level2_scores, aes(x = subj_id, y = X1, group = subj_id, colour = schizophrenia)) + geom_boxplot() + theme_bw() +
+  labs(y = "mFPC1", x = "Subject Id", title = "Score distribution") 
+ 
+
+```
+
+## Predicting Test Subject's Scores
+
+```{r, predicting mfpca scores function}
+predict_scores <- function(Y, id, visit, mfpca_obj){
+  # Input: Y -  Nxt matrix of new curves
+  #        id - a vector of repeated subject id with length = number of new curves
+  #       visit - a vector of F/NF with length = number of curves
+  #       mfpca_obj - mfpca.face object
+  
+  visit <- as.factor(visit)
+  id <- as.factor(id)
+  df <- data.frame(id = id, visit = visit, Y = I(Y))
+  rm(id, visit, Y)
+  J <- length(levels(df$visit))
+  L <- ncol(df$Y)
+  nVisits <- data.frame(table(df$id))
+  colnames(nVisits) = c("id", "numVisits")
+  ID = sort(unique(df$id))
+  I <- length(ID)
+  argvals <- seq(0, 1, length.out = L)
+  
+  # Population and visit-specific mean functions - from the mfpca.face object
+  mu <- mfpca_obj$mu
+  eta <- mfpca_obj$eta
+  # Ytilde = Y - mu - eta
+  # mueta = mu + eta
+  mueta <- mu + eta
+  
+  # Ytilde for the new curves
+  Ytilde <- matrix(NA, nrow = nrow(df$Y), ncol = ncol(df$Y))
+  for (j in 1:J) {
+    ind_j <- which(df$visit == levels(df$visit)[j])
+    Ytilde[ind_j, ] <- df$Y[ind_j, ] - matrix(mueta[, 
+                                                    j], nrow = length(ind_j), ncol = L, byrow = TRUE)
+  }
+  
+  df$Ytilde <- I(Ytilde)
+  rm(Ytilde)
+  
+  efunctions <- mfpca_obj$efunctions
+  npc <- mfpca_obj$npc
+  sigma2 <- mfpca_obj$sigma2
+  evalues <-mfpca_obj$evalues
+  
+  # Estimate principal component scores
+  phi1 <- efunctions[[1]]
+  phi2 <- efunctions[[2]]
+  score1 <- matrix(0, I, npc[[1]])
+  score2 <- matrix(0, nrow(df$Y), npc[[2]])
+  unVisits <- unique(nVisits$numVisits)
+  
+  #........... for I number of subjects - here I = 1 (one subject)
+  for (m in 1:I) {
+    Jm <- nVisits[m, 2]
+    A <- Jm * (t(phi1) %*% phi1)/sigma2 + diag(1/evalues[[1]])
+    B = matrix(rep(t(phi1) %*% phi2/sigma2, Jm), nrow = npc[[1]])
+    temp = ginv(t(phi2) %*% phi2/sigma2 + diag(1/evalues[[2]]))
+    
+    C <- t(B)
+    invD <- kronecker(diag(1, Jm), temp)
+    MatE <- ginv(A - B %*% invD %*% C)
+    MatF <- -invD %*% C %*% MatE
+    MatG <- -MatE %*% B %*% invD
+    MatH <- invD - invD %*% C %*% MatG
+    Mat1 <- cbind(MatE, MatG)
+    Mat2 <- cbind(MatF, MatH)
+    
+    # 
+    int1 <- colSums(matrix(df$Ytilde[df$id == ID[m], ], ncol = L) %*% phi1) 
+    int2 <- matrix(df$Ytilde[df$id == ID[m], ], ncol = L) %*% phi2
+    
+    int <- c(int1, as.vector(t(int2)))/sigma2
+    
+    score1[m, ] <- Mat1 %*% int
+    score2[which(df$id == ID[m]), ] <- matrix(Mat2 %*% int, ncol = npc[[2]], byrow = TRUE)
+    
+  }
+  
+  scores <- list(level1 = score1, level2 = score2)
+  
+  return(scores)
+  
+}
+
+```
+
+```{r, smooth test data}
+sm_test <- smooth_trial_data(df = test_pdf, cond_num = 1, node = "fp1")[[2]]
+cond_test <- smooth_trial_data(df = test_pdf, cond_num = 1, node = "fp1")[[1]]
+
+plot(sm_test,
+     main = "Smoothed Curves")
+```
+
+```{r, predict scores}
+dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
+                         time = cond_test$time_ms,
+                         trial = cond_test$trial,
+                         eeg_raw = as.numeric(sm_test$y),
+                         eeg_smooth = as.numeric(predict(sm_test)),
+                         schizophrenia = cond_test$schizophrenia) %>% 
+                         arrange(ID)
+
+df_wide <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
+                       names_from = time,
+                       values_from = eeg_smooth)
+n <- ncol(df_wide)
+Y_test <- as.matrix(df_wide[, c(4:n)]) # excluding column id, trial, schizophrenia
+
+
+predicted_scores <- predict_scores(Y_test, df_wide$ID, df_wide$trial, mlfpc)
+
+```
+
+
+
+
+# All trials
+
+- Creating sample of IDs, one row per subject
+- Using split / test / train
+- Sensors and conditions separate, all trials used
+- Level 1 and level 2 scores as predictors
+
+
+```{r, mfpca function}
+
+mfpca_fnc <- function(df, cond, nodes_en){
+  
+  cond_en <- df %>%
+    filter(condition == cond) %>%
+    arrange(trial)
+  
+  cond_en$subject <- as.numeric(as.character(cond_en$subject))
+  cond_en <- cond_en %>% arrange(subject)
+
+  r_len <- length(unique(cond_en$time_ms))
+  c_len <- n_distinct(cond_en$subject, cond_en$trial)
+  
+  matrix_sm_all_en <- matrix(cond_en[[nodes_en]], 
+                          nrow = r_len,
+                          ncol = c_len,
+                          byrow = FALSE)
+  
+  sm_cond_en <- smooth.basis(seq(1, r_len, length.out = r_len),
+                              matrix_sm_all_en,
+                              fdParObj)
+  
+  dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
+                               trial = as.numeric(as.character(cond_en$trial)),
+                               time = cond_en$time_ms,
+                               eeg_raw = as.numeric(sm_cond_en$y),
+                               eeg_smooth = as.numeric(predict(sm_cond_en))) %>%
+                                arrange(ID, trial)
+  
+  df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
+  n <- ncol(df_wide_en)
+  Y_en <- as.matrix(df_wide_en[, c(3:n)]) #not including trial or id columns
+  
+  mlfpc_en <- mfpca.face(Y = Y_en,
+                      id = df_wide_en$ID,
+                      visit = df_wide_en$trial,
+                      twoway = TRUE,
+                      pve = 0.95
+                      )
+  
+  myIDS = unique((dfresponse_en$ID))
+  
+  #df of scores level1 & 2
+  level1_en <- as.data.frame(mlfpc_en$score$level1) %>%
+    mutate(ID = myIDS, .before =1 )
+  level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
+    mutate(ID = df_wide_en$ID, trial = df_wide_en$trial, .before = 1 )
+  
+  l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
+  colnames(level1_en) <- c("ID", c(paste("cond", cond, "_", nodes_en, "_L1_", 1:l1, sep = "")))
+  
+  l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+  colnames(level2_en) <- c("ID", "trial", c(paste("cond", cond, "_", nodes_en, "_L2_", 1:l2, sep = "")))
+  
+  return(list(level1_en, level2_en, mlfpc_en, Y_en, df_wide_en))
+}
+```
+ 
+#######checked until here
+
+```{r, apply mfpca for all conditions and nodes}
+# conditions <- c(1:3)
+# nodes <- c("fp1", "f3", "f7", "af7")
+
+c1fp1 <- mfpca_fnc(df= p_df, cond = 1, nodes_en = "fp1")
+c2fp1 <- mfpca_fnc(df= p_df, cond = 2, nodes_en = "fp1")
+c3fp1 <- mfpca_fnc(df= p_df, cond = 3, nodes_en = "fp1")
+
+c1f3 <- mfpca_fnc(df= p_df, cond = 1, nodes_en = "f3")
+c2f3 <- mfpca_fnc(df= p_df, cond = 2, nodes_en = "f3")
+c3f3 <- mfpca_fnc(df= p_df, cond = 3, nodes_en = "f3")
+
+c1f7 <- mfpca_fnc(df= p_df, cond = 1, nodes_en = "f7")
+c2f7 <- mfpca_fnc(df= p_df, cond = 2, nodes_en = "f7")
+c3f7 <- mfpca_fnc(df= p_df, cond = 3, nodes_en = "f7")
+
+c1af7 <- mfpca_fnc(df= p_df, cond = 1, nodes_en = "af7")
+c2af7 <- mfpca_fnc(df= p_df, cond = 2, nodes_en = "af7")
+c3af7 <- mfpca_fnc(df= p_df, cond = 3, nodes_en = "af7")
+
+```
+
+```{r, merge mfpca into dataframe}
+##FP1
+c1fp1_l1 <- c1fp1[[1]] #condition 1 level 1
+c1fp1_l2 <- c1fp1[[2]] #condition 1 level 2
+c2fp1_l1 <- c2fp1[[1]]
+c2fp1_l2 <- c2fp1[[2]]
+c3fp1_l1 <- c3fp1[[1]]
+c3fp1_l2 <- c3fp1[[2]]
+
+fpca_fp1_en1 <- c1fp1_l2 %>%
+  left_join(c1fp1_l1, by = "ID")
+fpca_fp1_merged_en1 <- demographic %>%
+  left_join(fpca_fp1_en1, by = "ID")
+
+fpca_fp1_en2 <- c2fp1_l2 %>%
+  left_join(c2fp1_l1, by = "ID")
+fpca_fp1_merged_en2 <- fpca_fp1_merged_en1 %>%
+  left_join(fpca_fp1_en2, by = c("ID", "trial"))
+
+fpca_fp1_en3 <- c3fp1_l2 %>%
+  left_join(c3fp1_l1, by = "ID")
+fpca_fp1_merged_en3 <- fpca_fp1_merged_en2 %>%
+  left_join(fpca_fp1_en3, by = c("ID", "trial"))
+
+##F3
+c1f3_l1 <- c1f3[[1]] #condition 1 level 1
+c1f3_l2 <- c1f3[[2]] #condition 1 level 2
+c2f3_l1 <- c2f3[[1]]
+c2f3_l2 <- c2f3[[2]]
+c3f3_l1 <- c3f3[[1]]
+c3f3_l2 <- c3f3[[2]]
+
+fpca_f3_en1 <- c1f3_l2 %>%
+  left_join(c1f3_l1, by = "ID")
+fpca_f3_merged_en1 <- fpca_fp1_merged_en3 %>%
+  left_join(fpca_f3_en1, by = c("ID", "trial"))
+
+fpca_f3_en2 <- c2f3_l2 %>%
+  left_join(c2f3_l1, by = "ID")
+fpca_f3_merged_en2 <- fpca_f3_merged_en1 %>%
+  left_join(fpca_f3_en2, by = c("ID", "trial"))
+
+fpca_f3_en3 <- c3f3_l2 %>%
+  left_join(c3f3_l1, by = "ID")
+fpca_f3_merged_en3 <- fpca_f3_merged_en2 %>%
+  left_join(fpca_f3_en3, by = c("ID", "trial"))
+
+##F7
+c1f7_l1 <- c1f7[[1]] #condition 1 level 1
+c1f7_l2 <- c1f7[[2]] #condition 1 level 2
+c2f7_l1 <- c2f7[[1]]
+c2f7_l2 <- c2f7[[2]]
+c3f7_l1 <- c3f7[[1]]
+c3f7_l2 <- c3f7[[2]]
+
+fpca_f7_en1 <- c1f7_l2 %>%
+  left_join(c1f7_l1, by = "ID")
+fpca_f7_merged_en1 <- fpca_f3_merged_en3 %>%
+  left_join(fpca_f7_en1, by = c("ID", "trial"))
+
+fpca_f7_en2 <- c2f7_l2 %>%
+  left_join(c2f7_l1, by = "ID")
+fpca_f7_merged_en2 <- fpca_f7_merged_en1 %>%
+  left_join(fpca_f7_en2, by = c("ID", "trial"))
+
+fpca_f7_en3 <- c3f7_l2 %>%
+  left_join(c3f7_l1, by = "ID")
+fpca_f7_merged_en3 <- fpca_f7_merged_en2 %>%
+  left_join(fpca_f7_en3, by = c("ID", "trial"))
+
+##AF7
+c1af7_l1 <- c1af7[[1]] #condition 1 level 1
+c1af7_l2 <- c1af7[[2]] #condition 1 level 2
+c2af7_l1 <- c2af7[[1]]
+c2af7_l2 <- c2af7[[2]]
+c3af7_l1 <- c3af7[[1]]
+c3af7_l2 <- c3af7[[2]]
+
+fpca_af7_en1 <- c1af7_l2 %>%
+  left_join(c1af7_l1, by = "ID")
+fpca_af7_merged_en1 <- fpca_f7_merged_en3 %>%
+  left_join(fpca_af7_en1, by = c("ID", "trial"))
+
+fpca_af7_en2 <- c2af7_l2 %>%
+  left_join(c2af7_l1, by = "ID")
+fpca_af7_merged_en2 <- fpca_af7_merged_en1 %>%
+  left_join(fpca_af7_en2, by = c("ID", "trial"))
+
+fpca_af7_en3 <- c3af7_l2 %>%
+  left_join(c3af7_l1, by = "ID")
+fpca_af7_merged_en3 <- fpca_af7_merged_en2 %>%
+  left_join(fpca_af7_en3, by = c("ID", "trial"))
+
+mfpca_matrix <- fpca_af7_merged_en3
+
+```
+
+
+## Variable Selection - Elastic Net 
+
+Set up dataset to have three fpca scores per condition per node per person.
+eg cond1_fp1_fpca_1, cond2_fp1_fpca_1 etc
+
+
+Apply Elastic Net 
+
+
+```{r}
+
+mfpca_allcond <- mfpca_matrix %>%
+  mutate(group = ifelse(group == "Case", 1, 0),
+         gender = ifelse(gender == "Female", 1, 0)) %>%
+  drop_na() # TEMPORARY
+
+# set.seed(1020304050)
+# 
+# data_split <- group_initial_split(
+#   mfpca_allcond,
+#   group = ID,
+#   strata = group,
+#   prop = 0.7
+# )
+# 
+#   
+# sch_train <- training(data_split)
+# sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_allcond)[, -1] # gets rid of intercept term
+y <- mfpca_allcond$group
+
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+# highlight best alpha
+points(best_alpha, min(cv_error), col = "darkgreen", pch = 19, cex = 1.5)
+abline(v = best_alpha, col = "darkgreen", lty = 2)
+
+
+# misclassification error
+enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
+# confusion matrix (predicted, outcome)
+table(enet_class, y_test)
+enet_error <- mean(enet_class != y_test)
+
+
+enet_error # closer to zero is better. 0.5 = random guessing
+enet_brier # closer to zero is better. >0.25 is poor
+enet_auc # 1 is perfect discrimination. 0.5 = random guessing
+
+# To see which predictor was shrunk to zero (selam)
+rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
+
+coef_selam <- coef(enet, s = selam)
+
+coef_df <- data.frame(predictor = rownames(coef_selam),
+                      coefficient = as.vector(coef_selam))
+
+non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
+non_zero_coeffs
+
+zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
+```
+
+
+
+# Creating condition-specific matrix
+
+
+
+```{r cond matrix}
+
+# Condition 1 matrix
+mfpca_cond1 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond1"))
+
+# Condition 2 matrix
+mfpca_cond2 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond2"))
+
+# Condition 3 matrix
+mfpca_cond3 <- mfpca_allcond %>%
+  dplyr::select(ID, trial, group, starts_with("cond3"))
+
+
+```
+
+```{r Evaluating cond 1 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond1,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercept term
+y <- mfpca_cond1$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond1$ID %in% train_ids
+test_index  <- mfpca_cond1$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+```{r Evaluating cond 2 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond2,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] # gets rid of intercept term
+y <- mfpca_cond2$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond2$ID %in% train_ids
+test_index  <- mfpca_cond2$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+
+
+```{r Evaluating cond 3 performance}
+
+data_split <- group_initial_split(
+  mfpca_cond3,
+  group = ID,
+  strata = group,
+  prop = 0.7
+)
+
+  
+sch_train <- training(data_split)
+sch_test <- testing(data_split)
+
+# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
+# glmnet() x:matrix. y: vector
+x <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] # gets rid of intercept term
+y <- mfpca_cond3$group
+
+
+train_ids <- unique(sch_train$ID)
+test_ids  <- unique(sch_test$ID)
+
+train_index <- mfpca_cond3$ID %in% train_ids
+test_index  <- mfpca_cond3$ID %in% test_ids
+
+x_train <- x[train_index, ]
+x_test  <- x[test_index, ]
+
+y_train <- y[train_index]
+y_test  <- y[test_index]
+
+
+# table(sch_train$group)
+# table(sch_test$group)
+
+
+
+# elastic net: 0 < alpha < 1
+# 0 ridge, 1 lasso
+# cv to find best value of lambda and alpha 
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) {
+  cv.glmnet(x_train, y_train, 
+            alpha = a, 
+            family = "binomial")})
+
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+# best model
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]]
+best_alpha <- alpha_grid[best_index]
+
+# best lambda corresponding to that alpha
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default 
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# 1se lam
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+# convert to vector
+enet_prob_v <- as.vector(enet_prob)
+enet_prob_se_v <- as.vector(enet_prob_se)
+
+
+# calibration plots
+valProbggplot(enet_prob_v, y_test)
+valProbggplot(enet_prob_se_v, y_test)
+
+
+# Brier score on test set - 1se lam
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# ROC + AUC on test set
+enet_roc_obj <- roc(y_test, enet_prob_se_v)
+enet_auc <- auc(enet_roc_obj)
+plot(enet_roc_obj, print.auc = TRUE)
+coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+
+# Plots 
+plot(enet, xvar = "lambda")
+abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
+abline(v = -log(selam), col = "orange", lty = 2, lwd = 2)
+legend("topleft",
+       legend = c("Lambda.min", "Lambda.1se"),
+       col = c("darkgreen", "orange"),
+       lty = 2,
+       lwd = 2,
+       bty = "n")
+title("Coefficients - Elastic Net", line = 3)
+
+# CV plot
+plot(best_cv, pch = 19, main = "")   # remove default title so no overlap
+title("Tuning Lambda - Elastic Net", line = 3)
+
+# plot - best alpha 
+plot(alpha_grid, cv_error, type = "b", pch = 19,
+     xlab = expression(alpha),
+     ylab = "Cross-validated binomial deviance",
+     main = "Tuning Alpha - Elastic Net")
+
+
+as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+```
+
+
+# Cluster L1 for mFPCA 
+
+Clustering L1 scores from mFPCA to compare with FPCA. 
+
+
+```{r mFPCA level1 clustering}
+
+##KMEANS CLUSTERING - LEVEL 1 mFPCA
+set.seed(1)
+
+level1_scores <- as.data.frame(mlfpc$score$level1)
+
+level1_scores <- level1_scores %>%
+  mutate(ID = unique(df_wide$ID), .before = 1)
+
+rownames(level1_scores)
+
+level1_scores_demo <- merge(level1_scores, demographic, by = "ID")
+
+target_y <- level1_scores_demo$group
+features_x <- level1_scores_demo[c(2:5)]
+```
+
+```{r}
+set.seed(1)
+kmeans_c1 <- kmeans(features_x, centers = 5, nstart = 10)
+
+#CONFUSION MATRIX
+table(level1_scores_demo$group, kmeans_c1$cluster)
+
+#Visualise Clusters
+fviz_cluster(kmeans_c1, data = features_x, 
+             main = "K-Means Clusters - Level 1 mFPCA")
+```
+
+```{r plotting mfpca1 clusters}
+##PLOTTING THE CLUSTERS
+km <- data.frame(ID = level1_scores_demo$ID, 
+                 cluster = kmeans_c1$cluster)
+
+df_cluster <- merge(km, dfresponse10, by= "ID")
+
+df_cluster %>% 
+  ggplot(aes(x = time, y = eeg_smooth, group = interaction(ID, trial), color = schizophrenia)) +
+  geom_line()+
+  facet_wrap(~ cluster) +
+  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") 
+```
+

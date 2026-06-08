@@ -1,24 +1,28 @@
 ---
-title: A template for the *arxiv* style
+title: Exploring the EEG Signals of Schizophrenia
 authors:
-  - name: David S. Hippocampus
-    thanks: Use footnote for providing further information about author (webpage, alternative address)---*not* for acknowledging funding agencies. Optional.
-    department: Department of Computer Science
-    affiliation: Cranberry-Lemon University
-    location: Pittsburgh, PA 15213
-    email: hippo@cs.cranberry-lemon.edu
-  - name: Elias D. Striatum
-    department: Department of Electrical Engineering
-    affiliation: Mount-Sheikh University
-    location: Santa Narimana, Levand
+  - name: Maeve Samali
+    department: School of Mathematics, Applied Mathematics & Statistics
+    affiliation: University of Galway
+    location: Galway, Ireland
+    email: M.samali1@universityofgalway.ie
+  - name: Sarah Conway
+    department: School of Mathematics, Applied Mathematics & Statistics
+    affiliation: University of Galway
+    location: Galway, Ireland
+    email: stariate@ee.mount-sheikh.edu
+  - name: Hollie Keating 
+    department: School of Mathematics, Applied Mathematics & Statistics
+    affiliation: University of Galway
+    location: Galway, Ireland
     email: stariate@ee.mount-sheikh.edu
 abstract: |
   Enter the text of your abstract here.
 keywords:
-  - blah
-  - blee
-  - bloo
-  - these are optional and can be removed
+  - Electroencephelogram
+  - Schizophrenia
+  - Elastic Net
+  - Functional Data Analysis
 bibliography: references.bib
 biblio-style: unsrt
 output: rticles::arxiv_article
@@ -27,31 +31,53 @@ header-includes:
 ---
 
 # Introduction
+\label{sec:intro}
 
-Here goes an introduction text
+- Introduce EEG, how it relates to schizophrenia, how FDA can be used to analyse curves
+- Current Literature - FDA for EEG signals or for schizophrenia has been used before? findings? etc.
 
-# Headings: first level
-\label{sec:headings}
+##Data
 
-You can use directly LaTeX command or Markdown text. 
+- Explain the study background trials, conditions etc.
 
-LaTeX command can be used to reference other section. See Section \ref{sec:headings}.
-However, you can also use **bookdown** extensions mechanism for this.
 
-## Headings: second level
+# Methods
+\label{sec:methods}
 
-You can use equation in blocks
+We used several methods: spline smoothing, permutation test, FPCA & mFPCA
 
-$$
-\xi _{ij}(t)=P(x_{t}=i,x_{t+1}=j|y,v,w;\theta)= {\frac {\alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}{\sum _{i=1}^{N} \sum _{j=1}^{N} \alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}}
-$$
+## Smoothing
 
-But also inline i.e $z=x+y$
+- explain mathematically 
+- Cubic b-spline, 2nd derivative penalty, why?
 
-### Headings: third level
+## Permutation test
 
-Another paragraph. 
+## Functional Principal Component Analysis
 
+- single trial, single node, single condition
+
+## Multilevel Functional Principal Component Analysis
+
+- why mfpca can be applied to our data - multiple trials
+
+# Results
+\label{sec:results}
+
+- discuss FPCA components look like (top & bottom 5 scores), eigenfunctions
+- discuss mfpca components - what do they look like 
+- elastic net how many predictors included in final model
+
+# Discussion
+\label{sec:discussion}
+
+- what does the permutation test tell us?
+- what di the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
+- what do the mfpcs tell us? at each level?
+- why do they differ at level 1? why is mfpca better/worse?
+- what can we conclude from elastic net - more less shrinkage? too few subjects?
+- How does our model perform - calibration curve, auc, misclassification
+- Anything that could further this research
 
 # Examples of citations, figures, tables, references
 \label{sec:others}
