@@ -1790,6 +1790,8 @@ mfpca_allcond <- mfpca_matrix %>%
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
 
+
+
 set.seed(1020304050)
 
 data_split <- group_initial_split(
@@ -1824,13 +1826,15 @@ y_test  <- y[test_index]
 
 # table(sch_train$group)
 # table(sch_test$group)
-
+# 
+# length(unique(sch_train$ID)) # 28 in training set
+# length(unique(sch_test$ID)) # 12 in test set
 
 
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.1, 0.9, by = 0.1)
+alpha_grid <- seq(0.01, 0.99, by = 0.1)
 
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
@@ -1875,9 +1879,16 @@ enet_brier <- BrierScore(y_test, enet_prob_se_v)
 
 # ROC + AUC on test set
 enet_roc_obj <- roc(y_test, enet_prob_se_v)
+
+plot(
+  enet_roc_obj,
+  print.auc = TRUE,
+  legacy.axes = TRUE
+)
+
 enet_auc <- auc(enet_roc_obj)
 plot(enet_roc_obj, print.auc = TRUE)
-coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+coords(enet_roc_obj, "best")   #cut off that gives a good balance between sensitivity and specificity
 
 # Plots 
 plot(enet, xvar = "lambda")
@@ -1906,14 +1917,32 @@ points(best_alpha, min(cv_error), col = "darkgreen", pch = 19, cex = 1.5)
 abline(v = best_alpha, col = "darkgreen", lty = 2)
 
 
-# misclassification error
-enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
-# confusion matrix (predicted, outcome)
-table(enet_class, y_test)
+# confusion matrrix (predicted, outcome)
+enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
+conf_mat <- table(enet_class, y_test)
+
+conf_mat
+
+# extract values
+TN <- conf_mat[1,1]
+FN <- conf_mat[1,2]
+FP <- conf_mat[2,1]
+TP <- conf_mat[2,2]
+
+# missclassification error 
 enet_error <- mean(enet_class != y_test)
 
+# sensitivity
+sensitivity <- TP / (TP + FN)
 
-enet_error # closer to zero is better. 0.5 = random guessing
+# specificity
+specificity <- TN / (TN + FP)
+
+sensitivity
+specificity
+
+
+round(enet_error, 3) # closer to zero is better. 0.5 = random guessing
 enet_brier # closer to zero is better. >0.25 is poor
 enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
@@ -1929,6 +1958,32 @@ non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs
 
 zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
+
+
+# split by condition and sort descending
+cond1_coeffs <- non_zero_coeffs %>%
+  filter(str_detect(predictor, "^cond1")) %>%
+  arrange(desc(abs(coefficient)))
+
+cond2_coeffs <- non_zero_coeffs %>%
+  filter(str_detect(predictor, "^cond2")) %>%
+  arrange(desc(abs(coefficient)))
+
+cond3_coeffs <- non_zero_coeffs %>%
+  filter(str_detect(predictor, "^cond3")) %>%
+  arrange(desc(abs(coefficient)))
+
+# optional: non-condition predictors
+other_coeffs <- non_zero_coeffs %>%
+  filter(!str_detect(predictor, "^cond"))
+
+cond1_coeffs
+cond2_coeffs
+cond3_coeffs
+other_coeffs
+
+
 
 ```
 
