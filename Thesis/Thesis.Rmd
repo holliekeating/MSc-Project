@@ -1,12 +1,12 @@
 ---
-title: A template for the *arxiv* style
+title: Exploring the EEG Signals of Schizophrenia
 authors:
-  - name: David S. Hippocampus
+  - name: Maeve Samali
     thanks: Use footnote for providing further information about author (webpage, alternative address)---*not* for acknowledging funding agencies. Optional.
-    department: Department of Computer Science
-    affiliation: Cranberry-Lemon University
-    location: Pittsburgh, PA 15213
-    email: hippo@cs.cranberry-lemon.edu
+    department: School of Mathematics, Applied Mathematics & Statistics
+    affiliation: University of Galway
+    location: Galway, Ireland
+    email: M.samali1@universityofgalway.ie
   - name: Elias D. Striatum
     department: Department of Electrical Engineering
     affiliation: Mount-Sheikh University
@@ -15,8 +15,8 @@ authors:
 abstract: |
   Enter the text of your abstract here.
 keywords:
-  - blah
-  - blee
+  - Electroencephelogram
+  - Schizophrenia
   - bloo
   - these are optional and can be removed
 bibliography: references.bib
@@ -28,7 +28,12 @@ header-includes:
 
 # Introduction
 
-Here goes an introduction text
+- Introduce EEG, how it relates to schizophrenia, how FDA can be used to analyse curves
+
+##Data
+
+- Explain the study background trials, conditions etc.
+
 
 # Headings: first level
 \label{sec:headings}
