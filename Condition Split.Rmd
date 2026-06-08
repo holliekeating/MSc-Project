@@ -510,35 +510,48 @@ FPCA 1 was significantly associated with schizophrenia diagnosis (p = 0.039), al
 
 So now we want to take into account that we have more than 1 function per person. People completed each sensory condition up to 100 times. Including more of these trials will improve our ability to predict whether an EEG is typical of schizophrenia or not.
  
-## Smoothing all 10 trials
+## Smoothing multiple trials
 
 As before we need to smooth the data, but this time for all the trials.
 
-```{r, mfpca smooth}
-##smoothed data for 10 trials:
-cond_trials <- p_df %>% 
-  filter(condition == c) %>% 
-  arrange(trial)
+```{r, smoothing function}
+smooth_trial_data <- function(df, cond_num, node){
+  
+  # Smooth the data 
+  cond <- df %>%
+    filter(condition == cond_num)  %>% 
+    arrange(trial)
+  
+  #the subjects are not ordered correctly to fix this
+  cond$subject <- as.numeric(as.character(cond$subject))
+  cond <- cond %>% arrange(subject)
+  
+  sub <- unique(cond$subject)[1] #1st subject in df
+  ##r_len = number of time points for each curve
+  r_len <- nrow(cond %>% filter(subject == sub) %>% filter(trial == 1))
+  #number of curves per person
+  #number of individual curves
+  c_len <- nrow(cond %>% distinct(subject, trial))
+  
+  matrix_sm_all <- matrix(cond[[node]], nrow = r_len, ncol = c_len, byrow= FALSE)
+  
+  ## smooth the data - cond
+  # smooth.basis(x, y, fdParObj)
+  sm_trials <- smooth.basis(seq(1, r_len, length.out = r_len), # x
+                              matrix_sm_all, # y
+                              fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+ x <- list(cond, sm_trials)
+  return(x)
+}
 
-#the subjects are not ordered correctly to fix this
-cond_trials$subject <- as.numeric(as.character(cond_trials$subject))
-cond_trials <- cond_trials %>% arrange(subject)
+```
 
-##number of time points for each curve
-r_lent <- nrow(cond_trials %>% filter(subject == 1) %>% filter(trial == 1))
-#number of individual curves
-c_lent <- nrow(cond_trials %>% distinct(subject, trial))
 
-##all trials for all people for fp1
-matrix_sm_trial <- matrix(cond_trials[[node]], nrow = r_lent, ncol = c_lent, byrow= FALSE)
-
-## smooth the data - cond
-# smooth.basis(x, y, fdParObj)
-sm_trials <- smooth.basis(seq(1, r_lent, length.out = r_lent), # x
-                            matrix_sm_trial, # y
-                            fdParObj)# $fd     # extracts the smoothed functional data (fd) object ie
+```{r, plot mfpca smoothed}
+sm_trials <- smooth_trial_data(df = p_df, cond_num = 1, node = "fp1")[[2]]
+cond_trials <- smooth_trial_data(df = p_df, cond_num = 1, node = "fp1")[[1]]
 plot(sm_trials,
-     main = "Smoothed Curves")
+      main = "Smoothed Curves")
 ```
 
 ### Data in long format & plots
@@ -778,6 +791,119 @@ ggplot(level2_scores, aes(x = subj_id, y = X1, group = subj_id, colour = schizop
 ```
 
 
+## Predicting Test Subject's Scores
+
+```{r, predicting mfpca scores function}
+predict_scores <- function(Y, id, visit, mfpca_obj){
+  # Input: Y -  Nxt matrix of new curves
+  #        id - a vector of repeated subject id with length = number of new curves
+  #       visit - a vector of F/NF with length = number of curves
+  #       mfpca_obj - mfpca.face object
+  
+  visit <- as.factor(visit)
+  id <- as.factor(id)
+  df <- data.frame(id = id, visit = visit, Y = I(Y))
+  rm(id, visit, Y)
+  J <- length(levels(df$visit))
+  L <- ncol(df$Y)
+  nVisits <- data.frame(table(df$id))
+  colnames(nVisits) = c("id", "numVisits")
+  ID = sort(unique(df$id))
+  I <- length(ID)
+  argvals <- seq(0, 1, length.out = L)
+  
+  # Population and visit-specific mean functions - from the mfpca.face object
+  mu <- mfpca_obj$mu
+  eta <- mfpca_obj$eta
+  # Ytilde = Y - mu - eta
+  # mueta = mu + eta
+  mueta <- mu + eta
+  
+  # Ytilde for the new curves
+  Ytilde <- matrix(NA, nrow = nrow(df$Y), ncol = ncol(df$Y))
+  for (j in 1:J) {
+    ind_j <- which(df$visit == levels(df$visit)[j])
+    Ytilde[ind_j, ] <- df$Y[ind_j, ] - matrix(mueta[, 
+                                                    j], nrow = length(ind_j), ncol = L, byrow = TRUE)
+  }
+  
+  df$Ytilde <- I(Ytilde)
+  rm(Ytilde)
+  
+  efunctions <- mfpca_obj$efunctions
+  npc <- mfpca_obj$npc
+  sigma2 <- mfpca_obj$sigma2
+  evalues <-mfpca_obj$evalues
+  
+  # Estimate principal component scores
+  phi1 <- efunctions[[1]]
+  phi2 <- efunctions[[2]]
+  score1 <- matrix(0, I, npc[[1]])
+  score2 <- matrix(0, nrow(df$Y), npc[[2]])
+  unVisits <- unique(nVisits$numVisits)
+  
+  #........... for I number of subjects - here I = 1 (one subject)
+  for (m in 1:I) {
+    Jm <- nVisits[m, 2]
+    A <- Jm * (t(phi1) %*% phi1)/sigma2 + diag(1/evalues[[1]])
+    B = matrix(rep(t(phi1) %*% phi2/sigma2, Jm), nrow = npc[[1]])
+    temp = ginv(t(phi2) %*% phi2/sigma2 + diag(1/evalues[[2]]))
+    
+    C <- t(B)
+    invD <- kronecker(diag(1, Jm), temp)
+    MatE <- ginv(A - B %*% invD %*% C)
+    MatF <- -invD %*% C %*% MatE
+    MatG <- -MatE %*% B %*% invD
+    MatH <- invD - invD %*% C %*% MatG
+    Mat1 <- cbind(MatE, MatG)
+    Mat2 <- cbind(MatF, MatH)
+    
+    # 
+    int1 <- colSums(matrix(df$Ytilde[df$id == ID[m], ], ncol = L) %*% phi1) 
+    int2 <- matrix(df$Ytilde[df$id == ID[m], ], ncol = L) %*% phi2
+    
+    int <- c(int1, as.vector(t(int2)))/sigma2
+    
+    score1[m, ] <- Mat1 %*% int
+    score2[which(df$id == ID[m]), ] <- matrix(Mat2 %*% int, ncol = npc[[2]], byrow = TRUE)
+    
+  }
+  
+  scores <- list(level1 = score1, level2 = score2)
+  
+  return(scores)
+  
+}
+
+```
+
+```{r, smooth test data}
+sm_test <- smooth_trial_data(df = pdf_test, cond_num = 1, node = "fp1")[[2]]
+cond_test <- smooth_trial_data(df = pdf_test, cond_num = 1, node = "fp1")[[1]]
+
+plot(sm_test,
+     main = "Smoothed Curves")
+```
+
+```{r, predict scores}
+dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
+                         time = cond_test$time_ms,
+                         trial = cond_test$trial,
+                         eeg_raw = as.numeric(sm_test$y),
+                         eeg_smooth = as.numeric(predict(sm_test)),
+                         schizophrenia = cond_test$schizophrenia) %>% 
+                         arrange(ID)
+
+df_wide <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
+                       names_from = time,
+                       values_from = eeg_smooth)
+n <- ncol(df_wide)
+Y_test <- as.matrix(df_wide[, c(4:n)]) # excluding column id, trial, schizophrenia
+
+
+predicted_scores <- predict_scores(Y_test, df_wide$ID, df_wide$trial, mlfpc)
+
+```
 
 
 # edited all trials
