@@ -58,7 +58,7 @@ node <- "fp1"
 
 
 #setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -2083,6 +2083,138 @@ zero_coeffs <- coef_df %>% filter(coefficient == 0)
 
 ```
 
+
+```{r one-curve-split}
+
+set.seed(2210)
+
+mfpca_allcond <- mfpca_matrix %>%
+  mutate(group = ifelse(group == "Case", 1, 0),
+         gender = ifelse(gender == "Female", 1, 0)) %>%
+  drop_na() # TEMPORARY
+
+# for each iteration, holding out 1 EEG curve and training elastic net on remaining curves, predict held-out curve
+
+
+test_curve <- sample(1: nrow(mfpca_allcond), size = 1)
+
+sch_test <- mfpca_allcond[test_curve, ]
+sch_train <- mfpca_allcond[-test_curve, ]
+
+x <- model.matrix(group ~ . - ID, data = mfpca_allcond)[, -1]
+y <- mfpca_allcond$group
+
+x_train <- x[-test_curve,, drop = FALSE ]
+x_test <- x[test_curve, ]
+
+y_train <- y[-test_curve]
+y_test <- y[test_curve]
+
+
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) { cv.glmnet(x_train, y_train, alpha = a, family = "binomial")}) 
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]] 
+best_alpha <- alpha_grid[best_index]
+
+
+# best lambda corresponding to that alpha 
+bestlam <- best_cv$lambda.min 
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model 
+enet <- glmnet(x_train, y_train, alpha = best_alpha, family = "binomial") # standardize = TRUE is the default
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds) 
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+# 1se lam 
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+
+# convert to vector 
+enet_prob_v <- as.vector(enet_prob) 
+enet_prob_se_v <- as.vector(enet_prob_se) 
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+
+enet_prob_se_v
+y_test
+enet_brier
+
+###########################
+## testing another curve ##
+###########################
+
+set.seed(1022)
+
+mfpca_allcond <- mfpca_matrix %>%
+  mutate(group = ifelse(group == "Case", 1, 0),
+         gender = ifelse(gender == "Female", 1, 0)) %>%
+  drop_na() # TEMPORARY
+
+# for each iteration, holding out 1 EEG curve and training elastic net on remaining curves, predict held-out curve
+
+
+test_curve <- sample(1: nrow(mfpca_allcond), size = 1)
+
+sch_test <- mfpca_allcond[test_curve, ]
+sch_train <- mfpca_allcond[-test_curve, ]
+
+x <- model.matrix(group ~ . - ID, data = mfpca_allcond)[, -1]
+y <- mfpca_allcond$group
+
+x_train <- x[-test_curve,, drop = FALSE ]
+x_test <- x[test_curve, ]
+
+y_train <- y[-test_curve]
+y_test <- y[test_curve]
+
+
+alpha_grid <- seq(0.1, 0.9, by = 0.1)
+
+cv_list <- lapply(alpha_grid, function(a) { cv.glmnet(x_train, y_train, alpha = a, family = "binomial")}) 
+# extract CV error for eachg alpha 
+cv_error <- sapply(cv_list, function(m) min(m$cvm))
+
+
+best_index <- which.min(cv_error)
+best_cv <- cv_list[[best_index]] 
+best_alpha <- alpha_grid[best_index]
+
+
+# best lambda corresponding to that alpha 
+bestlam <- best_cv$lambda.min 
+selam <- best_cv$lambda.1se
+
+
+# fit elastic net model 
+enet <- glmnet(x_train, y_train, alpha = best_alpha, family = "binomial") # standardize = TRUE is the default
+
+# predicted probabilities with best lam from test set, type = response for pred prob (not log odds) 
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+# 1se lam 
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+
+
+# convert to vector 
+enet_prob_v <- as.vector(enet_prob) 
+enet_prob_se_v <- as.vector(enet_prob_se) 
+enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+
+enet_prob_se_v
+y_test
+enet_brier
+
+
+```
+Above, held out two single EEG curves from model fitting. Elastic net correctly classified the curve here - and a brier score close to the prediction. 
 
 
 # Creating condition-specific matrix
