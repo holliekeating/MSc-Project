@@ -374,21 +374,40 @@ sm_cond3_s1 <- smooth.basis(seq(1, 1638, length.out = 1638),
 
 # Permutation t test for comparing condition 1 control vs case 
 
-tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+tperm_cond1 <- tperm.fd(sm_cond1_s0, sm_cond1_s1, nperm=5000, q=0.05, argvals=NULL, plotres= TRUE)
+#abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+# threshold line at 100ms
+segments(x0 = 100, y0 = par("usr")[3],  # bottom of plot
+          x1 = 100,
+          y1 = 2.75,            # stop at chosen y-value
+          col = "blue",
+          lty = 2,
+          lwd = 2) 
 
 tperm_cond1
 
 # Permutation t test for comparing condition 2 control vs case 
 
-tperm_cond2 <- tperm.fd(sm_cond2_s0, sm_cond2_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+tperm_cond2 <- tperm.fd(sm_cond2_s0, sm_cond2_s1, nperm=5000, q=0.05, argvals=NULL, plotres= TRUE)
+# threshold line at 100ms
+segments(x0 = 100, y0 = par("usr")[3],  # bottom of plot
+          x1 = 100,
+          y1 = 2.51,            # stop at chosen y-value
+          col = "blue",
+          lty = 2,
+          lwd = 2) 
 tperm_cond2
 
 # Permutation t test for comparing condition 3 control vs case 
 
-tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=200, q=0.05, argvals=NULL, plotres= TRUE)
-abline(v = 100, lty = 2, col = "blue", lwd = 2) # threshold line at 100ms
+tperm_cond3 <- tperm.fd(sm_cond3_s0, sm_cond3_s1, nperm=5000, q=0.05, argvals=NULL, plotres= TRUE)
+# threshold line at 100ms
+segments(x0 = 100, y0 = par("usr")[3],  # bottom of plot
+          x1 = 100,
+          y1 = 2.6,            # stop at chosen y-value
+          col = "blue",
+          lty = 2,
+          lwd = 2) 
 tperm_cond3
 ```
 
