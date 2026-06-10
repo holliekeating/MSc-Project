@@ -56,7 +56,7 @@ node <- "fp1"
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
 #setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -2069,12 +2069,17 @@ mfpca_allcond <- mfpca_matrix %>%
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
 
+mfpca_test_all_cond <- mfpca_pred_scores %>%
+  mutate(group = ifelse(group == "Case", 1, 0),
+         gender = ifelse(gender == "Female", 1, 0)) %>%
+  drop_na() # TEMPORARY
+
 # set.seed(1020304050)
 # 
 # data_split <- group_initial_split(
 #   mfpca_allcond,
 #   group = ID,
-#   strata = group,
+#   strata = group
 #   prop = 0.7
 # )
 # 
@@ -2084,26 +2089,15 @@ mfpca_allcond <- mfpca_matrix %>%
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
-x <- model.matrix(group ~ .-ID, data = mfpca_allcond)[, -1] # gets rid of intercept term
-y <- mfpca_allcond$group
+##this is train data
+x_train <- model.matrix(group ~ .-ID, data = mfpca_allcond)[, -1] # gets rid of intercept term
+y_train <- mfpca_allcond$group
 
-
-train_ids <- unique(sch_train$ID)
-test_ids  <- unique(sch_test$ID)
-
-train_index <- mfpca_allcond$ID %in% train_ids
-test_index  <- mfpca_allcond$ID %in% test_ids
-
-x_train <- x[train_index, ]
-x_test  <- x[test_index, ]
-
-y_train <- y[train_index]
-y_test  <- y[test_index]
-
+x_test <- model.matrix(group ~ .-ID, data = mfpca_test_all_cond)[, -1] # gets rid of intercept term
+y_test <- mfpca_test_all_cond$group
 
 # table(sch_train$group)
 # table(sch_test$group)
-
 
 
 # elastic net: 0 < alpha < 1
@@ -2143,6 +2137,10 @@ enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
+df_pred_prob <- data.frame(enet_prob_v) %>% mutate(ID = mfpca_test_all_cond$ID, .before = 1)
+df_pred_prob %>% 
+  ggplot(aes(x = as.factor(ID), y = enet_prob_v, group = as.factor(ID)))+
+  geom_jitter()
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
@@ -2720,6 +2718,7 @@ as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop =
 # Cluster L1 for mFPCA 
 
 Clustering L1 scores from mFPCA to compare with FPCA. 
+
 
 
 ```{r mFPCA level1 clustering}
