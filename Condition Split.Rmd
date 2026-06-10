@@ -2063,7 +2063,6 @@ eg cond1_fp1_fpca_1, cond2_fp1_fpca_1 etc
 
 
 ```{r}
-
 mfpca_allcond <- mfpca_matrix %>%
   mutate(group = ifelse(group == "Case", 1, 0),
          gender = ifelse(gender == "Female", 1, 0)) %>%
@@ -2074,19 +2073,6 @@ mfpca_test_all_cond <- mfpca_pred_scores %>%
          gender = ifelse(gender == "Female", 1, 0)) %>%
   drop_na() # TEMPORARY
 
-# set.seed(1020304050)
-# 
-# data_split <- group_initial_split(
-#   mfpca_allcond,
-#   group = ID,
-#   strata = group
-#   prop = 0.7
-# )
-# 
-#   
-# sch_train <- training(data_split)
-# sch_test <- testing(data_split)
-
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
 ##this is train data
@@ -2096,15 +2082,11 @@ y_train <- mfpca_allcond$group
 x_test <- model.matrix(group ~ .-ID, data = mfpca_test_all_cond)[, -1] # gets rid of intercept term
 y_test <- mfpca_test_all_cond$group
 
-# table(sch_train$group)
-# table(sch_test$group)
-
-
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
 alpha_grid <- seq(0.1, 0.9, by = 0.1)
-
+alpha_grid <- 0.5
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
             alpha = a, 
@@ -2125,11 +2107,11 @@ selam <- best_cv$lambda.1se
 
 # fit elastic net model
 enet <- glmnet(x_train, y_train,
-               alpha = best_alpha,
+               alpha = 0,
                family = "binomial")      # standardize = TRUE is the default 
 
 # predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
-enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+enet_prob <- predict(enet, s = 0, newx = x_test, type = "response")
 # 1se lam
 enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 
@@ -2137,10 +2119,37 @@ enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
-df_pred_prob <- data.frame(enet_prob_v) %>% mutate(ID = mfpca_test_all_cond$ID, .before = 1)
+df_pred_prob <- data.frame(enet_prob_v) %>% mutate(ID = mfpca_test_all_cond$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_test_all_cond$group)) %>% mutate(trial = mfpca_test_all_cond$trial)
+
 df_pred_prob %>% 
   ggplot(aes(x = as.factor(ID), y = enet_prob_v, group = as.factor(ID)))+
-  geom_jitter()
+  geom_jitter(aes(colour = schizophrenia))+
+  geom_hline(
+        yintercept = 0.5, 
+        linetype = 'dashed', 
+        color = "red"
+    )
+
+df_pred_prob %>% 
+  filter(ID == 5) %>% 
+  ggplot(aes(x = trial, y = enet_prob_v))+
+  geom_point(aes(colour = schizophrenia))+
+  geom_hline(
+        yintercept = 0.5, 
+        linetype = 'dashed', 
+        color = "red"
+    )
+
+df_pred_prob %>% 
+  filter(ID == 5) %>% 
+  ggplot(aes(y = enet_prob_v))+
+  geom_boxplot(aes(fill = schizophrenia, alpha = 0.5))+
+  geom_hline(
+        yintercept = 0.5, 
+        linetype = 'dashed', 
+        color = "red"
+    )
+
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
@@ -2181,7 +2190,6 @@ plot(alpha_grid, cv_error, type = "b", pch = 19,
 # highlight best alpha
 points(best_alpha, min(cv_error), col = "darkgreen", pch = 19, cex = 1.5)
 abline(v = best_alpha, col = "darkgreen", lty = 2)
-
 
 # misclassification error
 enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
@@ -2738,6 +2746,7 @@ level1_scores_demo <- merge(level1_scores, demographic, by = "ID")
 target_y <- level1_scores_demo$group
 features_x <- level1_scores_demo[c(2:5)]
 ```
+
 ```{r, identify the optimal number of clusters}
 # Decide how many clusters to look at
 n_clusters <- 10
@@ -2774,7 +2783,7 @@ scree_plot +
 ```
 ```{r}
 set.seed(1)
-kmeans_c1 <- kmeans(features_x, centers = 5, nstart = 10)
+kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
 
 #CONFUSION MATRIX
 table(level1_scores_demo$group, kmeans_c1$cluster)
@@ -2789,7 +2798,7 @@ fviz_cluster(kmeans_c1, data = features_x,
 km <- data.frame(ID = level1_scores_demo$ID, 
                  cluster = kmeans_c1$cluster)
 
-df_cluster <- merge(km, dfresponse10, by= "ID")
+df_cluster <- merge(km, dfresponse_trial, by= "ID")
 
 df_cluster %>% 
   ggplot(aes(x = time, y = eeg_smooth, group = interaction(ID, trial), color = schizophrenia)) +
