@@ -173,3 +173,9 @@ knitr::kable(head(mtcars), caption = "Head of mtcars table")
 - Item 1
 - Item 2 
 - Item 3
+
+## References
+
+Gertheiss, J., Rügamer, D., Liew, B.X.W. and Greven, S., 2024. Functional data analysis: An introduction and recent developments. Biometrical Journal, 66(6), e202300363.
+
+Ramsay, J.O. and Silverman, B.W., 2005. Functional Data Analysis. 2nd ed. New York: Springer. ISBN 0-387-40080-X.
