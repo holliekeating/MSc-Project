@@ -45,7 +45,7 @@ library(rsample)
 
 ```{r, pipeline parameters}
 c = 1 # condition 1 
-t = 50 # 10 trials 
+t = 50 # multiple trials 
 t1 = 1 # selecting one trial
 node <- "fp1"
 ```
@@ -55,8 +55,8 @@ node <- "fp1"
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -2061,6 +2061,7 @@ eg cond1_fp1_fpca_1, cond2_fp1_fpca_1 etc
 
 ### Apply Elastic Net 
 
+All 3 conditions
 
 ```{r}
 mfpca_allcond <- mfpca_matrix %>%
@@ -2374,16 +2375,16 @@ mfpca_cond3 <- mfpca_allcond %>%
 
 ```{r Evaluating cond 1 performance}
 
-data_split <- group_initial_split(
-  mfpca_cond1,
-  group = ID,
-  strata = group,
-  prop = 0.7
-)
+train_ids <- unique(pdf_train$subject)
+test_ids  <- unique(pdf_test$subject)
 
-  
-sch_train <- training(data_split)
-sch_test <- testing(data_split)
+mfpca_cond1 <- mfpca_cond1 %>%
+  mutate(ID = as.numeric(as.character(ID)), 
+         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
+
+train_index <- mfpca_cond1$ID %in% train_ids
+test_index  <- mfpca_cond1$ID %in% test_ids
+
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
@@ -2391,12 +2392,6 @@ x <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercep
 y <- mfpca_cond1$group
 
 
-train_ids <- unique(sch_train$ID)
-test_ids  <- unique(sch_test$ID)
-
-train_index <- mfpca_cond1$ID %in% train_ids
-test_index  <- mfpca_cond1$ID %in% test_ids
-
 x_train <- x[train_index, ]
 x_test  <- x[test_index, ]
 
@@ -2404,15 +2399,11 @@ y_train <- y[train_index]
 y_test  <- y[test_index]
 
 
-# table(sch_train$group)
-# table(sch_test$group)
-
-
 
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.1, 0.9, by = 0.1)
+alpha_grid <- seq(0.01, 0.99, by = 0.1)
 
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
@@ -2486,20 +2477,32 @@ plot(alpha_grid, cv_error, type = "b", pch = 19,
 
 as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
 
+
+# To see which predictor was shrunk to zero (selam)
+rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
+
+coef_selam <- coef(enet, s = selam)
+
+coef_df <- data.frame(predictor = rownames(coef_selam),
+                      coefficient = as.vector(coef_selam))
+
+non_zero_coeffs_cond1 <- coef_df %>% filter(coefficient != 0)
+non_zero_coeffs_cond1
+
+zero_coeffs_cond1 <- coef_df %>% filter(coefficient == 0)
+
+
 ```
 
 ```{r Evaluating cond 2 performance}
 
-data_split <- group_initial_split(
-  mfpca_cond2,
-  group = ID,
-  strata = group,
-  prop = 0.7
-)
+mfpca_cond2 <- mfpca_cond2 %>%
+  mutate(ID = as.numeric(as.character(ID)), 
+         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
 
-  
-sch_train <- training(data_split)
-sch_test <- testing(data_split)
+train_index <- mfpca_cond2$ID %in% train_ids
+test_index  <- mfpca_cond2$ID %in% test_ids
+
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
@@ -2507,21 +2510,11 @@ x <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] # gets rid of intercep
 y <- mfpca_cond2$group
 
 
-train_ids <- unique(sch_train$ID)
-test_ids  <- unique(sch_test$ID)
-
-train_index <- mfpca_cond2$ID %in% train_ids
-test_index  <- mfpca_cond2$ID %in% test_ids
-
 x_train <- x[train_index, ]
 x_test  <- x[test_index, ]
 
 y_train <- y[train_index]
 y_test  <- y[test_index]
-
-
-# table(sch_train$group)
-# table(sch_test$group)
 
 
 
@@ -2601,6 +2594,19 @@ plot(alpha_grid, cv_error, type = "b", pch = 19,
 
 
 as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+# To see which predictor was shrunk to zero (selam)
+rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
+
+coef_selam <- coef(enet, s = selam)
+
+coef_df <- data.frame(predictor = rownames(coef_selam),
+                      coefficient = as.vector(coef_selam))
+
+non_zero_coeffs_cond2 <- coef_df %>% filter(coefficient != 0)
+non_zero_coeffs_cond2
+
+zero_coeffs_cond2 <- coef_df %>% filter(coefficient == 0)
 
 ```
 
@@ -2608,38 +2614,25 @@ as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop =
 
 ```{r Evaluating cond 3 performance}
 
-data_split <- group_initial_split(
-  mfpca_cond3,
-  group = ID,
-  strata = group,
-  prop = 0.7
-)
+mfpca_cond3 <- mfpca_cond3 %>%
+  mutate(ID = as.numeric(as.character(ID)), 
+         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
 
-  
-sch_train <- training(data_split)
-sch_test <- testing(data_split)
+train_index <- mfpca_cond3$ID %in% train_ids
+test_index  <- mfpca_cond3$ID %in% test_ids
+
 
 # 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
 # glmnet() x:matrix. y: vector
 x <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] # gets rid of intercept term
-y <- mfpca_cond3$group
+y <- mfpca_cond2$group
 
-
-train_ids <- unique(sch_train$ID)
-test_ids  <- unique(sch_test$ID)
-
-train_index <- mfpca_cond3$ID %in% train_ids
-test_index  <- mfpca_cond3$ID %in% test_ids
 
 x_train <- x[train_index, ]
 x_test  <- x[test_index, ]
 
 y_train <- y[train_index]
 y_test  <- y[test_index]
-
-
-# table(sch_train$group)
-# table(sch_test$group)
 
 
 
@@ -2719,6 +2712,19 @@ plot(alpha_grid, cv_error, type = "b", pch = 19,
 
 
 as.matrix(coef(enet, s = selam))[as.matrix(coef(enet, s = selam)) != 0, , drop = FALSE]
+
+# To see which predictor was shrunk to zero (selam)
+rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
+
+coef_selam <- coef(enet, s = selam)
+
+coef_df <- data.frame(predictor = rownames(coef_selam),
+                      coefficient = as.vector(coef_selam))
+
+non_zero_coeffs_cond3 <- coef_df %>% filter(coefficient != 0)
+non_zero_coeffs_cond3
+
+zero_coeffs_cond3 <- coef_df %>% filter(coefficient == 0)
 
 ```
 
