@@ -77,6 +77,21 @@ A second-derivative roughness penalty was then applied. In penalised smoothing a
 
 ## Functional Principal Component Analysis
 
+Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al., this data may display a small number of dominant modes of variation - to identify and explore these, principcal component analysis was applied to functional data. 
+
+In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components. 
+
+
+
+*Motivation - EEG signals high-dimensional ..*
+
+Due to the inherently high-dimensional nature of EEG data, directly analysing observations can be challenging. FPCA addresses this issue by representing each function as a linear combination of a small number of eigenfunctions, this allows the dominant sources of variation to be captured through a reduced set of principal component scores.  
+
+
+*FPCA via PACE*
+
+Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by Yao et al. (2005). This pacakge is useful for the analysis of data that have been generated alongside noise or irregular time points. A key advantage of the PACE framework 
+
 - single trial, single node, single condition
 
 $$
@@ -84,13 +99,29 @@ X_i (t) = \mu (t) + \sum _{k=1}^K \xi_{ik} \Phi_k (t)
 $$
 where $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores. 
 
+*Exploring FPCA scores via extreme curve and then k-means  clustering*
+
+
+## Logistic Regression Model
+
+
+
 ## Multilevel Functional Principal Component Analysis
+
+*Motivation - standard FPCA assumes independent functional observations*
+*Arranging multilevel functional data*
+
+*Multilevel FPCA model - retaining components to 95% variability explained*
 
 - why mfpca can be applied to our data - multiple trials
 
 $$
 X_ij = \mu(t) + 
 $$
+
+*Multilevel FPC scores - describe level 1 and 2*
+
+## Elastic Net
 
 # Results
 \label{sec:results}
@@ -206,3 +237,10 @@ knitr::kable(head(mtcars), caption = "Head of mtcars table")
 Gertheiss, J., Rügamer, D., Liew, B.X.W. and Greven, S., 2024. Functional data analysis: An introduction and recent developments. Biometrical Journal, 66(6), e202300363.
 
 Ramsay, J.O. and Silverman, B.W., 2005. Functional Data Analysis. 2nd ed. New York: Springer. ISBN 0-387-40080-X.
+
+Germán Aneiros-Pérez, Ricardo Cao, Juan M. Vilar-Fernández. (2011). Functional methods for time series prediction: a nonparametric approach. Journal of Forecasting. 30(4), pp.377-392. [Online]. Available at: https://doi.org/10.1002/for.1169 [Accessed 11 June 2026].
+
+J.O Ramsay, Giles Hooker, Spencer Graves. (2009). Functional Data Analysis with R and MATLAB. NY: Springer New York.
+
+Unknown. (2019). Principal Analysis by Conditional Estimation for Functional Data Analysis and Empirical Dynamics in Matlab.. [Online]. stat. Last Updated: 2019. Available at: https://anson.ucdavis.edu/~mueller/data/pace.html [Accessed 11 June 2026].
+
