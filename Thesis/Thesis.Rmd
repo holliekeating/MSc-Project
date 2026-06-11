@@ -35,7 +35,7 @@ header-includes:
 
 Electroencephelogram (EEG) is a test used to measure electrical activity in the brain by attaching 64 sensor nodes to the scalp. Each sensor measures a single curve so each test produces 64 curves. 
 
--Functional data and how FDA can be used to analyse this
+- Functional data and how FDA can be used to analyse this
 
 Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and pre-frontal sections of the brain.
 
@@ -45,7 +45,7 @@ Sensory gating is the process by which the brain filters expected or repeated st
 - Introduce EEG, how it relates to schizophrenia, how FDA can be used to analyse curves
 - Current Literature - FDA for EEG signals or for schizophrenia has been used before? findings? etc.
 
-##Data
+## Data
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
@@ -79,9 +79,18 @@ A second-derivative roughness penalty was then applied. In penalised smoothing a
 
 - single trial, single node, single condition
 
+$$
+X_i (t) = \mu (t) + \sum _{k=1}^K \xi_{ik} \Phi_k (t)
+$$
+where $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores. 
+
 ## Multilevel Functional Principal Component Analysis
 
 - why mfpca can be applied to our data - multiple trials
+
+$$
+X_ij = \mu(t) + 
+$$
 
 # Results
 \label{sec:results}
