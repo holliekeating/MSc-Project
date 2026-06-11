@@ -2064,6 +2064,8 @@ eg cond1_fp1_fpca_1, cond2_fp1_fpca_1 etc
 All 3 conditions
 
 ```{r}
+set.seed(0)
+
 mfpca_allcond <- mfpca_matrix %>%
   mutate(group = ifelse(group == "Case", 1, 0),
          gender = ifelse(gender == "Female", 1, 0)) %>%
@@ -2105,7 +2107,6 @@ best_alpha <- alpha_grid[best_index]
 bestlam <- best_cv$lambda.min
 selam <- best_cv$lambda.1se
 
-
 # fit elastic net model
 enet <- glmnet(x_train, y_train,
                alpha = 0,
@@ -2124,19 +2125,31 @@ df_pred_prob <- data.frame(enet_prob_v) %>% mutate(ID = mfpca_test_all_cond$ID, 
 
 df_pred_prob %>% 
   ggplot(aes(x = as.factor(ID), y = enet_prob_v, group = as.factor(ID)))+
-  geom_jitter(aes(colour = schizophrenia))+
+  geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
   geom_hline(
-        yintercept = 0.5, 
+        yintercept = 0.33,
         linetype = 'dashed', 
         color = "red"
     )
 
 df_pred_prob %>% 
-  filter(ID == 5) %>% 
+  filter(ID == 24) %>% 
+  ggplot(aes(x = schizophrenia, y = enet_prob_v))+
+  geom_boxplot(aes(fill = schizophrenia, alpha = 0.5), outlier.shape = NA)+
+  geom_jitter(alpha = 0.5)+
+  geom_hline(
+        yintercept = 0.33, 
+        linetype = 'dashed', 
+        color = "red"
+    )
+
+df_pred_prob %>% 
+  filter(ID == 24) %>% 
   ggplot(aes(x = trial, y = enet_prob_v))+
   geom_point(aes(colour = schizophrenia))+
   geom_hline(
-        yintercept = 0.5, 
+        yintercept = 0.33,
         linetype = 'dashed', 
         color = "red"
     )
@@ -2155,7 +2168,6 @@ df_pred_prob %>%
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
 valProbggplot(enet_prob_se_v, y_test)
-
 
 # Brier score on test set - 1se lam
 enet_brier <- BrierScore(y_test, enet_prob_se_v)
@@ -2198,7 +2210,6 @@ enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
 
-
 enet_error # closer to zero is better. 0.5 = random guessing
 enet_brier # closer to zero is better. >0.25 is poor
 enet_auc # 1 is perfect discrimination. 0.5 = random guessing
@@ -2215,6 +2226,7 @@ non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs
 
 zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
 
 ```
 
@@ -2787,6 +2799,7 @@ scree_plot +
         col = c(rep('#000000',4),'#FF0000', rep('#000000', 5))
     )
 ```
+
 ```{r}
 set.seed(1)
 kmeans_c1 <- kmeans(features_x, centers = 4, nstart = 10)
