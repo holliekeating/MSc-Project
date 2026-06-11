@@ -75,6 +75,13 @@ A second-derivative roughness penalty was then applied. In penalised smoothing a
 
 ## Permutation test
 
+Permutation t-tests were used to assess differences in functional EEG trajectories between cases and controls. Permutation-based inference is well suited to functional data and has been widely applied in the FDA literature (Bugni and Horowitz, 2021). The test evaluates the null hypothesis that the mean functions of the two groups are equal across the domain of the EEG signal.
+
+Under the null hypothesis, group labels are exchangeable, meaning that randomly reallocating observations between groups should not systematically alter the value of the test statistic. The permutation procedure repeatedly shuffles the case-control labels and recalculates the test statistic for each permutation, generating an empirical null distribution. The observed test statistic is then compared with this distribution to determine statistical significance. The resulting p-value represents the probability of obtaining a test statistic at least as extreme as that observed if the null hypothesis were true.
+
+In this study, five thousand permutation t-tests were applied to the FP1 electrode on a condition-by-condition basis. FP1 region was selected due to previous evidence linking frontal EEG abnormalities, particularly gamma-band dysfunction, to schizophrenia and associated cognitive deficits (Senkowski and Gallinat, 2015; Jeon and Polich, 2009; Shin et al., 2011).
+
+
 ## Functional Principal Component Analysis
 
 - single trial, single node, single condition
@@ -203,6 +210,14 @@ knitr::kable(head(mtcars), caption = "Head of mtcars table")
 
 ## References
 
+Bugni, F.A. and Horowitz, J.L., 2021. Permutation tests for equality of distributions of functional data. Journal of Applied Econometrics, 36(7), pp.861–877. 
+
 Gertheiss, J., Rügamer, D., Liew, B.X.W. and Greven, S., 2024. Functional data analysis: An introduction and recent developments. Biometrical Journal, 66(6), e202300363.
 
+Jeon, Y.-W. and Polich, J., 2003. The P300 event-related potential in psychosis: a meta-analysis. American Journal of Psychiatry, 166(10), pp.1115–1123.
+
 Ramsay, J.O. and Silverman, B.W., 2005. Functional Data Analysis. 2nd ed. New York: Springer. ISBN 0-387-40080-X.
+
+Senkowski, D. and Gallinat, J., 2015. Dysfunctional prefrontal gamma-band oscillations reflect working memory and other cognitive deficits in schizophrenia. Biological Psychiatry, 77(12), pp.1010–1019.
+
+Shin, Y.W., Kwon, J.S., Ha, T.H., Park, H.J., Hong, K.S., Kim, Y.Y. and Cho, H.S., 2011. Gamma oscillation in schizophrenia. Psychiatry Investigation, 8(4), pp.288–296.
