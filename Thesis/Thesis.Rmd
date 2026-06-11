@@ -10,12 +10,12 @@ authors:
     department: School of Mathematics, Applied Mathematics & Statistics
     affiliation: University of Galway
     location: Galway, Ireland
-    email: stariate@ee.mount-sheikh.edu
+    email: S.Conway29@universityofgalway.ie
   - name: Hollie Keating 
     department: School of Mathematics, Applied Mathematics & Statistics
     affiliation: University of Galway
     location: Galway, Ireland
-    email: stariate@ee.mount-sheikh.edu
+    email: H.Keating3@universityofgalway.ie
 abstract: |
   Enter the text of your abstract here.
 keywords:
@@ -33,10 +33,28 @@ header-includes:
 # Introduction
 \label{sec:intro}
 
+Electroencephelogram (EEG) is a test used to measure electrical activity in the brain by attaching 64 sensor nodes to the scalp. Each sensor measures a single curve so each test produces 64 curves. 
+
+-Functional data and how FDA can be used to analyse this
+
+Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and pre-frontal sections of the brain.
+
+Sensory gating is the process by which the brain filters expected or repeated stimuli. This process is thought to be impaired in individuals with schizophrenia.
+
+
 - Introduce EEG, how it relates to schizophrenia, how FDA can be used to analyse curves
 - Current Literature - FDA for EEG signals or for schizophrenia has been used before? findings? etc.
 
 ##Data
+
+Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
+
+In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which:
+
+1.  Subjects press a button to immediately produce a sound
+2.  Subjects passively listen to the same sound without pressing a button
+3.  Subjects press a button, and no sound is produced.
+
 
 - Explain the study background trials, conditions etc.
 
