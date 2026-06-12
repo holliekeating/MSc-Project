@@ -81,23 +81,27 @@ Following smoothing, each EEG recording was represented as a continuous function
 
 In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components. 
 
-
-
-*Motivation - EEG signals high-dimensional ..*
-
 Due to the inherently high-dimensional nature of EEG data, directly analysing observations can be challenging. FPCA addresses this issue by representing each function as a linear combination of a small number of eigenfunctions, this allows the dominant sources of variation to be captured through a reduced set of principal component scores.  
 
 
 *FPCA via PACE*
 
-Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by Yao et al. (2005). This pacakge is useful for the analysis of data that have been generated alongside noise or irregular time points. A key advantage of the PACE framework 
+Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by Yao et al. (2005). This pacakge is useful for the analysis of data that have been generated alongside noise or irregular time points. A key advantage of the PACE framework is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores. 
 
-- single trial, single node, single condition
+Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1. 
+
+### FPCA Formula
+
+Each EEG curve is decomposed into: (1) a mean function; (2) eigenfunctions describing major modes of variation, and; (3) subject-specific FPCA scores.
+
+The formula is represented as follows:
 
 $$
 X_i (t) = \mu (t) + \sum _{k=1}^K \xi_{ik} \Phi_k (t)
 $$
-where $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores. 
+where $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
+
+Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, and are used to explain the original high-dimensional functional observations. 
 
 *Exploring FPCA scores via extreme curve and then k-means  clustering*
 
