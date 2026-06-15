@@ -96,8 +96,10 @@ p_df<- p_df%>%
 ```{r splitting dataset}
 set.seed(1)
 
+p_df_full <- p_df
+
 p_df_data_split <- group_initial_split(
-  p_df,
+  p_df_full,
   group = subject,
   strata = schizophrenia,
   prop = 0.7
@@ -110,7 +112,6 @@ train_ids <- as.numeric(as.character(unique(pdf_train$subject)))
 test_ids  <- as.numeric(as.character(unique(pdf_test$subject)))
 
 # choose either train or test dataset
-df_full <- p_df
 p_df<- pdf_train
 
 demographic <- demographic %>%
@@ -128,6 +129,7 @@ test_index <- demographic$ID %in% test_ids
 
 demo_train <- demographic[train_index, ]
 demo_test <- demographic[test_index, ]
+
 ```
 
  
@@ -2370,45 +2372,43 @@ Above, held out two single EEG curves from model fitting. Elastic net correctly 
 
 ```{r cond matrix}
 
+mfpca_allcond <- mfpca_allcond %>% mutate(ID = as.numeric(as.character(ID)), 
+         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
+
+mfpca_test_all_cond <- mfpca_test_all_cond %>% mutate(ID = as.numeric(as.character(ID)), 
+         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
+
 # Condition 1 matrix
 mfpca_cond1 <- mfpca_allcond %>%
   dplyr::select(ID, trial, group, starts_with("cond1"))
+
+mfpca_cond1_test <- mfpca_test_all_cond %>% 
+    dplyr::select(ID, trial, group, starts_with("cond1"))
 
 # Condition 2 matrix
 mfpca_cond2 <- mfpca_allcond %>%
   dplyr::select(ID, trial, group, starts_with("cond2"))
 
+mfpca_cond2_test <- mfpca_test_all_cond %>% 
+    dplyr::select(ID, trial, group, starts_with("cond2"))
+
 # Condition 3 matrix
 mfpca_cond3 <- mfpca_allcond %>%
   dplyr::select(ID, trial, group, starts_with("cond3"))
+
+mfpca_cond3_test <- mfpca_test_all_cond %>% 
+    dplyr::select(ID, trial, group, starts_with("cond3"))
 
 
 ```
 
 ```{r Evaluating cond 1 performance}
 
-train_ids <- unique(pdf_train$subject)
-test_ids  <- unique(pdf_test$subject)
+x_train <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercept term
+y_train <- mfpca_cond1$group
 
-mfpca_cond1 <- mfpca_cond1 %>%
-  mutate(ID = as.numeric(as.character(ID)), 
-         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
-
-train_index <- mfpca_cond1$ID %in% train_ids
-test_index  <- mfpca_cond1$ID %in% test_ids
-
-
-# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
-# glmnet() x:matrix. y: vector
-x <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercept term
-y <- mfpca_cond1$group
-
-
-x_train <- x[train_index, ]
-x_test  <- x[test_index, ]
-
-y_train <- y[train_index]
-y_test  <- y[test_index]
+x_test <- model.matrix(group ~ .-ID, data = mfpca_cond1_test)[, -1] # gets rid of intercept term
+y_test <- mfpca_cond1_test$group
 
 
 
@@ -2451,8 +2451,8 @@ enet_prob_se_v <- as.vector(enet_prob_se)
 
 
 # calibration plots
-valProbggplot(enet_prob_v, y_test)
-valProbggplot(enet_prob_se_v, y_test)
+# valProbggplot(enet_prob_v, y_test)
+# valProbggplot(enet_prob_se_v, y_test)
 
 
 # Brier score on test set - 1se lam
@@ -2508,25 +2508,11 @@ zero_coeffs_cond1 <- coef_df %>% filter(coefficient == 0)
 
 ```{r Evaluating cond 2 performance}
 
-mfpca_cond2 <- mfpca_cond2 %>%
-  mutate(ID = as.numeric(as.character(ID)), 
-         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
+x_train <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] 
+y_train <- mfpca_cond2$group
 
-train_index <- mfpca_cond2$ID %in% train_ids
-test_index  <- mfpca_cond2$ID %in% test_ids
-
-
-# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
-# glmnet() x:matrix. y: vector
-x <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] # gets rid of intercept term
-y <- mfpca_cond2$group
-
-
-x_train <- x[train_index, ]
-x_test  <- x[test_index, ]
-
-y_train <- y[train_index]
-y_test  <- y[test_index]
+x_test <- model.matrix(group ~ .-ID, data = mfpca_cond2_test)[, -1] 
+y_test <- mfpca_cond2_test$group
 
 
 
@@ -2626,26 +2612,11 @@ zero_coeffs_cond2 <- coef_df %>% filter(coefficient == 0)
 
 ```{r Evaluating cond 3 performance}
 
-mfpca_cond3 <- mfpca_cond3 %>%
-  mutate(ID = as.numeric(as.character(ID)), 
-         group = as.numeric(as.character(group)))  # should be 0/1 for glmnet
+x_train <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] 
+y_train <- mfpca_cond3$group
 
-train_index <- mfpca_cond3$ID %in% train_ids
-test_index  <- mfpca_cond3$ID %in% test_ids
-
-
-# 10 fold CV in training to choose lambda (default). To be explicit: cv.glmnet(nfolds=10)
-# glmnet() x:matrix. y: vector
-x <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] # gets rid of intercept term
-y <- mfpca_cond2$group
-
-
-x_train <- x[train_index, ]
-x_test  <- x[test_index, ]
-
-y_train <- y[train_index]
-y_test  <- y[test_index]
-
+x_test <- model.matrix(group ~ .-ID, data = mfpca_cond3_test)[, -1] 
+y_test <- mfpca_cond3_test$group
 
 
 # elastic net: 0 < alpha < 1
