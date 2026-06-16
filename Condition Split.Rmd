@@ -55,8 +55,8 @@ node <- "fp1"
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
-setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-#setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -2091,7 +2091,7 @@ y_test <- mfpca_test_all_cond$group
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
 alpha_grid <- seq(0.01, 0.99, by = 0.1)
-# alpha_grid <- 0.5
+
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
             alpha = a, 
@@ -2152,16 +2152,6 @@ df_pred_prob %>%
   geom_point(aes(colour = schizophrenia))+
   geom_hline(
         yintercept = 0.33,
-        linetype = 'dashed', 
-        color = "red"
-    )
-
-df_pred_prob %>% 
-  filter(ID == 5) %>% 
-  ggplot(aes(y = enet_prob_v))+
-  geom_boxplot(aes(fill = schizophrenia, alpha = 0.5))+
-  geom_hline(
-        yintercept = 0.5, 
         linetype = 'dashed', 
         color = "red"
     )
@@ -2403,6 +2393,7 @@ mfpca_cond3_test <- mfpca_test_all_cond %>%
 ```
 
 ```{r Evaluating cond 1 performance}
+set.seed(0)
 
 x_train <- model.matrix(group ~ .-ID, data = mfpca_cond1)[, -1] # gets rid of intercept term
 y_train <- mfpca_cond1$group
@@ -2449,11 +2440,21 @@ enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
+df_pred_c1 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond1_test$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_cond1_test$group)) %>% mutate(trial = mfpca_cond1_test$trial)
+
+df_pred_c1 %>% 
+  ggplot(aes(x = as.factor(ID), y = enet_prob_se_v, group = as.factor(ID)))+
+  geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
+  geom_hline(
+        yintercept = 0.33,
+        linetype = 'dashed', 
+        color = "red"
+    )
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
 valProbggplot(enet_prob_se_v, y_test)
-
 
 # Brier score on test set - 1se lam
 enet_brier <- BrierScore(y_test, enet_prob_se_v)
@@ -2502,8 +2503,6 @@ non_zero_coeffs_cond1 <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs_cond1
 
 zero_coeffs_cond1 <- coef_df %>% filter(coefficient == 0)
-
-
 ```
 
 ```{r Evaluating cond 2 performance}
@@ -2513,8 +2512,6 @@ y_train <- mfpca_cond2$group
 
 x_test <- model.matrix(group ~ .-ID, data = mfpca_cond2_test)[, -1] 
 y_test <- mfpca_cond2_test$group
-
-
 
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
@@ -2553,6 +2550,17 @@ enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
+df_pred_c2 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond2_test$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_cond2_test$group)) %>% mutate(trial = mfpca_cond2_test$trial)
+
+df_pred_c2 %>% 
+  ggplot(aes(x = as.factor(ID), y = enet_prob_se_v, group = as.factor(ID)))+
+  geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
+  geom_hline(
+        yintercept = 0.33,
+        linetype = 'dashed', 
+        color = "red"
+    )
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
@@ -2656,6 +2664,18 @@ enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
 
+##plot predicted probabilities for each subject
+df_pred_c3 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond3_test$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_cond3_test$group)) %>% mutate(trial = mfpca_cond3_test$trial)
+
+df_pred_c3 %>% 
+  ggplot(aes(x = as.factor(ID), y = enet_prob_se_v, group = as.factor(ID)))+
+  geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
+  geom_hline(
+        yintercept = 0.33,
+        linetype = 'dashed', 
+        color = "red"
+    )
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
