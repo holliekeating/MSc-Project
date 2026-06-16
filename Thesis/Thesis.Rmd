@@ -151,34 +151,29 @@ $$
 
 ## Elastic Net
 
-Elastic net is a regularization and variable selection method that combines the penalties used in ridge and lasso regression. The method is controlled by a mixing parameter, (\alpha), where (\alpha = 0) corresponds to ridge regression and (\alpha = 1) corresponds to lasso regression. Values of (\alpha) between 0 and 1 provide a balance between the two approaches (Zou and Hastie, 2005).
+Elastic net is a regularization and variable selection method that combines the penalties used in ridge and lasso regression. The method is controlled by a mixing parameter, $\alpha$, where $\alpha = 0$ corresponds to ridge regression and $\alpha = 1$ corresponds to lasso regression. Values of $\alpha$ between 0 and 1 provide a balance between the two approaches, (Zou and Hastie, 2005).
 
-In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data.
-Ridge regression, introduced by Hoerl and Kennard (1970), extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing
-
-$$
-\text{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2
-$$
-
-where (\lambda) is a non-negative tuning parameter controlling the degree of shrinkage. By shrinking coefficients towards zero, ridge regression reduces model variance and can improve predictive performance in the presence of multicollinearity. However, coefficients are not reduced exactly to zero, meaning all predictors remain in the model.
-
-Lasso regression applies an (L_1) penalty to the regression coefficients and minimizes
+In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data. Ridge regression, introduced by Hoerl and Kennard (1970), extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing:
 
 $$
-\text{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|
+\mathrm{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2
 $$
 
-This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model (Tibshirani, 1996).
-
-Elastic net combines the (L_1) and (L_2) penalties and minimizes
+where $\lambda$ is a non-negative tuning parameter controlling the degree of shrinkage. By shrinking coefficients towards zero, ridge regression reduces model variance and can improve predictive performance in the presence of multicollinearity. However, coefficients are not reduced exactly to zero, meaning all predictors remain in the model. Lasso regression applies an (L_1) penalty to the regression coefficients and minimizes:
 
 $$
-\text{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]
+\mathrm{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|
 $$
 
-This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter (\alpha) was tuned over a grid of values between 0 and 1. For each value of (\alpha), an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of (\alpha) that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, (\lambda).
+This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model, (Tibshirani, 1996). Elastic net combines the (L_1) and (L_2) penalties and minimizes:
 
-Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone (Zou and Hastie, 2005).
+$$
+\mathrm{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]
+$$
+
+This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter $\alpha$ was tuned over a grid of values between 0 and 1. For each value of $\alpha$, an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of $\alpha$ that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, $\lambda$. Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone (Zou and Hastie, 2005).
+
+
 
 # Results
 \label{sec:results}
@@ -322,5 +317,5 @@ Logistic regression modeling: methodological insights and roadmap, Currents in P
 
 Di CZ, Crainiceanu CM, Caffo BS, Punjabi NM. MULTILEVEL FUNCTIONAL PRINCIPAL COMPONENT ANALYSIS. Ann Appl Stat. 2009 Mar 1;3(1):458-488. doi: 10.1214/08-AOAS206SUPP. PMID: 20221415; PMCID: PMC2835171.
 
-Zou, H. and Hastie, T. (2005) ‘Regularization and variable selection via the elastic net’, Journal of the Royal Statistical Society: Series B (Statistical Methodology), 67(2), pp. 301–320. 
+Zou, H. and Hastie, T. (2005) ‘Regularization and variable selection via the elastic net’, Journal of the Royal Statistical Society: Series B (Statistical Methodology), 67(2), pp. 301–320.
 
