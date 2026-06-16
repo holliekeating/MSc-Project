@@ -72,6 +72,11 @@ Spline smoothing was used to reduce noise while preserving the underlying brain 
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available (Ramsay and Silverman, 2005). Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals (Ramsay and Silverman, 2005; Gertheiss et al., 2024).
 
+**insert plot of raw data and smoothed means
+**insert formula 
+
+
+
 
 ## Permutation test
 
@@ -145,6 +150,35 @@ $$
 *Multilevel FPC scores - describe level 1 and 2*
 
 ## Elastic Net
+
+Elastic net is a regularization and variable selection method that combines the penalties used in ridge and lasso regression. The method is controlled by a mixing parameter, (\alpha), where (\alpha = 0) corresponds to ridge regression and (\alpha = 1) corresponds to lasso regression. Values of (\alpha) between 0 and 1 provide a balance between the two approaches (Zou and Hastie, 2005).
+
+In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data.
+Ridge regression, introduced by Hoerl and Kennard (1970), extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2
+$$
+
+where (\lambda) is a non-negative tuning parameter controlling the degree of shrinkage. By shrinking coefficients towards zero, ridge regression reduces model variance and can improve predictive performance in the presence of multicollinearity. However, coefficients are not reduced exactly to zero, meaning all predictors remain in the model.
+
+Lasso regression applies an (L_1) penalty to the regression coefficients and minimizes
+
+$$
+\text{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|
+$$
+
+This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model (Tibshirani, 1996).
+
+Elastic net combines the (L_1) and (L_2) penalties and minimizes
+
+$$
+\text{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]
+$$
+
+This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter (\alpha) was tuned over a grid of values between 0 and 1. For each value of (\alpha), an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of (\alpha) that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, (\lambda).
+
+Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone (Zou and Hastie, 2005).
 
 # Results
 \label{sec:results}
@@ -261,9 +295,13 @@ Bugni, F.A. and Horowitz, J.L., 2021. Permutation tests for equality of distribu
 
 Gertheiss, J., Rügamer, D., Liew, B.X.W. and Greven, S., 2024. Functional data analysis: An introduction and recent developments. Biometrical Journal, 66(6), e202300363.
 
+Hoerl, A.E. and Kennard, R.W. (1970) ‘Ridge Regression: Biased Estimation for Nonorthogonal Problems’, Technometrics, 12(1), pp. 55–67.
+
 Jeon, Y.-W. and Polich, J., 2003. The P300 event-related potential in psychosis: a meta-analysis. American Journal of Psychiatry, 166(10), pp.1115–1123.
 
 Ramsay, J.O. and Silverman, B.W., 2005. Functional Data Analysis. 2nd ed. New York: Springer. ISBN 0-387-40080-X.
+
+Robert Tibshirani (1996) ‘Regression shrinkage and selection via the lasso’, Journal of the Royal Statistical Society: Series B (Methodological), 58(1), pp. 267–288.
 
 Germán Aneiros-Pérez, Ricardo Cao, Juan M. Vilar-Fernández. (2011). Functional methods for time series prediction: a nonparametric approach. Journal of Forecasting. 30(4), pp.377-392. [Online]. Available at: https://doi.org/10.1002/for.1169 [Accessed 11 June 2026].
 
@@ -283,4 +321,6 @@ Lan N. Bui, Qian Ding,
 Logistic regression modeling: methodological insights and roadmap, Currents in Pharmacy Teaching and Learning, Volume 17, Issue 12, 2025, 102460, ISSN 1877-1297, https://doi.org/10.1016/j.cptl.2025.102460.
 
 Di CZ, Crainiceanu CM, Caffo BS, Punjabi NM. MULTILEVEL FUNCTIONAL PRINCIPAL COMPONENT ANALYSIS. Ann Appl Stat. 2009 Mar 1;3(1):458-488. doi: 10.1214/08-AOAS206SUPP. PMID: 20221415; PMCID: PMC2835171.
+
+Zou, H. and Hastie, T. (2005) ‘Regularization and variable selection via the elastic net’, Journal of the Royal Statistical Society: Series B (Statistical Methodology), 67(2), pp. 301–320. 
 
