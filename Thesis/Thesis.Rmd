@@ -83,6 +83,8 @@ Permutation t-tests were used to assess differences in functional EEG trajectori
 
 Under the null hypothesis, group labels are exchangeable, meaning that randomly reallocating observations between groups should not systematically alter the value of the test statistic. The permutation procedure repeatedly shuffles the case-control labels and recalculates the test statistic for each permutation, generating an empirical null distribution. The observed test statistic is then compared with this distribution to determine statistical significance. The resulting p-value represents the probability of obtaining a test statistic at least as extreme as that observed if the null hypothesis were true.
 
+When interpreting a permutation t-test plot for an a priori, theory-driven hypothesis, statistical significance is indicated when the observed test statistic exceeds the pointwise 0.05 critical value. However, for post hoc, data-driven hypotheses, significance should be assessed relative to the maximum 0.05 critical value, which controls for multiple comparisons across the entire functional domain and provides stronger control of the family-wise error rate, (Bugni and Horowitz, 2021).
+
 In this study, five thousand permutation t-tests were applied to the FP1 electrode on a condition-by-condition basis. FP1 region was selected due to previous evidence linking frontal EEG abnormalities, particularly gamma-band dysfunction, to schizophrenia and associated cognitive deficits [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
 
