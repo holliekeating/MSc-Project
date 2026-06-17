@@ -225,6 +225,7 @@ group_plot <- dfresponse_merged %>%
        y = "EEG Signals",
        color = "")
 
+
 #group_plot
 
 
@@ -280,6 +281,18 @@ grid.arrange(group_plot, gender_plot, age_plot, edu_plot, ncol = 1)
 
 
 # demographic only has up to patient 77
+
+group_raw <- cond %>% ggplot(aes(x = time_ms, y = fp1, group = subject, colour = schizophrenia))+
+  geom_line(alpha = 0.6) +
+  scale_color_manual(values = c("orange", "darkgreen")) +
+  theme_bw()+
+  labs(title = "Raw Curves Case vs Controls",
+       x = "Time",
+       y = "EEG Signals",
+       color = "")+
+  guides(fill = F)
+
+grid.arrange(group_raw, group_plot)
 
 
 dfresponse %>%
@@ -374,7 +387,7 @@ fpca_plots <- function(df = fpca_scores_merged, fpc){
     semi_join(group_ids_fpc, by = "ID") %>%      # keeps rows that IDs are in both dfs
     left_join(group_ids_fpc, by = "ID")          # adds the group label
   
-  plot_data_fpc %>% ggplot(aes(x = time, y = eeg_raw, group = ID, colour = top_bot)) +
+  plot_data_fpc %>% ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = top_bot)) +
     geom_line(linewidth = 0.5) +
     theme_bw() +
     labs(title = paste("Top vs Bottom 5 Curves Scores:", fpca_name),
@@ -421,7 +434,7 @@ km <- data.frame(ID = fpca_scores_demo$ID,
 df_cluster <- merge(km, fpca_scores_merged, by= "ID") #%>% 
   #arrange(subject, time_ms)
 
-#plotting the cluster by schizophrenia
+#plotting the cluster by schizophrenia  
 df_cluster %>% 
   ggplot(aes(x = time, y = eeg_smooth, group = ID, colour = group)) +
   geom_line(lwd = 0.5)+

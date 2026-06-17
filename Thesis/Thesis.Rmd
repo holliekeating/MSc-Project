@@ -30,6 +30,20 @@ header-includes:
   - \newcommand{\pandocbounded}[1]{#1}
 ---
 
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      tidy = FALSE,
+                      message = FALSE,
+                      fig.align = 'center',
+                      out.width = "100%")
+options(knitr.table.format = "html") 
+# Load any additional libraries here
+library(tidyverse)
+library(plotly)
+library(kableExtra)
+```
+
 # Introduction
 \label{sec:intro}
 
@@ -72,6 +86,14 @@ Spline smoothing was used to reduce noise while preserving the underlying brain 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024].
 
 **insert plot of raw data and smoothed means
+
+```{r, echo = FALSE, out.width="80%", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
+
+knitr::include_graphics("Images/raw_smooth_data.png")
+
+```
+
+
 **insert formula 
 
 
@@ -152,9 +174,9 @@ $$
 
 ## Elastic Net
 
-Elastic net is a regularization and variable selection method that combines the penalties used in ridge and lasso regression. The method is controlled by a mixing parameter, $\alpha$, where $\alpha = 0$ corresponds to ridge regression and $\alpha = 1$ corresponds to lasso regression. Values of $\alpha$ between 0 and 1 provide a balance between the two approaches, (Zou and Hastie, 2005).
+Elastic net is a regularization and variable selection method that combines the penalties used in ridge and lasso regression. The method is controlled by a mixing parameter, $\alpha$, where $\alpha = 0$ corresponds to ridge regression and $\alpha = 1$ corresponds to lasso regression. Values of $\alpha$ between 0 and 1 provide a balance between the two approaches, [@ZouHastie2005].
 
-In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data. Ridge regression, introduced by Hoerl and Kennard (1970), extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing:
+In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data. Ridge regression, introduced by @HoerlKennard1970, extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing:
 
 $$
 \mathrm{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2
@@ -166,7 +188,7 @@ $$
 \mathrm{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|
 $$
 
-This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model, (Tibshirani, 1996). Elastic net combines the (L_1) and (L_2) penalties and minimizes:
+This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model, [@Tibshirani1996]. Elastic net combines the (L_1) and (L_2) penalties and minimizes:
 
 $$
 \mathrm{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]
@@ -181,7 +203,70 @@ Model performance was evaluated using the Receiver Operating Characteristic (ROC
 # Results
 \label{sec:results}
 
+## Permutation t-test
+
 ## Functional Principal Component Analysis
+
+FPCA decomposes each individual curve into the mean curve plus the sum of the other principal components multiplied by a scalar (score) which indicates how much that individual curve aligns with the specific principal component.
+
+We conducted this FPCA for a single condition and a single trial (trial 1 condition 1) since FPCA can only work on data where each person has only one curve. We chose to investigate the FPCs of condition 1 rather than the other two conditions as it showed the most significant difference in EEG signals between cases and controls according to the permutation t-test above.
+
+```{r, echo = FALSE, out.width="80%", fig.cap = "FPCA visualisation - condition 1, trial 1", fig.pos="H"}
+
+knitr::include_graphics("Images/FPCA.png")
+
+```
+
+As you can see the functional principal components are eigenfunctions which explain the main modes of variation. We found we only needed three functional principal components to explain 95% of the variability in the curves.
+
+On the top right of this plot is the mean curve, and on the bottom right, we can see the main modes of variation about this mean curve. So, the mean curve is flattened to be a straight line, and the eigenfunctions represent the functional principal components. 
+
+The first functional principal component, shown in black, remains close to the mean function initially, and then it drops below the mean. In the second FPC shown in red the eigenfunction rises above the mean and then dropping below. The third initially rises above the mean then goes below before rising above the mean again. 
+
+These are the three main ways in which subject's curves vary about the mean and as we can see from the scree plot on the bottom left we can see that the first FPC explains the most variance at approximately ~90% and the second and third describe the remaining ~5% of the variation.
+
+### Investigating FPC scores
+
+To observe the principal component scores look like on our actual data, we have plotted the subjects with the top and bottom scores for each FPC.
+
+```{r, echo = FALSE, out.width="80%", fig.cap="Curves with highest 5 FPC 1 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
+
+knitr::include_graphics("Images/FPC1_top_bot.png")
+
+```
+
+```{r, echo = FALSE, out.width="70%", fig.cap="Curves with highest 5 FPC 2 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
+
+knitr::include_graphics("Images/FPC2_top_bot.png")
+
+```
+
+```{r, echo = FALSE, out.width="70%", fig.cap="Curves with highest 5 FPC 3 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
+
+knitr::include_graphics("Images/FPC3_top_bot.png")
+
+```
+
+
+## K-means clustering 
+
+```{r, echo = FALSE, out.width="70%", fig.cap="Visulisation of K-means clustering of FPC scores", fig.pos="H"}
+
+knitr::include_graphics("Images/fpca_kmeans_plot.png")
+
+```
+
+```{r, echo=FALSE, out.width = "12%", fig.pos="H"}
+
+knitr::include_graphics("Images/FPCA_km_cm.png")
+
+```
+
+```{r, echo = FALSE, out.width="70%", fig.cap="Visulisation of functions in each of the K-means clusters", fig.pos="H"}
+
+knitr::include_graphics("Images/functions_by_cluster.png")
+
+```
 
 - discuss FPCA components look like (top & bottom 5 scores), eigenfunctions
 - discuss mfpca components - what do they look like 
