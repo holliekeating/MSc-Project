@@ -2506,7 +2506,7 @@ zero_coeffs_cond1 <- coef_df %>% filter(coefficient == 0)
 ```
 
 ```{r Evaluating cond 2 performance}
-
+set.seed(0)
 x_train <- model.matrix(group ~ .-ID, data = mfpca_cond2)[, -1] 
 y_train <- mfpca_cond2$group
 
@@ -2619,7 +2619,7 @@ zero_coeffs_cond2 <- coef_df %>% filter(coefficient == 0)
 
 
 ```{r Evaluating cond 3 performance}
-
+set.seed(0)
 x_train <- model.matrix(group ~ .-ID, data = mfpca_cond3)[, -1] 
 y_train <- mfpca_cond3$group
 
