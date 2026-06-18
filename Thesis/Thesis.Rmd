@@ -83,9 +83,7 @@ Due to the inherently noisy nature of EEG signals, smoothing was applied to the 
 
 Spline smoothing was used to reduce noise while preserving the underlying brain activity patterns. Specifically, 100 cubic B-spline basis functions were defined over the domain of each EEG signal, (0-1638ms). Using a relatively large number of basis functions provides sufficient flexibility to represent complex functional features while allowing smoothness to be controlled separately through penalisation.
 
-A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024].
-
-**insert plot of raw data and smoothed means
+A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
 
 ```{r, echo = FALSE, out.width="80%", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
@@ -198,28 +196,33 @@ This approach balances the sparsity-inducing properties of lasso with the abilit
 
 # Performance Evaluation
 
-Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration. The ROC curve assesses the ability of a classification model to distinguish between two classes, (Fawcett, 2006), cases and controls in this application. It plots the true positive rate (sensitivity) against the false positive rate (specificity) across a range of classification thresholds. These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0). The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), (Fawcett, 2006). The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination. Classification performance was further evaluated using a confusion matrix. Accuracy was calculated as the proportion of correctly classified observations, while the misclassification error rate was calculated as the proportion of incorrectly classified observations. Calibration was assessed using calibration plots, which compare observed outcome frequencies with predicted probabilities, (Collins et al., 2014). A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
+Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration. 
+
+The ROC curve assesses the ability of a classification model to distinguish between two classes, (Fawcett, 2006), cases and controls in this application. It plots the true positive rate (sensitivity) against the false positive rate (specificity) across a range of classification thresholds. These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0). The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), (Fawcett, 2006). The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination. 
+
+Classification performance was further evaluated using a confusion matrix. Accuracy was calculated as the proportion of correctly classified observations, while the misclassification error rate was calculated as the proportion of incorrectly classified observations. Calibration was assessed using calibration plots, which compare observed outcome frequencies with predicted probabilities, (Collins et al., 2014). A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
 # Results
 \label{sec:results}
 
 ## Permutation t-test
-
 The a priori null hypothesis was that, following stimulus presentation at approximately 100 ms, there would be no difference in the mean EEG functions between cases and controls. Stimulus onset is indicated by the vertical blue reference line in the plots below. As this hypothesis was pre-specified, statistical significance was assessed relative to the pointwise 0.05 critical value. Evidence against the null hypothesis is indicated when the observed test statistic exceeds this threshold.
 
 In Condition 1, during which participants pressed a button to immediately produce a sound, the observed test statistic exceeded the pointwise 0.05 critical value over a substantial portion of the post-stimulus interval. This provides strong evidence of differences in the EEG responses of cases and controls.
 
-INSERT PLOT
-
 In Condition 2, during which participants passively listened to the same sound without pressing a button, the observed test statistic exceeded the pointwise 0.05 critical value over a small portion of the post-stimulus interval, suggesting evidence of differences between the groups.
-
-INSERT PLOT
 
 In Condition 3, during which participants pressed a button, but no sound was produced, the observed test statistic did not exceed the pointwise 0.05 critical value. Consequently, there was no evidence of a difference between the EEG responses of cases and controls.
 
-INSERT PLOT
 
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Permutation T-tests: (a) Condition 1; (b) Condition 2; (c) Condition 3.", fig.pos="H"}
 
+knitr::include_graphics(c(
+"Images/permt_cond1.png",
+"Images/permt_cond2.png",
+"Images/permt_cond3.png"))
+
+```
 ## Functional Principal Component Analysis
 
 FPCA decomposes each individual curve into the mean curve plus the sum of the other principal components multiplied by a scalar (score) which indicates how much that individual curve aligns with the specific principal component.
@@ -282,6 +285,31 @@ knitr::include_graphics("Images/FPCA_km_cm.png")
 knitr::include_graphics("Images/functions_by_cluster.png")
 
 ```
+
+
+## Elastic Net 
+
+Overall, condition by condition
+- best model four nodes & 95% variability
+- ROC, calibration plot, confusion matrix?
+- Plot of how many predictors included
+- Table of included predictors?
+
+- table of other trialed models?
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) ROC Curve; (b) Coefficient Plot; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/roc_allcond_4nodes_95var.png",
+"Images/coefficients_allcond_4nodes_95var.png",
+"Images/calibration_allcond_4nodes_95var.png",
+"Images/predprob_allcond_4nodes_95var.png"))
+
+```
+
+
+
+
 
 - discuss FPCA components look like (top & bottom 5 scores), eigenfunctions
 - discuss mfpca components - what do they look like 
