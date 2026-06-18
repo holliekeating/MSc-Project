@@ -288,20 +288,13 @@ knitr::include_graphics("Images/functions_by_cluster.png")
 
 
 ## Elastic Net 
+An elastic net model was trained using the training dataset and subsequently evaluated on the independent test dataset. The model incorporated data from all three experimental conditions, four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Model discrimination was high, with an AUC of 93.7% (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Overall classification accuracy on the test set was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope ranging from 0.47 to 0.70. This pattern was also evident in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range. Although the model demonstrated strong discriminatory performance, the calibration results suggest that the model was overconfident in its predictions, producing probabilities that were more extreme than those observed in the data.
 
-Overall, condition by condition
-- best model four nodes & 95% variability
-- ROC, calibration plot, confusion matrix?
-- Plot of how many predictors included
-- Table of included predictors?
-
-- table of other trialed models?
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) ROC Curve; (b) Coefficient Plot; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
-"Images/roc_allcond_4nodes_95var.png",
 "Images/coefficients_allcond_4nodes_95var.png",
+"Images/roc_allcond_4nodes_95var.png",
 "Images/calibration_allcond_4nodes_95var.png",
 "Images/predprob_allcond_4nodes_95var.png"))
 
