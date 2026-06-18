@@ -205,6 +205,21 @@ Model performance was evaluated using the Receiver Operating Characteristic (ROC
 
 ## Permutation t-test
 
+The a priori null hypothesis was that, following stimulus presentation at approximately 100 ms, there would be no difference in the mean EEG functions between cases and controls. Stimulus onset is indicated by the vertical blue reference line in the plots below. As this hypothesis was pre-specified, statistical significance was assessed relative to the pointwise 0.05 critical value. Evidence against the null hypothesis is indicated when the observed test statistic exceeds this threshold.
+
+In Condition 1, during which participants pressed a button to immediately produce a sound, the observed test statistic exceeded the pointwise 0.05 critical value over a substantial portion of the post-stimulus interval. This provides strong evidence of differences in the EEG responses of cases and controls.
+
+INSERT PLOT
+
+In Condition 2, during which participants passively listened to the same sound without pressing a button, the observed test statistic exceeded the pointwise 0.05 critical value over a small portion of the post-stimulus interval, suggesting evidence of differences between the groups.
+
+INSERT PLOT
+
+In Condition 3, during which participants pressed a button, but no sound was produced, the observed test statistic did not exceed the pointwise 0.05 critical value. Consequently, there was no evidence of a difference between the EEG responses of cases and controls.
+
+INSERT PLOT
+
+
 ## Functional Principal Component Analysis
 
 FPCA decomposes each individual curve into the mean curve plus the sum of the other principal components multiplied by a scalar (score) which indicates how much that individual curve aligns with the specific principal component.
@@ -275,7 +290,15 @@ knitr::include_graphics("Images/functions_by_cluster.png")
 # Discussion
 \label{sec:discussion}
 
-- what does the permutation test tell us?
+## Permutation ttests
+
+Sensory gating refers to the ability of the brain to filter repeated, expected, or redundant sensory stimuli and has been shown to be impaired in individuals with schizophrenia (Boutros et al., 2009; Shen et al., 2020). In the present study, the repeated stimulus was represented by an auditory tone. The observed differences between cases and controls in Conditions 1 and 2 are consistent with impaired sensory gating in schizophrenia.
+
+The difference was most pronounced in Condition 1, where participants generated the sound themselves by pressing a button. In healthy controls, self-generated sensory events are typically attenuated because the sensory consequences of an action are anticipated. Consequently, the larger difference observed in this condition may reflect reduced suppression of predictable sensory input in individuals with schizophrenia.
+
+In contrast, no evidence of group differences was observed in Condition 3, where participants pressed a button, but no sound was produced. The absence of a difference when no auditory stimulus was present provides further support for the interpretation that the findings are related to altered processing of expected auditory information rather than the differences in motor activity associated with pressing the button.
+
+
 - what di the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
 - what do the mfpcs tell us? at each level?
 - why do they differ at level 1? why is mfpca better/worse?
