@@ -28,6 +28,8 @@ biblio-style: unsrt
 output: rticles::arxiv_article
 header-includes:
   - \newcommand{\pandocbounded}[1]{#1}
+  - \usepackage{setspace}
+  - \setstretch{1.2}
 ---
 
 ```{r, include=FALSE}
@@ -86,31 +88,25 @@ Spline smoothing uses piecewise polynomial functions joined smoothly through poi
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
 
-Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $f(t_i)$ from our observations assuming $y_i = f(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $f(t_i)$ represents the true underlying curve and $\epsilon_i ~ iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
+Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $X(t_i)$ from our observations assuming $y_i = X(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $X(t_i)$ represents the true underlying curve and $\epsilon_i ~ iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
 
-We estimate $f(t)$ by minimising the following:
+We estimate $X(t)$ by minimising the following:
 
-$$\Sigma_{i=1}^n (y_i – f(t_i))^2 + \lambda\int [f’’(t)]^2 dt$$
+$$
+\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt
+$$
 
-Where $\Sigma_{i=1}^n (y_i – f(t_i))^2$ is the residual sum of square (RSS) and $\int [f’’(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $f’’(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
+Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
 
-We estimate $f(t)$ by assuming that $f(t) = \Sigma_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
-
-
+We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
 
-**insert plot of raw data and smoothed means
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.8, fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
-```{r, echo = FALSE, out.width="80%", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
-
-knitr::include_graphics("Images/raw_smooth_data.png")
+knitr::include_graphics(c("Images/raw_data.png",
+                          "Images/smooth_data.png"))
 
 ```
-
-
-**insert formula 
-
-
 
 
 ## Permutation test
@@ -133,9 +129,9 @@ In functional PCA, eigenvalues of the bivariate variance-covariance function $\n
 Due to the inherently high-dimensional nature of EEG data, directly analysing observations can be challenging. FPCA addresses this issue by representing each function as a linear combination of a small number of eigenfunctions, this allows the dominant sources of variation to be captured through a reduced set of principal component scores.  
 
 
-*FPCA via PACE*
+### FPCA via PACE
 
-Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by Yao et al. (2005). This pacakge is useful for the analysis of data that have been generated alongside noise or irregular time points. A key advantage of the PACE framework is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs). 
+Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
 
 Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1. 
 
@@ -143,21 +139,25 @@ Each participant contributed a single densely sampled EEG curve corresponding to
 
 Each EEG curve is decomposed into: (1) a mean function; (2) eigenfunctions describing major modes of variation, and; (3) subject-specific FPCA scores.
 
-The formula is represented as follows:
+The curves are decomposed by the Karhunen-Loève expansion as follows:
 
 $$
-X_i (t) = \mu (t) + \sum _{k=1}^K \xi_{ik} \Phi_k (t)
+X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)
 $$
 where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
+
+Using the PACE method, however we estimate the FPC scores as follows:
+
+
+
+Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and functions [@yao2005PACE].
 
 
 Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
 
 #### Exploring FPCA scores via extreme curve and then k-means  clustering
 
-To help interpret the functional principal components, five subjects with the highest and lowest scores for each of the first three FCPs were chosen for visualisation. The corresponding smoothed EEG curves were then plotted to examine how variation in each score related to the change in shape of the EEG signal. This aided visual understanding of the first three FPCs.  
-
-Following this investigation, the first three FPCA scores were then used as inputs for the k-means clustering analysis. 
+K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
 
 As quoted from Fortuna F. "cluster analysis aims to group a set of data such that units within clusters are more similar than across clusters with respect to a metric. In the FDA context, the most popular technique is the k-means clustering algorithm" [@FortunaMaturo2019]. 
 
@@ -257,7 +257,7 @@ FPCA decomposes each individual curve into the mean curve plus the sum of the ot
 
 We conducted this FPCA for a single condition and a single trial (trial 1 condition 1) since FPCA can only work on data where each person has only one curve. We chose to investigate the FPCs of condition 1 rather than the other two conditions as it showed the most significant difference in EEG signals between cases and controls according to the permutation t-test above.
 
-```{r, echo = FALSE, out.width="80%", fig.cap = "FPCA visualisation - condition 1, trial 1", fig.pos="H"}
+```{r, echo = FALSE, out.width="70%", fig.cap = "FPCA visualisation - condition 1, trial 1", fig.pos="H"}
 
 knitr::include_graphics("Images/FPCA.png")
 
@@ -275,53 +275,47 @@ These are the three main ways in which subject's curves vary about the mean and 
 
 To observe the principal component scores look like on our actual data, we have plotted the subjects with the top and bottom scores for each FPC.
 
-```{r, echo = FALSE, out.width="80%", fig.cap="Curves with highest 5 FPC 1 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Curves with highest 5 FPC scores (blue) and lowest 5 scores (red): (a) FPC 1, (b) FPC 2, (c) FPC 3", fig.pos="H"}
 
-knitr::include_graphics("Images/FPC1_top_bot.png")
-
-```
-
-Those with the highest scores for the first principal component (in blue) remain close to the mean at the beginning and go down over time, and those with the lowest scores for the first principal component (in red) remain close to the mean and then rise up above the mean over time. The top scorers following a similar trajectory to that of the first eigenfunction shown above and the lowest scorers following an inverse trajectory.
-
-```{r, echo = FALSE, out.width="70%", fig.cap="Curves with highest 5 FPC 2 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
-
-knitr::include_graphics("Images/FPC2_top_bot.png")
+knitr::include_graphics(c("Images/FPC1_top_bot.png",
+                          "Images/FPC2_top_bot.png",
+                          "Images/FPC3_top_bot.png"))
 
 ```
 
-```{r, echo = FALSE, out.width="70%", fig.cap="Curves with highest 5 FPC 3 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
+Those with the highest scores (in blue) for the first principal component (top left figure) remain close to the mean at the beginning and go down over time, and those with the lowest scores (in red) for the first principal component remain close to the mean and then rise up above the mean over time. The top scorers following a similar trajectory to that of the first eigenfunction shown above and the lowest scorers following an inverse trajectory.
 
-knitr::include_graphics("Images/FPC3_top_bot.png")
+For those with the highest scores for the second functional principal component (see top right figure) they go up initially before going down. Inversely those with the lowest scores go have a downward trajectory initially before going up. Top scorers approximately follows the trajectory of the second eigenfunction and low scorers the opposite, although the similarity is not as strong as in the first principal component.
 
-```
-
-
-
+Those with the highest scores for the third principal component (plot on the bottom) they go up, then down, then up again as in the third eigenfunction. The lowest scorers as before do the opposite however, these patterns are not as distinct as the actual eigenfunction itself.
 
 ## K-means clustering 
 
-```{r, echo = FALSE, out.width="70%", fig.cap="Visulisation of K-means clustering of FPC scores", fig.pos="H"}
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="(a) Visulisation of K-means clustering of FPC scores, (b) Plot of each subject's function by cluster", fig.pos="H"}
 
-knitr::include_graphics("Images/fpca_kmeans_plot.png")
+knitr::include_graphics(c("Images/fpca_kmeans_plot.png",
+                        "Images/functions_by_cluster.png"))
 
 ```
 
-```{r, echo=FALSE, out.width = "12%", fig.pos="H"}
+Four distinct clusters were identified with K-means clustering visualised in (a). The plot (b) on the right was used to determine if there was any association between clusters and case-control status. Cluster 1 is largely made up of controls, cluster 3 is mainly made up of cases, cluster 4 has only one subject (control), and membership to cluster 2 was somewhat mixed.
+
+```{r, echo=FALSE, out.width = "10%", fig.pos="H"}
 
 knitr::include_graphics("Images/FPCA_km_cm.png")
 
 ```
 
-```{r, echo = FALSE, out.width="70%", fig.cap="Visulisation of functions in each of the K-means clusters", fig.pos="H"}
-
-knitr::include_graphics("Images/functions_by_cluster.png")
-
-```
-
+We can see from the confusion matrix above, the exact number of cases and controls in each cluster. 
 
 ## Elastic Net 
-An elastic net model was trained using the training dataset and subsequently evaluated on the independent test dataset. The model incorporated data from all three experimental conditions, four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Model discrimination was high, with an AUC of 93.7% (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Overall classification accuracy on the test set was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope ranging from 0.47 to 0.70. This pattern was also evident in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range. Although the model demonstrated strong discriminatory performance, the calibration results suggest that the model was overconfident in its predictions, producing probabilities that were more extreme than those observed in the data.
+Elastic net models were trained using the training datasets and subsequently evaluated on independent test datasets. The first model incorporated data from four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. 
 
+The second model……………….
+
+### Model 1 – four EEG nodes, with 95% variability
+
+Firstly, the model was fitted on all conditions simultaneously. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 32 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was outstanding, with an AUC of 0.937 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope between 0.47 and 0.70. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -331,7 +325,41 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_4nodes_95var.png"))
 
 ```
+Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was high, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
+knitr::include_graphics(c(
+"Images/coefficients_cond1_4nodes_95var.png",
+"Images/roc_cond1_4nodes_95var.png",
+"Images/calibration_cond1_4nodes_95var.png",
+"Images/predprob_cond1_4nodes_95var.png"))
+
+```
+Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the MFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond2_4nodes_95var.png",
+"Images/roc_cond2_4nodes_95var.png",
+"Images/calibration_cond2_4nodes_95var.png",
+"Images/predprob_cond2_4nodes_95var.png"))
+
+```
+Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond3_4nodes_95var.png",
+"Images/roc_cond3_4nodes_95var.png",
+"Images/calibration_cond3_4nodes_95var.png",
+"Images/predprob_cond3_4nodes_95var.png"))
+
+```
+
+- Maybe reduced to 2 nodes?
+- Maybe reduced to 90% variability
+
+- With less shrinkage 
 
 
 
