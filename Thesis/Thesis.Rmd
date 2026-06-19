@@ -90,9 +90,9 @@ Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estima
 
 We estimate $f(t)$ by minimising the following:
 
-$$\Sigma_{i=1}^n (y_i – f(t_i))^2 + \lambda\int [f’’(t)]^2 dt$$
+$$\Sigma_{i=1}^n (y_i - f(y_i - f(t_i))^2 + \lambda\int [f''(t)]^2 dt$$
 
-Where $\Sigma_{i=1}^n (y_i – f(t_i))^2$ is the residual sum of square (RSS) and $\int [f’’(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $f’’(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
+Where $\Sigma_{i=1}^n (y_i - f(t_i))^2$ is the residual sum of square (RSS) and $\int [f''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $f''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
 
 We estimate $f(t)$ by assuming that $f(t) = \Sigma_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
@@ -308,6 +308,9 @@ knitr::include_graphics("Images/functions_by_cluster.png")
 
 ```
 ## Elastic Net 
+
+### Model with four nodes and 95% variability
+#### Overll Model
 An elastic net model was trained using the training dataset and subsequently evaluated on the independent test dataset. The model incorporated data from all three experimental conditions, four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Model discrimination was high, with an AUC of 93.7% (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Overall classification accuracy on the test set was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope ranging from 0.47 to 0.70. This pattern was also evident in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range. Although the model demonstrated strong discriminatory performance, the calibration results suggest that the model was overconfident in its predictions, producing probabilities that were more extreme than those observed in the data.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
@@ -320,9 +323,38 @@ knitr::include_graphics(c(
 
 ```
 
-- Condition 1
-- Condition 2
-- Condition 3
+#### Condition 1
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond1_4nodes_95var.png",
+"Images/roc_cond1_4nodes_95var.png",
+"Images/calibration_cond1_4nodes_95var.png",
+"Images/predprob_cond1_4nodes_95var.png"))
+
+```
+
+#### Condition 2
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond2_4nodes_95var.png",
+"Images/roc_cond2_4nodes_95var.png",
+"Images/calibration_cond2_4nodes_95var.png",
+"Images/predprob_cond2_4nodes_95var.png"))
+
+```
+
+#### Condition 3
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond3_4nodes_95var.png",
+"Images/roc_cond3_4nodes_95var.png",
+"Images/calibration_cond3_4nodes_95var.png",
+"Images/predprob_cond3_4nodes_95var.png"))
+
+```
 
 - Maybe reduced to 2 nodes?
 - Maybe reduced to 90% variability
