@@ -33,7 +33,7 @@ header-includes:
 ```{r, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE,
                       warning = FALSE,
-                      tidy = FALSE,
+                      tidy = FALSE, 
                       message = FALSE,
                       fig.align = 'center',
                       out.width = "100%")
@@ -54,6 +54,7 @@ Schizophrenia is a mental health condition which is associated with unusual acti
 Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the curve [@Shen2020; @BOUTROS2009].
 
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. 
+
 
 - Introduce EEG, how it relates to schizophrenia, and how FDA can be used to analyse curves
 - Current Literature - FDA for EEG signals or for schizophrenia has been used before? findings? etc.
@@ -79,11 +80,26 @@ We used several methods: spline smoothing, permutation test, FPCA & mFPCA
 
 ## Smoothing
 
-Due to the inherently noisy nature of EEG signals, smoothing was applied to the functional observations. When smoothing functions, it is important to balance the trade-off between variance and bias. Variance refers to the sensitivity of an estimated function to random fluctuations in the observed data, while bias refers to systematic deviation of the estimated function from the true underlying signal. High variance may lead to overfitting and poor generalisability to new data, whereas high bias may over smooth the data and obscure important signal characteristics.
+Due to the inherently noisy nature of EEG signals, smoothing was applied to the functional observations. When smoothing functions, it is important to balance the trade-off between variance and bias. Variance refers to the sensitivity of an estimated function to random fluctuations in the observed data, while bias refers to systematic deviation of the estimated function from the true underlying signal. High variance may lead to overfitting and poor generalisability to new data, whereas high bias may over-smooth the data leading to underfitting and obscuring important signal characteristics.
 
-Spline smoothing was used to reduce noise while preserving the underlying brain activity patterns. Specifically, 100 cubic B-spline basis functions were defined over the domain of each EEG signal, (0-1638ms). Using a relatively large number of basis functions provides sufficient flexibility to represent complex functional features while allowing smoothness to be controlled separately through penalisation.
+Spline smoothing uses piecewise polynomial functions joined smoothly through points called knots to estimate the underlying smoothed curve and reduce noise in the data. Spline smoothing was used to reduce noise while preserving the underlying brain activity patterns. Specifically, 100 cubic B-spline basis functions were defined over the domain of each EEG signal, (0-1638ms). Using a relatively large number of basis functions provides sufficient flexibility to represent complex functional features while allowing smoothness to be controlled separately through penalisation.
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
+
+Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $f(t_i)$ from our observations assuming $y_i = f(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $f(t_i)$ represents the true underlying curve and $\epsilon_i ~ iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
+
+We estimate $f(t)$ by minimising the following:
+
+$$\Sigma_{i=1}^n (y_i – f(t_i))^2 + \lambda\int [f’’(t)]^2 dt$$
+
+Where $\Sigma_{i=1}^n (y_i – f(t_i))^2$ is the residual sum of square (RSS) and $\int [f’’(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $f’’(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
+
+We estimate $f(t)$ by assuming that $f(t) = \Sigma_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
+
+
+
+
+**insert plot of raw data and smoothed means
 
 ```{r, echo = FALSE, out.width="80%", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
@@ -132,11 +148,13 @@ The formula is represented as follows:
 $$
 X_i (t) = \mu (t) + \sum _{k=1}^K \xi_{ik} \Phi_k (t)
 $$
-where $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
+where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
+
+
 
 Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
 
-*Exploring FPCA scores via extreme curve and then k-means  clustering*
+#### Exploring FPCA scores via extreme curve and then k-means  clustering
 
 To help interpret the functional principal components, five subjects with the highest and lowest scores for each of the first three FCPs were chosen for visualisation. The corresponding smoothed EEG curves were then plotted to examine how variation in each score related to the change in shape of the EEG signal. This aided visual understanding of the first three FPCs.  
 
@@ -253,6 +271,8 @@ knitr::include_graphics("Images/FPC1_top_bot.png")
 
 ```
 
+Those with the highest scores for the first principal component (in blue) remain close to the mean at the beginning and go down over time, and those with the lowest scores for the first principal component (in red) remain close to the mean and then rise up above the mean over time. The top scorers following a similar trajectory to that of the first eigenfunction shown above and the lowest scorers following an inverse trajectory.
+
 ```{r, echo = FALSE, out.width="70%", fig.cap="Curves with highest 5 FPC 2 scores (blue) and lowest 5 scores (red)", fig.pos="H"}
 
 knitr::include_graphics("Images/FPC2_top_bot.png")
@@ -264,6 +284,8 @@ knitr::include_graphics("Images/FPC2_top_bot.png")
 knitr::include_graphics("Images/FPC3_top_bot.png")
 
 ```
+
+
 
 
 ## K-means clustering 
@@ -305,7 +327,13 @@ knitr::include_graphics(c(
 
 
 - discuss FPCA components look like (top & bottom 5 scores), eigenfunctions
+
+## Multi-Level Functional Principal Component Analysis
+
 - discuss mfpca components - what do they look like 
+
+## Elastic Net
+
 - elastic net how many predictors included in final model
 
 # Discussion
@@ -328,43 +356,7 @@ In contrast, no evidence of group differences was observed in Condition 3, where
 - Anything that could further this research
 
 
-
 ## References
 
-Bugni, F.A. and Horowitz, J.L., 2021. Permutation tests for equality of distributions of functional data. Journal of Applied Econometrics, 36(7), pp.861–877. 
 
-Collins, G.S., de Groot, J.A.H., Dutton, S., Omar, O., Shanyinde, M., Tajar, A., Voysey, M., Wharton, R., Yu, L.M., Moons, K.G.M. and Altman, D.G. (2014) ‘External validation of multivariable prediction models: a systematic review of methodological conduct and reporting’, BMC Medical Research Methodology, 14(1), p. 40.
-
-Fawcett, T. (2006) ‘An introduction to ROC analysis’, Pattern Recognition Letters, 27(8), pp. 861–874.
-
-Gertheiss, J., Rügamer, D., Liew, B.X.W. and Greven, S., 2024. Functional data analysis: An introduction and recent developments. Biometrical Journal, 66(6), e202300363.
-
-Hoerl, A.E. and Kennard, R.W. (1970) ‘Ridge Regression: Biased Estimation for Nonorthogonal Problems’, Technometrics, 12(1), pp. 55–67.
-
-Jeon, Y.-W. and Polich, J., 2003. The P300 event-related potential in psychosis: a meta-analysis. American Journal of Psychiatry, 166(10), pp.1115–1123.
-
-Ramsay, J.O. and Silverman, B.W., 2005. Functional Data Analysis. 2nd ed. New York: Springer. ISBN 0-387-40080-X.
-
-Robert Tibshirani (1996) ‘Regression shrinkage and selection via the lasso’, Journal of the Royal Statistical Society: Series B (Methodological), 58(1), pp. 267–288.
-
-Germán Aneiros-Pérez, Ricardo Cao, Juan M. Vilar-Fernández. (2011). Functional methods for time series prediction: a nonparametric approach. Journal of Forecasting. 30(4), pp.377-392. [Online]. Available at: https://doi.org/10.1002/for.1169 [Accessed 11 June 2026].
-
-J.O Ramsay, Giles Hooker, Spencer Graves. (2009). Functional Data Analysis with R and MATLAB. NY: Springer New York.
-
-Unknown. (2019). Principal Analysis by Conditional Estimation for Functional Data Analysis and Empirical Dynamics in Matlab.. [Online]. stat. Last Updated: 2019. Available at: https://anson.ucdavis.edu/~mueller/data/pace.html [Accessed 11 June 2026].
-
-=======
-Senkowski, D. and Gallinat, J., 2015. Dysfunctional prefrontal gamma-band oscillations reflect working memory and other cognitive deficits in schizophrenia. Biological Psychiatry, 77(12), pp.1010–1019.
-
-Shin, Y.W., Kwon, J.S., Ha, T.H., Park, H.J., Hong, K.S., Kim, Y.Y. and Cho, H.S., 2011. Gamma oscillation in schizophrenia. Psychiatry Investigation, 8(4), pp.288–296.
-b720f887b39546aca4786026cf2d25f5312bc228
-
-Fortuna, F., Maturo, F. K-means clustering of item characteristic curves and item information curves via functional principal component analysis. Qual Quant 53, 2291–2304 (2019). https://doi.org/10.1007/s11135-018-0724-7
-
-Lan N. Bui, Qian Ding,
-Logistic regression modeling: methodological insights and roadmap, Currents in Pharmacy Teaching and Learning, Volume 17, Issue 12, 2025, 102460, ISSN 1877-1297, https://doi.org/10.1016/j.cptl.2025.102460.
-
-Di CZ, Crainiceanu CM, Caffo BS, Punjabi NM. MULTILEVEL FUNCTIONAL PRINCIPAL COMPONENT ANALYSIS. Ann Appl Stat. 2009 Mar 1;3(1):458-488. doi: 10.1214/08-AOAS206SUPP. PMID: 20221415; PMCID: PMC2835171.
-
-Zou, H. and Hastie, T. (2005) ‘Regularization and variable selection via the elastic net’, Journal of the Royal Statistical Society: Series B (Statistical Methodology), 67(2), pp. 301–320.
 
