@@ -101,13 +101,7 @@ Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
 
-<<<<<<< HEAD
-```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 15, fig.height="80%", fig.asp = 0.9, fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
-=======
-**insert plot of raw data and smoothed means
-
 ```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.8, fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
->>>>>>> b7c3f359cd7af3a3966a591ed11812fa070b662d
 
 knitr::include_graphics(c("Images/raw_data.png",
                           "Images/smooth_data.png"))
@@ -301,11 +295,13 @@ knitr::include_graphics("Images/FPCA_km_cm.png")
 We can see from the confusion matrix above, the exact number of cases and controls in each cluster. 
 
 ## Elastic Net 
+Elastic net models were trained using the training datasets and subsequently evaluated on independent test datasets. The first model incorporated data from four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. 
 
-### Model with four nodes and 95% variability
-#### Overll Model
-An elastic net model was trained using the training dataset and subsequently evaluated on the independent test dataset. The model incorporated data from all three experimental conditions, four EEG nodes (fp1, f3, f7 and af7), and mfpca scores explaining 95% of the variability at both levels 1 and 2. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Model discrimination was high, with an AUC of 93.7% (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Overall classification accuracy on the test set was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope ranging from 0.47 to 0.70. This pattern was also evident in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range. Although the model demonstrated strong discriminatory performance, the calibration results suggest that the model was overconfident in its predictions, producing probabilities that were more extreme than those observed in the data.
+The second model……………….
 
+### Model 1 – four EEG nodes, with 95% variability
+
+Firstly, the model was fitted on all conditions simultaneously. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 32 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was outstanding, with an AUC of 0.937 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope between 0.47 and 0.70. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -315,8 +311,7 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_4nodes_95var.png"))
 
 ```
-
-#### Condition 1
+Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was high, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -326,8 +321,7 @@ knitr::include_graphics(c(
 "Images/predprob_cond1_4nodes_95var.png"))
 
 ```
-
-#### Condition 2
+Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the MFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -337,8 +331,7 @@ knitr::include_graphics(c(
 "Images/predprob_cond2_4nodes_95var.png"))
 
 ```
-
-#### Condition 3
+Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
