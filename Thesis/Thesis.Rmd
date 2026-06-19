@@ -368,7 +368,47 @@ knitr::include_graphics(c(
 
 ## Multi-Level Functional Principal Component Analysis
 
-- discuss mfpca components - what do they look like 
+Unlike the previous FPCA analysis, which considered a single trial under a single condition, MFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation). 
+
+The first four eigenfunctions for Level 1 and Level 2 are shown in Figure ... . Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals. However, Level 1 components describe differences between subjects, whereas Level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the Level 1 MFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as MFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
+
+
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="MFPCA eigenfunctions (a) First four Level 1 eigenfunctions representing between-subject variation, (b) First four Level 2 eigenfunctions representing within-subject trial-to-trial variation", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level1mfpca.png",
+                        "Images/level2mfpca.png"))
+
+```
+
+The Level 1 eigenfunctions (Figure (a)), exhibit substantial variation throughout the EEG time frame. The first component captures a broad pattern of variability across the time period, while the remaining components exhibit more localised changes in the EEG pattern. In contrast, the Level 2 eigenfunctions (Figure (b)) appear smoother and capture less between-trial fluctuations around an individual's typical EEG response. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject. 
+
+To aid interpretation of the components, the mean EEG function was plotted alongside the deviations corresponding to each principal component. Figures X and X below show the first three principal components for Levels 1 and 2 respectively. 
+
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 1 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level1PC1.png",
+                          "Images/level1PC2.png",
+                          "Images/level1PC3.png"))
+
+```
+
+For Level 1, above, the first principal component explains the largest proportion of between-subject variability. Subjects with high positive PC1 tend to show increased EEG trajectories relative to the mean function, particularly surrounding $100ms$, the point of stimulus onset. Whereas, subjects with large negative scores exhibit reduced trajectories. The second and third components capture more specific localised variations, with changes occuring at certain times rather than across the entire time period. 
+
+
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 2 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level2PC1.png",
+                          "Images/level2PC2.png",
+                          "Images/level2PC3.png"))
+
+```
+
+For Level 2, above, the first principal component displays the dominant source of between-trial variation within subjects. A expected, less localised variation is observed than between-subject variation. However, the magnitude of the deviations from the mean function suggests that a lot of variability exists between repeated trials despite accounting for subject-level effects. As before, the second and third Level 2 components describe additional within-subject fluctuations. 
+
+Overall, the MFPCA results indicate that meaningful variation does exist at both the subject and trial levels. This information is used further as predictors in the elastic net classification model.
+
 
 ## Elastic Net
 
