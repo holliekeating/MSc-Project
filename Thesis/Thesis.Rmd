@@ -151,7 +151,6 @@ $$
 where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
 
 
-
 Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
 
 #### Exploring FPCA scores via extreme curve and then k-means  clustering
@@ -172,21 +171,32 @@ The purpose of this analysis was to assess whether the selected three FPCA score
 
 ## Multilevel Functional Principal Component Analysis
 
-At this stage in analysis, the EEG curves of subjects within one trial and one condition were investigated. To extend this, and include several of the repeated trials per subject and conditions one could no longer use standard FPCA. 
+At this stage in analysis, the EEG curves of subjects within one trial and one condition were investigated. To extend this, and include several of the repeated trials per subject and conditions, one could no longer use standard FPCA. 
 
 An important limitation of standard FPCA methods is that they are not designed for multilevel analyses, due to their assumption of independence between observations. Introduced in @Di2009, multilevel FPCA was designed to address the volume and importance of EEG data specifically. This methodology is designed to extract core intra- and inter- subject components of multilevel functional data. 
 
 *Arranging multilevel functional data*
 
-*Multilevel FPCA model - retaining components to 95% variability explained*
+To accurately arrange the repeated structure, all available trials were retained and smoothed using the same B-spline smoothing procedure described previously for standard FPCA. The data were then reorganised into a long-format data structure, where each observation consisted of a subject ID, trial number, time point and the corresponding smoothed EEG value. By organising the data into this format, repeated functional observations from the same individual can be linked together during later analysis. 
 
-- why mfpca can be applied to our data - multiple trials
+MFPCA was implemented using the `mfpca.face()` function [@LiCui2024]. The smoothed EEG curves were arranged in a matrix where each row represented a single EEG trial, each column corresponded to a time point. To separate the subject-level and trial-level variation, subject ID and trial number were included. Components were retained until $95%$ of the total variation had been explained. 
+
+*MFPCA Formula*
+
+The full model of MFPCA was formulated as 
 
 $$
-X_ij = \mu(t) + 
+Y_{ij} = \mu(t) + \eta_j(t) + \sum^{K_1}_{k=1} \xi_{ik}\phi_k^{(1)}(t) + \sum^{K_2}_{l=1} \zeta_{ijl}\phi_l^{(2)} + \epsilon_{ij}(t)
 $$
+[@Zablocki2024], where $Y_{ij}(t)$ is the smoothed EEG signal measured at time $(t)$ for trial $(j)$ belonging to subject $(i)$, where $(i = 1, 2, \ldots, n)$ and $(j = 1, 2, \ldots, n)$. The function $(\mu(t))$ represents the overall mean EEG trajectory across all subjects and trials, and $(\eta_j(t))$ represents the trial-specific shift from this overall mean. The term $(\epsilon_{ij}(t))$ denotes a residual error. 
 
-*Multilevel FPC scores - describe level 1 and 2*
+The functions $(\phi_k^{(1)(t))})$ and $(\phi_l^{(2)}(t))$ are the eigenfunctions at Level 1 and Level 2 respectively. Level 1 eigenfunctions describe between-subject variation, capturing the systematic differences in EEG signals across subjects, whereas Level 2 eigenfunctions describe the within-subject variation, capturing trial-to-trial fluctuations within the same subject. The corresponding scores, $(\xi_{ik})$ and $(\zeta_{ijl})$, quantifies this variation from at a subject and trial level, described  by each eigenfunction. 
+
+Intuitively here, each eigenfunction can be interpreted as representing a particular characteristic pattern of EEG activity. The corresponding principal component score, similar to standard FPCA, indicates the extent to which that pattern is present within an individual's EEG trajectory. Larger positive or negative scores indicate a greater differentiation from the overall mean function. Therefore, the eigenvalues associated with each component tell one the amount of variability explained by that specific component. 
+
+In order to explain 95% of the total variability in the EEG data, as set within `mfpca.face()`, an appropriate number of principal components were to be selected at both Level 1 and Level 2. The quantities $(K_1)$ and $(K_2)$ denote this number of retained components at Level 1 and Level 2 respectively. The resulting Level 1 and Level 2 scores represented these repeated EEG measurements in a concise way and were subsequently used in clustering and classification analyses. 
+
+
 
 ## Elastic Net
 
