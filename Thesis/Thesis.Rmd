@@ -197,6 +197,10 @@ Intuitively here, each eigenfunction can be interpreted as representing a partic
 
 In order to explain 95% of the total variability in the EEG data, as set within `mfpca.face()`, an appropriate number of principal components were to be selected at both Level 1 and Level 2. The quantities $(K_1)$ and $(K_2)$ denote this number of retained components at Level 1 and Level 2 respectively. The resulting Level 1 and Level 2 scores represented these repeated EEG measurements in a concise way and were subsequently used in clustering and classification analyses. 
 
+## K-Means Clustering Level 1 Scores
+
+Following the formation of Level 1 MFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
+
 
 
 ## Elastic Net
@@ -222,6 +226,8 @@ $$
 $$
 
 This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter $\alpha$ was tuned over a grid of values between 0 and 1. For each value of $\alpha$, an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of $\alpha$ that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, $\lambda$. Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone [@ZouHastie2005].
+
+
 
 # Performance Evaluation
 
@@ -308,6 +314,62 @@ knitr::include_graphics("Images/FPCA_km_cm.png")
 ```
 
 We can see from the confusion matrix above, the exact number of cases and controls in each cluster. 
+
+
+
+## Multi-Level Functional Principal Component Analysis
+
+Unlike the previous FPCA analysis, which considered a single trial under a single condition, MFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation). 
+
+The first four eigenfunctions for Level 1 and Level 2 are shown below. Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals. However, Level 1 components describe differences between subjects, whereas Level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the Level 1 MFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as MFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
+
+
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="MFPCA eigenfunctions (a) First four Level 1 eigenfunctions representing between-subject variation, (b) First four Level 2 eigenfunctions representing within-subject trial-to-trial variation", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level1mfpca.png",
+                        "Images/level2mfpca.png"))
+
+```
+
+The Level 1 eigenfunctions (Figure (a)), exhibit substantial variation throughout the EEG time frame. The first component captures a broad pattern of variability across the time period, while the remaining components exhibit more localised changes in the EEG pattern. In contrast, the Level 2 eigenfunctions (Figure (b)) appear smoother and capture less between-trial fluctuations around an individual's typical EEG response. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject. 
+
+To aid interpretation of the components, the mean EEG function was plotted alongside the deviations corresponding to each principal component. The figures below show the first three principal components for Levels 1 and 2 respectively. 
+
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 1 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level1PC1.png",
+                          "Images/level1PC2.png",
+                          "Images/level1PC3.png"))
+
+```
+
+For Level 1, above, the first principal component explains the largest proportion of between-subject variability. Subjects with high positive PC1 tend to show increased EEG trajectories relative to the mean function, particularly surrounding $100ms$, the point of stimulus onset. Whereas, subjects with large negative scores exhibit reduced trajectories. The second and third components capture more specific localised variations, with changes occuring at certain times rather than across the entire time period. 
+
+
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 2 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
+
+knitr::include_graphics(c("Images/level2PC1.png",
+                          "Images/level2PC2.png",
+                          "Images/level2PC3.png"))
+
+```
+
+For Level 2, above, the first principal component displays the dominant source of between-trial variation within subjects. As expected, less localised variation is observed than between-subject variation. However, the magnitude of the deviations from the mean function suggests that a lot of variability exists between repeated trials despite accounting for subject-level effects. As before, the second and third Level 2 components describe additional within-subject fluctuations. 
+
+Overall, the MFPCA results indicate that meaningful variation does exist at both the subject and trial levels. This information is used further as predictors in the elastic net classification model.
+
+## K-Means Clustering Level 1 Scores
+
+To determine whether the subject-level variation identified by MFPCA improved the distinction between cases and controls, k-means clustering was applied to MFPCA level 1 scores and compared with standard FPCA score clustering results. 
+
+The elbow plot suggested that five clusters was a reasonable choice, therefore, k-means clustering was performed using five clusters based on the first four Level 1 MFPCA scores. 
+
+*Insert Cluster Picture*
+
+Visual inspection of the resulting clusters showed that, when compared with clustering based on standard FPCA scores, the MFPCA clusters appeared to provide a slightly clearer representation of between-subject variability. Level 1 scores account for the repeated-trial structure of the data, however show broadly similar results to that observed using standard FPCA scores at subject-level. 
+
 
 ## Elastic Net 
 Elastic net models were trained using the training datasets and subsequently evaluated on independent test datasets.
@@ -408,53 +470,6 @@ knitr::include_graphics(c(
 ```
 
 
-## Multi-Level Functional Principal Component Analysis
-
-Unlike the previous FPCA analysis, which considered a single trial under a single condition, MFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation). 
-
-The first four eigenfunctions for Level 1 and Level 2 are shown below. Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals. However, Level 1 components describe differences between subjects, whereas Level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the Level 1 MFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as MFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
-
-
-```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="MFPCA eigenfunctions (a) First four Level 1 eigenfunctions representing between-subject variation, (b) First four Level 2 eigenfunctions representing within-subject trial-to-trial variation", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level1mfpca.png",
-                        "Images/level2mfpca.png"))
-
-```
-
-The Level 1 eigenfunctions (Figure (a)), exhibit substantial variation throughout the EEG time frame. The first component captures a broad pattern of variability across the time period, while the remaining components exhibit more localised changes in the EEG pattern. In contrast, the Level 2 eigenfunctions (Figure (b)) appear smoother and capture less between-trial fluctuations around an individual's typical EEG response. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject. 
-
-To aid interpretation of the components, the mean EEG function was plotted alongside the deviations corresponding to each principal component. The figures below show the first three principal components for Levels 1 and 2 respectively. 
-
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 1 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level1PC1.png",
-                          "Images/level1PC2.png",
-                          "Images/level1PC3.png"))
-
-```
-
-For Level 1, above, the first principal component explains the largest proportion of between-subject variability. Subjects with high positive PC1 tend to show increased EEG trajectories relative to the mean function, particularly surrounding $100ms$, the point of stimulus onset. Whereas, subjects with large negative scores exhibit reduced trajectories. The second and third components capture more specific localised variations, with changes occuring at certain times rather than across the entire time period. 
-
-
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 2 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level2PC1.png",
-                          "Images/level2PC2.png",
-                          "Images/level2PC3.png"))
-
-```
-
-For Level 2, above, the first principal component displays the dominant source of between-trial variation within subjects. A expected, less localised variation is observed than between-subject variation. However, the magnitude of the deviations from the mean function suggests that a lot of variability exists between repeated trials despite accounting for subject-level effects. As before, the second and third Level 2 components describe additional within-subject fluctuations. 
-
-Overall, the MFPCA results indicate that meaningful variation does exist at both the subject and trial levels. This information is used further as predictors in the elastic net classification model.
-
-
-## Elastic Net
-
-- elastic net how many predictors included in final model
 
 # Discussion
 \label{sec:discussion}
@@ -466,6 +481,42 @@ Sensory gating refers to the ability of the brain to filter repeated, expected, 
 The difference was most pronounced in Condition 1, where participants generated the sound themselves by pressing a button. In healthy controls, self-generated sensory events are typically attenuated because the sensory consequences of an action are anticipated. Consequently, the larger difference observed in this condition may reflect reduced suppression of predictable sensory input in individuals with schizophrenia.
 
 In contrast, no evidence of group differences was observed in Condition 3, where participants pressed a button, but no sound was produced. The absence of a difference when no auditory stimulus was present provides further support for the interpretation that the findings are related to altered processing of expected auditory information rather than the differences in motor activity associated with pressing the button.
+
+Overall, it is observed that permutation test results support previous evidence that sensory gating mechanisms are disrupted in schizophrenia, particularly when participants self-generate the auditory stimulus. These findings are consistent with previous research, proposing that schizophrenia is linked to impaired predictive processing. 
+
+### FPCA
+
+
+### MFPCA
+
+The MFPCA results demonstrated that meaningful variation existed at both subject and trial level ($1$ and $2$). The presence of substantial Level 2 variability motivates the use of MFPCA, confirming that using repeated EEG trials contain valuable information rather than simply measuring noise. 
+
+Interestingly, we see differences between the MFPCA Level 1 eigenfunctions and those obtained using standard FPCA. This is expected due to the additional inherently noisy EEG data across multiple conditions and repeated trials. We observe a cleaner representation of subject-level differences following the introduction of additional data, and the account for within-subject variability. This finding is consistent with previous work which suggested that between EEG trials may itself be informative in schizophrenia. 
+
+### Classification Performance (Elastic net)
+
+### Strengths and Limitations
+
+Strengths 
+- incorporated multilevel repeated trials, using functional data analysis to treat EEG signals as continuous functions.
+
+- successfully created a predictive model for schizophrenia using mfpca scores. Elastic net regression was a suitable choice to automatically perform variable selection, although evidence of overfitting remains
+
+- consistent results, where several analyses identified Condition 1 as the most informative condition, including permutation tests and elastic net. 
+
+Limitations
+- small number of subjects following full split of dataset
+- potential overfitting as many of the elastic net models retained a large number of predictors relative to the number of subjects
+- only a subset of EEG nodes were analysed
+
+Despite these limitations, the study demonstrated that MFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+
+### Further Research
+
+- future work could use more participants
+- could use a larger number of trials 
+- could incorporate more nodes
+- could apply FPCA to different nodes and conditions
 
 
 - what di the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
