@@ -81,7 +81,7 @@ Each subject completed each of these sensory conditions up to 100 times. Therefo
 # Methods
 \label{sec:methods}
 
-We used several methods: spline smoothing, permutation test, FPCA & mFPCA
+This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (mFPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
 
 ## Smoothing
 
@@ -239,6 +239,8 @@ Classification performance was further evaluated using a confusion matrix. Accur
 
 # Results
 \label{sec:results}
+
+This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, MFPCA, and elastic net analyses are reported.
 
 ## Permutation t-test
 The a priori null hypothesis was that, following stimulus presentation at approximately 100 ms, there would be no difference in the mean EEG functions between cases and controls. Stimulus onset is indicated by the vertical blue reference line in the plots below. As this hypothesis was pre-specified, statistical significance was assessed relative to the pointwise 0.05 critical value. Evidence against the null hypothesis is indicated when the observed test statistic exceeds this threshold.
@@ -473,6 +475,8 @@ knitr::include_graphics(c(
 
 # Discussion
 \label{sec:discussion}
+
+This section discusses the key findings of the study and considers their implications. The results as outlined in the results section above are interpreted with particular emphasis on sensory gating, group differences between cases and controls, and the performance of the predictive modelling approaches. The strengths and limitations of the study are also considered, together with recommendations for future research.
 
 ## Permutation ttests
 
