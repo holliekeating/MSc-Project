@@ -81,7 +81,8 @@ Each subject completed each of these sensory conditions up to 100 times. Therefo
 # Methods
 \label{sec:methods}
 
-This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (mFPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
+This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (M
+FPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
 
 ## Smoothing
 
@@ -501,26 +502,20 @@ Interestingly, we see differences between the MFPCA Level 1 eigenfunctions and t
 
 ### Strengths and Limitations
 
-Strengths 
-- incorporated multilevel repeated trials, using functional data analysis to treat EEG signals as continuous functions.
+A key strength of this study was the use of Functional Data Analysis techniques to analyse EEG signals as continuous functions, in particular, the application of MFPCA which allowed the incorporation of the repeated-trial structure of the data. Another strength was the successful development of a predictive model for schizophrenia using these MFPCA-derived scores. Elastic Net regression proved a suitable choice due to the large amount of correlated predictor variables, simultaneously balancing variable shrinkage and selection. Furthermore, several analyses produced consistent findings, with Condition 1 emerging as the most informative condition across both the permutation tests and Elastic Net models. This consistency furthers confidence in the robustness of overall findings.
 
-- successfully created a predictive model for schizophrenia using mfpca scores. Elastic net regression was a suitable choice to automatically perform variable selection, although evidence of overfitting remains
-
-- consistent results, where several analyses identified Condition 1 as the most informative condition, including permutation tests and elastic net. 
-
-Limitations
-- small number of subjects following full split of dataset
-- potential overfitting as many of the elastic net models retained a large number of predictors relative to the number of subjects
-- only a subset of EEG nodes were analysed
+Several limitations should be acknowledged. Firstly, following the overall train-test split of the data set, the number of unique subjects for model development was relatively small which limits the statistical power of analysis. Secondly, potential over-fitting is observed within the Elastic Net models due to the large number of predictors retained within a model compared with the number of subjects. Finally, the analysis focused on a few pre-determined EEG nodes which are commonly associated with schizophrenia rather than the entire electrode set. This means potential informative signals from other brain regions were not investigated which may produce meaningful results. 
 
 Despite these limitations, the study demonstrated that MFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
 
+
 ### Further Research
 
-- future work could use more participants
-- could use a larger number of trials 
-- could incorporate more nodes
-- could apply FPCA to different nodes and conditions
+Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study. 
+
+It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of MFPCA scores. 
+
+
 
 
 - what di the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
