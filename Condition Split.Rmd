@@ -55,8 +55,8 @@ node <- "fp1"
 # Loop which reads in separate excel file for each patient and compiles all data into a dataframe
 # Merges time data and demogrpahic data which contains whether patients are controls or cases
 
-#setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
-setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
+setwd("C:/Users/holli/OneDrive - National University of Ireland, Galway/Modules/Research Project")
+# setwd("C:/Users/35387/Documents/College/MSc Health Data Science/HDS Project/Rscript/Data")
 
 times = fread("archive/time.csv")
 demographic <- fread("archive/demographic.csv")
@@ -1551,7 +1551,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond1_", nodes_en, "_L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond1_", nodes_en, "_L2_", 1:l2, sep = "")))
 
 
@@ -1576,7 +1576,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -1596,7 +1596,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond1_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond1_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -1645,7 +1645,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond2_", nodes_en, "_L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond2_", nodes_en, "_L2_", 1:l2, sep = "")))
 
 #add new scores to df
@@ -1670,7 +1670,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -1690,7 +1690,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond2_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond2_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -1737,7 +1737,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond3_", nodes_en, "_L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond3_", nodes_en, "_L2_", 1:l2, sep = "")))
 
 # add to full scores df
@@ -1761,7 +1761,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -1781,7 +1781,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond3_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond3_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -1811,7 +1811,7 @@ dfresponse_en <- data.frame(ID = as.numeric(as.character(cond_en$subject)),
                               arrange(ID, trial)
 
 df_wide_en <- pivot_wider(dfresponse_en[,-4], names_from = time, values_from = eeg_smooth)
-Y_en <- as.matrix(df_wide_en[, -(1:2)]) # remove id & trial 
+Y_en <- as.matrix(df_wide_en[, -(1:2)]) # remove id & trial
 
 mlfpc_en <- mfpca.face(Y = Y_en,
                     id = df_wide_en$ID,
@@ -1830,7 +1830,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond1_", nodes_en, "_L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond1_", nodes_en, "_L2_", 1:l2, sep = "")))
 
 # add scores to full scores df
@@ -1852,7 +1852,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -1872,7 +1872,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond1_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond1_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -1920,7 +1920,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond2_", nodes_en, "L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond2_", nodes_en, "L2_", 1:l2, sep = "")))
 
 # add scores to df
@@ -1944,7 +1944,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -1964,7 +1964,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond2_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond2_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -2009,7 +2009,7 @@ level2_en <- as.data.frame(mlfpc_en$score$level2) %>%
 l1 <- ncol(as.data.frame(mlfpc_en$score$level1)) # number of fpcs
 colnames(level1_en) <- c("ID", c(paste("cond3_", nodes_en, "_L1_", 1:l1, sep = "")))
 
-l2 <- ncol(as.data.frame(mlfpc_en$score$level2)) 
+l2 <- ncol(as.data.frame(mlfpc_en$score$level2))
 colnames(level2_en) <- c("ID", "trial", c(paste("cond3_", nodes_en, "_L2_", 1:l2, sep = "")))
 
 # add to full score df
@@ -2034,7 +2034,7 @@ dfresponse_test <- data.frame(ID = as.numeric(as.character(cond_test$subject)),
                          time = cond_test$time_ms,
                          eeg_raw = as.numeric(sm_test$y),
                          eeg_smooth = as.numeric(predict(sm_test)),
-                         schizophrenia = cond_test$schizophrenia) %>% 
+                         schizophrenia = cond_test$schizophrenia) %>%
                          arrange(ID, trial)
 
 df_wide_test <- pivot_wider(dfresponse_test[,-4], #exclude the raw eeg column
@@ -2054,7 +2054,7 @@ level2_test <- as.data.frame(predicted_scores[[2]]) %>%
 
 l1 <- ncol(as.data.frame(predicted_scores[[1]])) # number of fpcs
 colnames(level1_test) <- c("ID", c(paste("cond3_", node_test, "_L1_", 1:l1, sep = "")))
-l2 <- ncol(as.data.frame(predicted_scores[[2]])) 
+l2 <- ncol(as.data.frame(predicted_scores[[2]]))
 colnames(level2_test) <- c("ID", "trial", c(paste("cond3_", node_test, "_L2_", 1:l2, sep = "")))
 
 #put in a single df
@@ -2067,6 +2067,11 @@ pred_af7_c3_merged <- pred_af7_c2_merged %>%
 mfpca_pred_scores <- pred_af7_c3_merged
 ```
 
+
+```{r}
+mfpca_matrix <- fpca_f3_merged_en3
+mfpca_pred_scores <- pred_f3_c3_merged
+```
 
 ## Variable Selection - Elastic Net 
 
@@ -2100,53 +2105,64 @@ y_train <- mfpca_allcond$group
 x_test <- model.matrix(group ~ .-ID - trial, data = mfpca_test_all_cond)[, -1] # gets rid of intercept term
 y_test <- mfpca_test_all_cond$group
 
-# elastic net: 0 < alpha < 1
-# 0 ridge, 1 lasso
-# cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.01, 0.99, by = 0.1)
+# # elastic net: 0 < alpha < 1
+# # 0 ridge, 1 lasso
+# # cv to find best value of lambda and alpha 
+# alpha_grid <- seq(0.01, 0.99, by = 0.1)
+# 
+# cv_list <- lapply(alpha_grid, function(a) {
+#   cv.glmnet(x_train, y_train, 
+#             alpha = a, 
+#             family = "binomial")})
+# 
+# # extract CV error for eachg alpha 
+# cv_error <- sapply(cv_list, function(m) min(m$cvm))
+# 
+# # best model
+# best_index <- which.min(cv_error)
+# best_cv <- cv_list[[best_index]]
+# best_alpha <- alpha_grid[best_index]
+# 
+# # best lambda corresponding to that alpha
+# bestlam <- ((best_cv$lambda.min)/2)
+# selam <- ((best_cv$lambda.1se)/2)
+# 
+# # fit elastic net model
+# enet <- glmnet(x_train, y_train,
+#                alpha = best_alpha,
+#                family = "binomial")      # standardize = TRUE is the default 
+# 
+# # predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+# enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# # 1se lam
+# enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+# 
+# # convert to vector
+# enet_prob_v <- as.vector(enet_prob)
+# enet_prob_se_v <- as.vector(enet_prob_se)
 
-cv_list <- lapply(alpha_grid, function(a) {
-  cv.glmnet(x_train, y_train, 
-            alpha = a, 
-            family = "binomial")})
+cv_fit <- cv.glmnet( x_train, y_train, alpha = 0, family = "binomial", nfolds = 10 ) 
+bestlam <- cv_fit$lambda.min 
+selam <- cv_fit$lambda.1se 
+enet <- glmnet( x_train, y_train, alpha = 0, family = "binomial" ) 
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response") 
 
-# extract CV error for eachg alpha 
-cv_error <- sapply(cv_list, function(m) min(m$cvm))
-
-# best model
-best_index <- which.min(cv_error)
-best_cv <- cv_list[[best_index]]
-best_alpha <- alpha_grid[best_index]
-
-# best lambda corresponding to that alpha
-bestlam <- best_cv$lambda.min
-selam <- best_cv$lambda.1se
-
-# fit elastic net model
-enet <- glmnet(x_train, y_train,
-               alpha = best_alpha,
-               family = "binomial")      # standardize = TRUE is the default 
-
-# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
-enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
-# 1se lam
-enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
-
-# convert to vector
-enet_prob_v <- as.vector(enet_prob)
+# convert to vector 
+enet_prob_v <- as.vector(enet_prob) 
 enet_prob_se_v <- as.vector(enet_prob_se)
 
 df_pred_prob <- data.frame(enet_prob_v) %>% mutate(ID = mfpca_test_all_cond$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_test_all_cond$group)) %>% mutate(trial = mfpca_test_all_cond$trial)
 
 df_pred_prob %>% 
-  ggplot(aes(x = as.factor(ID), y = enet_prob_v, group = as.factor(ID)))+
+  ggplot(aes(x = as.factor(ID), y = enet_prob_se_v, group = as.factor(ID)))+
   geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
-  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0))+
   geom_hline(
-        yintercept = 0.33,
+        yintercept = 0.5,
         linetype = 'dashed', 
         color = "red"
-    )
+    )+theme_bw()
 
 df_pred_prob %>% 
   filter(ID == 24) %>% 
@@ -2154,7 +2170,7 @@ df_pred_prob %>%
   geom_boxplot(aes(fill = schizophrenia, alpha = 0.5), outlier.shape = NA)+
   geom_jitter(alpha = 0.5)+
   geom_hline(
-        yintercept = 0.33, 
+        yintercept = 0.5, 
         linetype = 'dashed', 
         color = "red"
     )
@@ -2164,7 +2180,7 @@ df_pred_prob %>%
   ggplot(aes(x = trial, y = enet_prob_v))+
   geom_point(aes(colour = schizophrenia))+
   geom_hline(
-        yintercept = 0.33,
+        yintercept = 0.5,
         linetype = 'dashed', 
         color = "red"
     )
@@ -2181,7 +2197,7 @@ enet_brier <- BrierScore(y_test, enet_prob_se_v)
 enet_roc_obj <- roc(y_test, enet_prob_se_v)
 enet_auc <- auc(enet_roc_obj)
 plot(enet_roc_obj, print.auc = TRUE)
-coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
+coords(enet_roc_obj, "best")
 
 # Plots 
 plot(enet, xvar = "lambda")
@@ -2210,7 +2226,7 @@ points(best_alpha, min(cv_error), col = "darkgreen", pch = 19, cex = 1.5)
 abline(v = best_alpha, col = "darkgreen", lty = 2)
 
 # misclassification error
-enet_class <- ifelse(enet_prob_se_v > 0.33, 1, 0)
+enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
 # confusion matrix (predicted, outcome)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
@@ -2229,6 +2245,12 @@ coef_df <- data.frame(predictor = rownames(coef_selam),
 
 non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs
+
+non_zero_coeffs %>%
+  summarise(
+    Level1 = sum(str_detect(predictor, "L1")),
+    Level2 = sum(str_detect(predictor, "L2"))
+  )
 
 zero_coeffs <- coef_df %>% filter(coefficient == 0)
 
@@ -2416,41 +2438,52 @@ y_test <- mfpca_cond1_test$group
 
 
 
-# elastic net: 0 < alpha < 1
-# 0 ridge, 1 lasso
-# cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.01, 0.99, by = 0.1)
+# # elastic net: 0 < alpha < 1
+# # 0 ridge, 1 lasso
+# # cv to find best value of lambda and alpha 
+# alpha_grid <- seq(0.01, 0.99, by = 0.1)
+# 
+# cv_list <- lapply(alpha_grid, function(a) {
+#   cv.glmnet(x_train, y_train, 
+#             alpha = a, 
+#             family = "binomial")})
+# 
+# # extract CV error for eachg alpha 
+# cv_error <- sapply(cv_list, function(m) min(m$cvm))
+# 
+# # best model
+# best_index <- which.min(cv_error)
+# best_cv <- cv_list[[best_index]]
+# best_alpha <- alpha_grid[best_index]
+# 
+# # best lambda corresponding to that alpha
+# bestlam <- best_cv$lambda.min
+# selam <- best_cv$lambda.1se
+# 
+# 
+# # fit elastic net model
+# enet <- glmnet(x_train, y_train,
+#                alpha = best_alpha,
+#                family = "binomial")      # standardize = TRUE is the default 
+# 
+# # predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
+# enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
+# # 1se lam
+# enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
+# 
+# # convert to vector
+# enet_prob_v <- as.vector(enet_prob)
+# enet_prob_se_v <- as.vector(enet_prob_se)
 
-cv_list <- lapply(alpha_grid, function(a) {
-  cv.glmnet(x_train, y_train, 
-            alpha = a, 
-            family = "binomial")})
+cv_fit <- cv.glmnet( x_train, y_train, alpha = 0, family = "binomial", nfolds = 10 ) 
+bestlam <- cv_fit$lambda.min 
+selam <- cv_fit$lambda.1se 
+enet <- glmnet( x_train, y_train, alpha = 0, family = "binomial" ) 
+enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response") 
 
-# extract CV error for eachg alpha 
-cv_error <- sapply(cv_list, function(m) min(m$cvm))
-
-# best model
-best_index <- which.min(cv_error)
-best_cv <- cv_list[[best_index]]
-best_alpha <- alpha_grid[best_index]
-
-# best lambda corresponding to that alpha
-bestlam <- best_cv$lambda.min
-selam <- best_cv$lambda.1se
-
-
-# fit elastic net model
-enet <- glmnet(x_train, y_train,
-               alpha = best_alpha,
-               family = "binomial")      # standardize = TRUE is the default 
-
-# predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
-enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
-# 1se lam
-enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
-
-# convert to vector
-enet_prob_v <- as.vector(enet_prob)
+# convert to vector 
+enet_prob_v <- as.vector(enet_prob) 
 enet_prob_se_v <- as.vector(enet_prob_se)
 
 df_pred_c1 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond1_test$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_cond1_test$group)) %>% mutate(trial = mfpca_cond1_test$trial)
@@ -2458,12 +2491,12 @@ df_pred_c1 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond1_test$ID, .b
 df_pred_c1 %>% 
   ggplot(aes(x = as.factor(ID), y = enet_prob_se_v, group = as.factor(ID)))+
   geom_boxplot(aes(fill = schizophrenia), outlier.shape = NA)+
-  geom_jitter(aes(colour = schizophrenia, alpha = 0.5))+
+  geom_jitter(aes(colour = schizophrenia, alpha = 0))+
   geom_hline(
-        yintercept = 0.33,
+        yintercept = 0.5,
         linetype = 'dashed', 
         color = "red"
-    )
+    )+theme_bw()
 
 # calibration plots
 valProbggplot(enet_prob_v, y_test)
@@ -2471,6 +2504,16 @@ valProbggplot(enet_prob_se_v, y_test)
 
 # Brier score on test set - 1se lam
 enet_brier <- BrierScore(y_test, enet_prob_se_v)
+
+# misclassification error
+enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
+# confusion matrix (predicted, outcome)
+table(enet_class, y_test)
+enet_error <- mean(enet_class != y_test)
+
+enet_error # closer to zero is better. 0.5 = random guessing
+enet_brier # closer to zero is better. >0.25 is poor
+enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
 # ROC + AUC on test set
 enet_roc_obj <- roc(y_test, enet_prob_se_v)
@@ -2514,6 +2557,12 @@ coef_df <- data.frame(predictor = rownames(coef_selam),
 
 non_zero_coeffs_cond1 <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs_cond1
+
+non_zero_coeffs_cond1 %>%
+  summarise(
+    Level1 = sum(str_detect(predictor, "L1")),
+    Level2 = sum(str_detect(predictor, "L2"))
+  )
 
 zero_coeffs_cond1 <- coef_df %>% filter(coefficient == 0)
 ```
