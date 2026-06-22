@@ -55,7 +55,7 @@ Schizophrenia is a mental health condition which is associated with unusual acti
 
 Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the curve [@Shen2020; @BOUTROS2009].
 
-Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. Recent research has suggested that differences in schizophrenia may be reflected not only in average EEG responses, but also in variability between repeated trials. Karanikolaou et al. [-@Karanikolaou2022] found evidence of imprecise results while analysing temporal EEG activity for individuals with schizophrenia, suggesting that between-trial variation may contain important information about EEG prediction mechanisms. This highlights the importance of methods that account for repeated measurements when analysing EEG data. 
+Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. Recent research has suggested that differences in schizophrenia may be reflected not only in average EEG responses, but also in variability between repeated trials. Karanikolaou et al. [-@Karanikolaou2022] found evidence of imprecise results while analysing temporal EEG activity for individuals with schizophrenia, suggesting that between-trial variation may contain important information about EEG prediction mechanisms. This highlights the importance of methods that account for repeated measurements when analysing EEG data. 
 
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In paarticular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each funtional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
@@ -98,7 +98,7 @@ $$
 \sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt
 $$
 
-Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is over-smoothed and under-fit.
+Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
@@ -156,7 +156,7 @@ Given the smoothed random functions $X_i(t)$ we first estimate the mean function
 
 Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
 
-#### Exploring FPCA scores via extreme curve and then k-means  clustering
+### Exploring FPCA scores via extreme curve and then k-means clustering
 
 K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
 
@@ -187,6 +187,7 @@ The full model of MFPCA was formulated as
 $$
 Y_{ij} = \mu(t) + \eta_j(t) + \sum^{K_1}_{k=1} \xi_{ik}\phi_k^{(1)}(t) + \sum^{K_2}_{l=1} \zeta_{ijl}\phi_l^{(2)} + \epsilon_{ij}(t)
 $$
+
 [@Zablocki2024], where $Y_{ij}(t)$ is the smoothed EEG signal measured at time $(t)$ for trial $(j)$ belonging to subject $(i)$, where $(i = 1, 2, \ldots, n)$ and $(j = 1, 2, \ldots, n)$. The function $(\mu(t))$ represents the overall mean EEG trajectory across all subjects and trials, and $(\eta_j(t))$ represents the trial-specific shift from this overall mean. The term $(\epsilon_{ij}(t))$ denotes a residual error. 
 
 The functions $(\phi_k^{(1)(t))})$ and $(\phi_l^{(2)}(t))$ are the eigenfunctions at Level 1 and Level 2 respectively. Level 1 eigenfunctions describe between-subject variation, capturing the systematic differences in EEG signals across subjects, whereas Level 2 eigenfunctions describe the within-subject variation, capturing trial-to-trial fluctuations within the same subject. The corresponding scores, $(\xi_{ik})$ and $(\zeta_{ijl})$, quantifies this variation from at a subject and trial level, described  by each eigenfunction. 
@@ -198,7 +199,6 @@ In order to explain 95% of the total variability in the EEG data, as set within 
 ## K-Means Clustering Level 1 Scores
 
 Following the formation of Level 1 MFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
-
 
 ## Elastic Net
 
@@ -223,7 +223,6 @@ $$
 $$
 
 This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter $\alpha$ was tuned over a grid of values between 0 and 1. For each value of $\alpha$, an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of $\alpha$ that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, $\lambda$. Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone [@ZouHastie2005].
-
 
 
 # Performance Evaluation
@@ -307,7 +306,7 @@ knitr::include_graphics(c("Images/fpca_kmeans_plot.png",
 
 Four distinct clusters were identified with K-means clustering visualised in (a). The plot (b) on the right was used to determine if there was any association between clusters and case-control status. Cluster 1 is largely made up of controls, cluster 3 is mainly made up of cases, cluster 4 has only one subject (control), and membership to cluster 2 was somewhat mixed.
 
-```{r, echo=FALSE, out.width = "10%", fig.pos="H"}
+```{r, echo=FALSE, out.width = "12%", fig.pos="H"}
 
 knitr::include_graphics("Images/FPCA_km_cm.png")
 
@@ -399,7 +398,7 @@ As in the first analysis, models in the second and third analyses were fitted us
 
 Firstly, the model was fitted on all conditions simultaneously. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 32 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was outstanding, with an AUC of 0.937 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope between 0.47 and 0.70. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_allcond_4nodes_95var.png",
@@ -411,7 +410,7 @@ knitr::include_graphics(c(
 
 Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_cond1_4nodes_95var.png",
@@ -423,7 +422,7 @@ knitr::include_graphics(c(
 
 Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the MFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_cond2_4nodes_95var.png",
@@ -435,7 +434,7 @@ knitr::include_graphics(c(
 
 Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_cond3_4nodes_95var.png",
@@ -446,8 +445,10 @@ knitr::include_graphics(c(
 ```
 
 ### Section 2: two EEG nodes, with 95% variability explained
+
 Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.61$ and $\lambda = 0.000049$. The original set of 148 predictor variables was reduced to 37 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 27 level 1 and 7 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.914 (Figure b). Classification accuracy at a threshold of 0.5 was 79.89%. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.46 to 0.73. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_allcond_2nodes_95var.png",
@@ -456,8 +457,10 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_2nodes_95var.png"))
 
 ```
+
 Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000016$. The original set of 40 predictor variables was reduced to 32 non-zero coefficients (Figure a). Among the MFPCA score predictors, 13 level 1 and 18 level 2 predictors were retained. Model discrimination was limited, with an AUC of 0.577 (Figure b) Classification accuracy was 58.0%, indicating limited classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.01 to 0.04. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1 with 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_cond1_2nodes_95var.png",
@@ -470,7 +473,7 @@ knitr::include_graphics(c(
 ### Section 3: four EEG nodes, with 90% variability
 Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.91$ and $\lambda = 0.000071$. The original set of 150 predictor variables was reduced to 24 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 20 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was modest, with an AUC of 0.655 (Figure b). Classification accuracy at a threshold of 0.5 was 49.63%, indicating performance close to random classification. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.03 to 0.07. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_allcond_4nodes_90var.png",
@@ -480,9 +483,9 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000020$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the MFPCA score predictors, 13 level 1 and 2 level 2 predictors were retained. Model discrimination was modest, with an AUC of 0.684 (Figure b). Classification accuracy at a threshold of 0.5 was 40.77%, indicating poor classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from −0.03 to −0.01. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000020$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the MFPCA score predictors, 13 level 1 and 2 level 2 predictors were retained. Model discrimination was modest, with an AUC of 0.684 (Figure b). Classification accuracy at a threshold of 0.5 was 40.77%, indicating poor classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from -0.03 to -0.01. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1 with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/coefficients_cond1_4nodes_90var.png",
@@ -538,7 +541,8 @@ A key strength of this study was the use of Functional Data Analysis techniques 
 
 Several limitations should be acknowledged. Firstly, following the overall train-test split of the data set, the number of unique subjects for model development was relatively small which limits the statistical power of analysis. Secondly, potential over-fitting is observed within the Elastic Net models due to the large number of predictors retained within a model compared with the number of subjects. Finally, the analysis focused on a few pre-determined EEG nodes which are commonly associated with schizophrenia rather than the entire electrode set. This means potential informative signals from other brain regions were not investigated which may produce meaningful results. 
 
-Despite these limitations, the study demonstrated that MFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+
 
 
 ### Further Research
