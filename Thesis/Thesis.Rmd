@@ -59,7 +59,7 @@ Previous studies have investigated schizophrenia using EEG data to identify abno
 
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In paarticular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each funtional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
-In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (MFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework therefore provides a more appropriate representation of repeated-measures EEG data. 
+In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (MFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data. 
 
 The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status. 
 
@@ -84,9 +84,9 @@ FPCA) were employed to characterise the major sources of variation in the data a
 
 ## Smoothing
 
-Due to the inherently noisy nature of EEG signals, smoothing was applied to the functional observations. When smoothing functions, it is important to balance the trade-off between variance and bias. Variance refers to the sensitivity of an estimated function to random fluctuations in the observed data, while bias refers to systematic deviation of the estimated function from the true underlying signal. High variance may lead to overfitting and poor generalisability to new data, whereas high bias may over-smooth the data leading to underfitting and obscuring important signal characteristics.
+Due to the inherently noisy nature of EEG signals, smoothing was applied to the functional observations. When smoothing functions, it is important to balance the trade-off between variance and bias. Variance refers to the sensitivity of an estimated function to random fluctuations in the observed data, while bias refers to systematic deviation of the estimated function from the true underlying signal. High variance may lead to over-fitting and poor generalisability to new data, whereas high bias may over-smooth the data leading to under-fitting and obscuring important signal characteristics.
 
-Spline smoothing uses piecewise polynomial functions joined smoothly through points called knots to estimate the underlying smoothed curve and reduce noise in the data. Spline smoothing was used to reduce noise while preserving the underlying brain activity patterns. Specifically, 100 cubic B-spline basis functions were defined over the domain of each EEG signal, (0-1638ms). Using a relatively large number of basis functions provides sufficient flexibility to represent complex functional features while allowing smoothness to be controlled separately through penalisation.
+Spline smoothing uses piece-wise polynomial functions joined smoothly through points called knots to estimate the underlying smoothed curve and reduce noise in the data. Spline smoothing was used to reduce noise while preserving the underlying brain activity patterns. Specifically, 100 cubic B-spline basis functions were defined over the domain of each EEG signal, (0-1638ms). Using a relatively large number of basis functions provides sufficient flexibility to represent complex functional features while allowing smoothness to be controlled separately through penalisation.
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
 
@@ -98,7 +98,7 @@ $$
 \sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt
 $$
 
-Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is oversmoothed and underfit.
+Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
@@ -117,14 +117,14 @@ Permutation t-tests were used to assess differences in functional EEG trajectori
 
 Under the null hypothesis, group labels are exchangeable, meaning that randomly reallocating observations between groups should not systematically alter the value of the test statistic. The permutation procedure repeatedly shuffles the case-control labels and recalculates the test statistic for each permutation, generating an empirical null distribution. The observed test statistic is then compared with this distribution to determine statistical significance. The resulting p-value represents the probability of obtaining a test statistic at least as extreme as that observed if the null hypothesis were true.
 
-When interpreting a permutation t-test plot for an a priori, theory-driven hypothesis, statistical significance is indicated when the observed test statistic exceeds the pointwise 0.05 critical value. However, for post hoc, data-driven hypotheses, significance should be assessed relative to the maximum 0.05 critical value, which controls for multiple comparisons across the entire functional domain and provides stronger control of the family-wise error rate, (Bugni and Horowitz, 2021).
+When interpreting a permutation t-test plot for an a priori, theory-driven hypothesis, statistical significance is indicated when the observed test statistic exceeds the pointwise $0.05$ critical value. However, for post hoc, data-driven hypotheses, significance should be assessed relative to the maximum $0.05$ critical value, which controls for multiple comparisons across the entire functional domain and provides stronger control of the family-wise error rate, (Bugni and Horowitz, 2021).
 
 In this study, five thousand permutation t-tests were applied to the FP1 electrode on a condition-by-condition basis. FP1 region was selected due to previous evidence linking frontal EEG abnormalities, particularly gamma-band dysfunction, to schizophrenia and associated cognitive deficits [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
 
 ## Functional Principal Component Analysis
 
-Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al., this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data. 
+Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data. 
 
 In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components. 
 
@@ -149,7 +149,6 @@ $$
 where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
 
 Using the PACE method, however we estimate the FPC scores as follows:
-
 
 
 Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and functions [@yao2005PACE].
@@ -199,7 +198,6 @@ In order to explain 95% of the total variability in the EEG data, as set within 
 ## K-Means Clustering Level 1 Scores
 
 Following the formation of Level 1 MFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
-
 
 
 ## Elastic Net
@@ -382,7 +380,7 @@ knitr::include_graphics("Images/mfpca_kmeans_conf_mat.png")
 ```
 As we can see from the confusion matrix, cluster one has only one subject (control), membership to cluster two is mixed with 6 controls and 7 cases, cluster three is dominated by controls and similarly cluster four has only controls in it.
 
-Visual inspection of the resulting clusters showed that, when compared with clustering based on standard FPCA scores, the mFPCA clusters appeared to provide a slightly clearer representation of between-subject variability. Level 1 scores account for the repeated-trial structure of the data, however show broadly similar results to that observed using standard FPCA scores at subject-level. 
+As expected, the clustering results were broadly similar to those obtained using standard FPCA scores, since both methods primarily describe between-subject variation. While MFPCA provides a more appropriate framework for repeated measures data, the overall cluster composition remained largely unchanged.
 
 
 ## Elastic Net 
@@ -515,7 +513,6 @@ Overall, it is observed that permutation test results support previous evidence 
 
 FPCA was able to explain 95% of the variability in the curves by using three principal components (i.e. the three main modes of variation). Subjects with higher scores for FPC 1 had a similar trajectory to that of the eigenfunction as the score indicates how closely a curve aligns with the eigenfunction in question. The trajectories of the top scores for FPC 2 and FPC 3 followed similar trajectories to their eigenfunctions however it a was far less pronounced than similarity than that of FPC 1. This is likely due to the fact that FPC 1 explains far more of the variability in curves than FPC 2 or FPC 3.
 
-- what do the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
 
 ### K-means Clustering
 
@@ -529,7 +526,7 @@ Interestingly, we see differences between the MFPCA Level 1 eigenfunctions and t
 
 ### K-means clustering
 
-When K-means clustering was applied to the level 1 mFPCA scores, a difference was anticipated based on the fact that multiple trials were being included as as opposed to a single trial, therefore there was more information for each subject even looking at the level 1 scores. 
+When K-means clustering was applied to the level 1 mFPCA scores, a difference was anticipated based on the fact that multiple trials were being included as as opposed to a single trial, therefore there was more information for each subject even looking at the level 1 scores. However, the overall clustering structure remained broadly similar.
 
 Membership to cluster 1, 3 and 4 were mainly controls, while cluster 2 membership was more evenly split. This may indicate that we may be better able to predict controls than cases and that including the level 2 scores in our predictive model may improve its predictive power.
 
