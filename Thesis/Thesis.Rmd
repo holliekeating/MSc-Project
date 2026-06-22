@@ -76,8 +76,6 @@ In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cas
 
 Each subject completed each of these sensory conditions up to 100 times. Therefore, we have many repetitions of the same conditions for each of the subjects. So in total we have approximately $64\times 40 \times 100 = 256,000$ curves.
 
-- Explain the study background trials, conditions etc.
-
 # Methods
 \label{sec:methods}
 
@@ -261,6 +259,7 @@ knitr::include_graphics(c(
 "Images/permt_cond3.png"))
 
 ```
+
 ## Functional Principal Component Analysis
 
 FPCA decomposes each individual curve into the mean curve plus the sum of the other principal components multiplied by a scalar (score) which indicates how much that individual curve aligns with the specific principal component.
@@ -318,8 +317,6 @@ knitr::include_graphics("Images/FPCA_km_cm.png")
 
 We can see from the confusion matrix above, the exact number of cases and controls in each cluster. 
 
-
-
 ## Multi-Level Functional Principal Component Analysis
 
 Unlike the previous FPCA analysis, which considered a single trial under a single condition, MFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation). 
@@ -365,13 +362,27 @@ Overall, the MFPCA results indicate that meaningful variation does exist at both
 
 ## K-Means Clustering Level 1 Scores
 
-To determine whether the subject-level variation identified by MFPCA improved the distinction between cases and controls, k-means clustering was applied to MFPCA level 1 scores and compared with standard FPCA score clustering results. 
+To determine whether the subject-level variation identified by MFPCA improved the distinction between cases and controls, k-means clustering was applied to MFPCA level 1 scores and compared with standard FPCA score clustering results. This was done as the level 1 scores and the standard FPCA scores are both working on the between-subject level.
 
-The elbow plot suggested that five clusters was a reasonable choice, therefore, k-means clustering was performed using five clusters based on the first four Level 1 MFPCA scores. 
+To compare this with the kmeans clustering performed previously on the single trial data we used four clusters as before.
 
-*Insert Cluster Picture*
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Kmeans clustering of level 1 mFPCA scores (a) visualisation of clusters, (b) curves coloured by case-control status, faceted by cluster", fig.pos="H"}
 
-Visual inspection of the resulting clusters showed that, when compared with clustering based on standard FPCA scores, the MFPCA clusters appeared to provide a slightly clearer representation of between-subject variability. Level 1 scores account for the repeated-trial structure of the data, however show broadly similar results to that observed using standard FPCA scores at subject-level. 
+knitr::include_graphics(c("Images/mfpca_kmeans_clusters.png",
+                          "Images/mFPCA_kmeans_curves.png"))
+
+```
+
+In (b) the curves shown by cluster show all of the trials (curves) for an individual which contributes to the density of curves in each cluster. To understand how many individuals are in each cluster we will look at the confusion matrix.
+
+```{r, echo=FALSE, fig.show='hold', out.width= "12%", fig.cap="Confusion matrix for of case control status by cluster", fig.pos="H"}
+
+knitr::include_graphics("Images/mfpca_kmeans_conf_mat.png")
+
+```
+As we can see from the confusion matrix, cluster one has only one subject (control), membership to cluster two is mixed with 6 controls and 7 cases, cluster three is dominated by controls and similarly cluster four has only controls in it.
+
+Visual inspection of the resulting clusters showed that, when compared with clustering based on standard FPCA scores, the mFPCA clusters appeared to provide a slightly clearer representation of between-subject variability. Level 1 scores account for the repeated-trial structure of the data, however show broadly similar results to that observed using standard FPCA scores at subject-level. 
 
 
 ## Elastic Net 
@@ -497,7 +508,7 @@ FPCA was able to explain 95% of the variability in the curves by using three pri
 
 ### K-means Clustering
 
-The k-means clusters indicate that there may be some predictive power in the FPC scores since cluster 1, 3, and 4 have membership mainly of cases or controls. Though there is some overlap in cluster 2.........
+The k-means clusters indicate that there may be some predictive power in the FPC scores since cluster 1, 3, and 4 have membership mainly of cases or controls. Though there is some overlap in cluster 2 the other clusters tend to separate cases and controls quite well, indicating that a model using the FPC scores may have some predictive power on the case-control status.
 
 
 ### mFPCA
@@ -522,17 +533,6 @@ Despite these limitations, the study demonstrated that MFPCA combined with elast
 Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study. 
 
 It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of MFPCA scores. 
-
-
-
-
-- what di the fpcs tell us and what do the scores tell us about how much an individual eeg aligns with the eigenfunction?
-- what do the mfpcs tell us? at each level?
-- why do they differ at level 1? why is mfpca better/worse?
-- what can we conclude from elastic net - more less shrinkage? too few subjects?
-- How does our model perform - calibration curve, auc, misclassification
-- Anything that could further this research
-
 
 ## References
 
