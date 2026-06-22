@@ -98,7 +98,7 @@ $$
 \sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt
 $$
 
-Where $\sum_{i=1}^n (y_i – X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \inf$ is over-smoothed and under-fit.
+Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 
@@ -156,7 +156,7 @@ Given the smoothed random functions $X_i(t)$ we first estimate the mean function
 
 Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
 
-#### Exploring FPCA scores via extreme curve and then k-means  clustering
+### Exploring FPCA scores via extreme curve and then k-means clustering
 
 K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
 
@@ -306,7 +306,7 @@ knitr::include_graphics(c("Images/fpca_kmeans_plot.png",
 
 Four distinct clusters were identified with K-means clustering visualised in (a). The plot (b) on the right was used to determine if there was any association between clusters and case-control status. Cluster 1 is largely made up of controls, cluster 3 is mainly made up of cases, cluster 4 has only one subject (control), and membership to cluster 2 was somewhat mixed.
 
-```{r, echo=FALSE, out.width = "10%", fig.pos="H"}
+```{r, echo=FALSE, out.width = "12%", fig.pos="H"}
 
 knitr::include_graphics("Images/FPCA_km_cm.png")
 
@@ -541,7 +541,8 @@ A key strength of this study was the use of Functional Data Analysis techniques 
 
 Several limitations should be acknowledged. Firstly, following the overall train-test split of the data set, the number of unique subjects for model development was relatively small which limits the statistical power of analysis. Secondly, potential over-fitting is observed within the Elastic Net models due to the large number of predictors retained within a model compared with the number of subjects. Finally, the analysis focused on a few pre-determined EEG nodes which are commonly associated with schizophrenia rather than the entire electrode set. This means potential informative signals from other brain regions were not investigated which may produce meaningful results. 
 
-Despite these limitations, the study demonstrated that MFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+
 
 
 ### Further Research
