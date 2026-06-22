@@ -391,7 +391,9 @@ The second analysis incorporated data from two EEG nodes (fp1 and f3) together w
 
 The third analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with MFPCA scores explaining 90% of the variability at both Levels 1 and 2.
 
-As in the first analysis, models in the second and third analyses were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions. However, only the results for all conditions combined and for Condition 1 are presented in detail. The focus on Condition 1 was motivated by the permutation t-test results, which provided the strongest evidence of differences between cases and controls. Results for Conditions 2 and 3 are not presented, as these conditions showed limited evidence of group differences.
+The fourth analysis examined the effect of ridge regression by setting $\alpha = 0$, thereby retaining all the predictors in the model as ridge regression shrinks coefficients towards zero but does not set them exactly equal to zero, and therefore does not perform variable selection. Data from four EEG nodes (fp1, f3, f7 and af7) were incorporated together with mFPCA scores explaining 95% of the variability at both Levels 1 and 2.
+
+As in the first analysis, models in the second, third and fourth analyses were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions. However, only the results for all conditions combined and for Condition 1 are presented in detail. The focus on Condition 1 was motivated by the permutation t-test results, which provided the strongest evidence of differences between cases and controls. Results for Conditions 2 and 3 are not presented, as these conditions showed limited evidence of group differences.
 
 
 ### Section 1 – four EEG nodes, with 95% variability explained
@@ -495,7 +497,27 @@ knitr::include_graphics(c(
 
 ```
 
+### Section 4: Ridge Regression, four EEG nodes, with 95% variability explained
+Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as (\lambda = 0.020575). All 148 original predictors were retained in the model. Among the MFPCA score predictors, 42 Level 1 and 102 Level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.946 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 79.89%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope estimate exceeding 1. The 95% confidence interval was between 2.22 and 3.52, suggesting substantial underfitting and overly conservative predicted probabilities. This was reflected in both the calibration rug plot and the predicted probability density plot (Figure d), which showed predictions distributed across a broad range of probabilities rather than clustering near 0 and 1.
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
+knitr::include_graphics(c(
+"Images/coefficients_allcond_ridge.png",
+"Images/roc_allcond_ridge.png",
+"Images/calibration_allcond_ridge.png",
+"Images/predprob_allcond_ridge.png"))
+
+```
+Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.0144897$. All 40 predictor variables were retained in the model. Among the MFPCA score predictors, 21 Level 1 and 4 Level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.574 (Figure b), indicating only limited ability to distinguish between cases and controls. Classification accuracy at a threshold of 0.5 was 58.30%. Examination of the calibration plot (Figure c) indicated imperfect calibration. The calibration slope was substantially below 1, with a 95% confidence interval of between 0.09 and 0.31, suggesting overfitting. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 1 and 0.
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond1_ridge.png",
+"Images/roc_cond1_ridge.png",
+"Images/calibration_cond1_ridge.png",
+"Images/predprob_cond1_ridge.png"))
+
+```
 
 # Discussion
 \label{sec:discussion}
