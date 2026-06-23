@@ -84,9 +84,9 @@ In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cas
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
 
-Each subject completed each of these sensory conditions up to 100 times. Consequently, multiple observations of the same condition were available for each participant. EEG data were recorded using a 64-sensor EEG cap, the sensor positions can be seen in the image below. In total, the dataset comprised of approximately $64\times 40 \times 100 = 256,000$ curves.
+Each subject completed each of these sensory conditions up to 100 times. Consequently, multiple observations of the same condition were available for each participant. EEG data were recorded using a 64-sensor EEG cap, the sensor positions can be seen in the image below, [@Artinis2024]. In total, the dataset comprised of approximately $64\times 40 \times 100 = 256,000$ curves.
 
-```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 1, fig.cap = "EEG Cap Sensor Labels, [@Artinis2024]", fig.pos="H"}
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 1, fig.cap = "EEG Cap Sensor Labels", fig.pos="H"}
 
 knitr::include_graphics("Images/EEG_cap.png")
 
@@ -116,15 +116,13 @@ $$\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt$$
 Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
+```{r, echo = FALSE, fig.show='hold', out.width="89%", out.height="7cm", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
-```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.8, fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
-
-knitr::include_graphics(c("Images/raw_data.png",
-                          "Images/smooth_data.png"))
+knitr::include_graphics("Images/raw_vs_smoothed.png")
 
 ```
 
-## Permutation test
+## Permutation t-test
 
 Permutation t-tests were used to assess differences in functional EEG trajectories between cases and controls. Permutation-based inference is well suited to functional data and has been widely applied in the FDA literature [@BugniHorowitz2021]. The test evaluates the null hypothesis that the mean functions of the two groups are equal across the domain of the EEG signal.
 
