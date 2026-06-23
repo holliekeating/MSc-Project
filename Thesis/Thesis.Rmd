@@ -2,17 +2,17 @@
 title: Exploring the EEG Signals of Schizophrenia
 authors:
   - name: Maeve Samali
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: M.samali1@universityofgalway.ie
   - name: Sarah Conway
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: S.Conway29@universityofgalway.ie
   - name: Hollie Keating 
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: H.Keating3@universityofgalway.ie
@@ -51,17 +51,28 @@ library(kableExtra)
 
 An electroencephalogram (EEG) is a non-invasive test used to measure electrical activity in the brain by attaching 64 sensor nodes to the scalp. Each sensor measures a single curve, so each test produces 64 curves. The data from EEG is commonly used to diagnose conditions such as sleep disorders, seizures and schizophrenia
 
-Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010]. 
+Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010].
 
 Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the curve [@Shen2020; @BOUTROS2009].
 
-Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. Recent research has suggested that differences in schizophrenia may be reflected not only in average EEG responses, but also in variability between repeated trials. Karanikolaou et al. [-@Karanikolaou2022] found evidence of imprecise results while analysing temporal EEG activity for individuals with schizophrenia, suggesting that between-trial variation may contain important information about EEG prediction mechanisms. This highlights the importance of methods that account for repeated measurements when analysing EEG data. 
 
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In paarticular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each funtional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
-In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (MFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data. 
+Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. 
 
-The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status. 
+At present, researchers have been using FDA to study EEG data using differing techniques. Yi Yuyan et al. [@yi2022classification] explored classification of EEG signals using functional data analysis. This research involved feature extraction and dimension reduction via FDA in a study consisting of healthy adults, where the aim was to classify long versus short distance travel. Similar to our approach, multiple trials and multiple electrodes were analysed for penalised functional logistic regression. However, the hierarchical structure of repeated trials within subjects was not explicitly modelled, with trials instead treated as separate observations.
+
+To address the hierarchical nature of complex data, Hasenstab et al. (2017) [@hasenstab2017multidimensional] used Multidimensional FPCA to preserve the structure of EEG data collected from children with autism spectrum disorder. Their study incorporated multiple trials (120 per participant) and multiple nodes, with the main analysis focuses on four nodes from right frontal region. However, the work primarily focused on understanding variation within the data, whereas the current study investigates whether FPCA-derived features can be used to discriminate between schizophrenia cases and controls through predictive modelling and clustering.
+
+The main foundation for this current study was introduced by Di et al. (2009) [@Di2009] who developed  Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
+
+Together, these studies display the value of using FDA and multilevel approaches for the analysis of complex EEG data. However, limited research has applied mFPCA specifically to schizophrenia EEG data while also evaluating these PC scores within predictive modelling frameworks. This study aims to address this gap. 
+
+In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (mFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data and motivates the methodology adopted in the present study.
+
+AIM:
+
+<!-- The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status.  -->
 
 
 ## Data
