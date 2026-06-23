@@ -2,17 +2,17 @@
 title: Exploring the EEG Signals of Schizophrenia
 authors:
   - name: Maeve Samali
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: M.samali1@universityofgalway.ie
   - name: Sarah Conway
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: S.Conway29@universityofgalway.ie
   - name: Hollie Keating 
-    department: School of Mathematics, Applied Mathematics & Statistics
+    department: School of Mathematical and Statistical Sciences
     affiliation: University of Galway
     location: Galway, Ireland
     email: H.Keating3@universityofgalway.ie
@@ -47,21 +47,32 @@ library(kableExtra)
 ```
 
 # Introduction
+
 \label{sec:intro}
 
 An electroencephalogram (EEG) is a non-invasive test used to measure electrical activity in the brain by attaching 64 sensor nodes to the scalp. Each sensor measures a single curve, so each test produces 64 curves. The data from EEG is commonly used to diagnose conditions such as sleep disorders, seizures and schizophrenia
 
-Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010]. 
+Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010].
 
 Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the curve [@Shen2020; @BOUTROS2009].
 
-Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. Recent research has suggested that differences in schizophrenia may be reflected not only in average EEG responses, but also in variability between repeated trials. Karanikolaou et al. [-@Karanikolaou2022] found evidence of imprecise results while analysing temporal EEG activity for individuals with schizophrenia, suggesting that between-trial variation may contain important information about EEG prediction mechanisms. This highlights the importance of methods that account for repeated measurements when analysing EEG data. 
-
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In paarticular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each funtional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
-In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (MFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data. 
+Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. 
 
-The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status. 
+At present, researchers have been using FDA to study EEG data using differing techniques. Yi Yuyan et al. [@yi2022classification] explored classification of EEG signals using functional data analysis. This research involved feature extraction and dimension reduction via FDA in a study consisting of healthy adults, where the aim was to classify long versus short distance travel. Similar to our approach, multiple trials and multiple electrodes were analysed for penalised functional logistic regression. However, the hierarchical structure of repeated trials within subjects was not explicitly modelled, with trials instead treated as separate observations.
+
+To address the hierarchical nature of complex data, Hasenstab et al. (2017) [@hasenstab2017multidimensional] used Multidimensional FPCA to preserve the structure of EEG data collected from children with autism spectrum disorder. Their study incorporated multiple trials (120 per participant) and multiple nodes, with the main analysis focuses on four nodes from right frontal region. However, the work primarily focused on understanding variation within the data, whereas the current study investigates whether FPCA-derived features can be used to discriminate between schizophrenia cases and controls through predictive modelling and clustering.
+
+The main foundation for this current study was introduced by Di et al. (2009) [@Di2009] who developed  Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
+
+Together, these studies display the value of using FDA and multilevel approaches for the analysis of complex EEG data. However, limited research has applied mFPCA specifically to schizophrenia EEG data while also evaluating these PC scores within predictive modelling frameworks. This study aims to address this gap. 
+
+In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (mFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data and motivates the methodology adopted in the present study.
+
+AIM:
+
+<!-- The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status.  -->
 
 
 ## Data
@@ -77,10 +88,10 @@ In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cas
 Each subject completed each of these sensory conditions up to 100 times. Therefore, we have many repetitions of the same conditions for each of the subjects. So in total we have approximately $64\times 40 \times 100 = 256,000$ curves.
 
 # Methods
+
 \label{sec:methods}
 
-This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (M
-FPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
+This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (M FPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
 
 ## Smoothing
 
@@ -94,14 +105,11 @@ Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estima
 
 We estimate $X(t)$ by minimising the following:
 
-$$
-\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt
-$$
+$$\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt$$
 
 Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
-
 
 ```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.8, fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
@@ -109,7 +117,6 @@ knitr::include_graphics(c("Images/raw_data.png",
                           "Images/smooth_data.png"))
 
 ```
-
 
 ## Permutation test
 
@@ -121,21 +128,19 @@ When interpreting a permutation t-test plot for an a priori, theory-driven hypot
 
 In this study, five thousand permutation t-tests were applied to the FP1 electrode on a condition-by-condition basis. FP1 region was selected due to previous evidence linking frontal EEG abnormalities, particularly gamma-band dysfunction, to schizophrenia and associated cognitive deficits [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
-
 ## Functional Principal Component Analysis
 
-Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data. 
+Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data.
 
-In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components. 
+In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components.
 
-Due to the inherently high-dimensional nature of EEG data, directly analysing observations can be challenging. FPCA addresses this issue by representing each function as a linear combination of a small number of eigenfunctions, this allows the dominant sources of variation to be captured through a reduced set of principal component scores.  
-
+Due to the inherently high-dimensional nature of EEG data, directly analysing observations can be challenging. FPCA addresses this issue by representing each function as a linear combination of a small number of eigenfunctions, this allows the dominant sources of variation to be captured through a reduced set of principal component scores.
 
 ### FPCA via PACE
 
 Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
 
-Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1. 
+Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1.
 
 ### FPCA Formula
 
@@ -143,62 +148,56 @@ Each EEG curve is decomposed into: (1) a mean function; (2) eigenfunctions descr
 
 The curves are decomposed by the Karhunen-Loève expansion as follows:
 
-$$
-X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)
-$$
+$$X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)$$
 where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
 
 Using the PACE method, however we estimate the FPC scores as follows:
 
-
 Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and functions [@yao2005PACE].
 
-
-Intuitively, the first 3 PC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations. 
+Intuitively, the first 3 FPC scores summarise much of the variation present across the observed EEG curves, 95%, and are used to explain the original high-dimensional functional observations.
 
 ### Exploring FPCA scores via extreme curve and then k-means clustering
 
 K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
 
-As quoted from Fortuna F. "cluster analysis aims to group a set of data such that units within clusters are more similar than across clusters with respect to a metric. In the FDA context, the most popular technique is the k-means clustering algorithm" [@FortunaMaturo2019]. 
+As quoted from Fortuna F. "cluster analysis aims to group a set of data such that units within clusters are more similar than across clusters with respect to a metric. In the FDA context, the most popular technique is the k-means clustering algorithm" [@FortunaMaturo2019].
 
-To establish an appropriate number of clusters for our k-means analysis, several values of $k$ were explored and a four-cluster solution was selected. This number was chosen as it provided a reasonable balance between cluster separation and interpretability. Given the relatively small sample size, large numbers of clusters would have resulted in very small cluster memberships. The aim of this is to investigate whether subjects with similar FPCA score patterns group together naturally. The resulting clusters were compared with schizophrenia status using a confusion matrix, and smoothed EEG curves were then plotted within each cluster. This analysis was used to assess whether FPCA scores captured patterns in the EEG data that could be relevant for differentiating between schizophrenia cases and controls. 
+To establish an appropriate number of clusters for our k-means analysis, several values of $k$ were explored and a four-cluster solution was selected. This number was chosen as it provided a reasonable balance between cluster separation and interpretability. Given the relatively small sample size, large numbers of clusters would have resulted in very small cluster memberships. The aim of this is to investigate whether subjects with similar FPCA score patterns group together naturally. The resulting clusters were compared with schizophrenia status using a confusion matrix, and smoothed EEG curves were then plotted within each cluster. This analysis was used to assess whether FPCA scores captured patterns in the EEG data that could be relevant for differentiating between schizophrenia cases and controls.
 
 ## Logistic Regression Model
 
-According to Lan N. Bui, "Logistic regression is commonly utilized in clinical and educational research to examine relationships between risk factors and binary outcomes" [@BuiDing2025]. Following clustering analysis, logistic regression models were fitted to examine whether FPCA scores were associated with the classification of schizophrenia (group = 1). 
+According to Lan N. Bui, "Logistic regression is commonly utilized in clinical and educational research to examine relationships between risk factors and binary outcomes" [@BuiDing2025]. Following clustering analysis, logistic regression models were fitted to examine whether FPCA scores were associated with the classification of schizophrenia (group = 1).
 
-The purpose of this analysis was to assess whether the selected three FPCA scores contained significant information to discriminate between schizophrenia cases and controls. Odds ratios were also calculated to aid interpretation of the resulting fitted coefficients. 
+The purpose of this analysis was to assess whether the selected three FPCA scores contained significant information to discriminate between schizophrenia cases and controls. Odds ratios were also calculated to aid interpretation of the resulting fitted coefficients.
 
 ## Multilevel Functional Principal Component Analysis
 
-At this stage in analysis, the EEG curves of subjects within one trial and one condition were investigated. To extend this, and include several of the repeated trials per subject and conditions, one could no longer use standard FPCA. 
+At this stage in analysis, the EEG curves of subjects within one trial and one condition were investigated. To extend this, and include several of the repeated trials per subject and conditions, one could no longer use standard FPCA.
 
-An important limitation of standard FPCA methods is that they are not designed for multilevel analyses, due to their assumption of independence between observations. Introduced in @Di2009, multilevel FPCA was designed to address the volume and importance of EEG data specifically. This methodology is designed to extract core intra- and inter- subject components of multilevel functional data. 
+An important limitation of standard FPCA methods is that they are not designed for multilevel analyses, due to their assumption of independence between observations. Introduced in @Di2009, multilevel FPCA was designed to address the volume and importance of EEG data specifically. This methodology is designed to extract core intra- and inter- subject components of multilevel functional data.
 
 ### Arranging multilevel functional data
 
-To accurately arrange the repeated structure, all available trials were retained and smoothed using the same B-spline smoothing procedure described previously for standard FPCA. The data were then reorganised into a long-format data structure, where each observation consisted of a subject ID, trial number, time point and the corresponding smoothed EEG value. By organising the data into this format, repeated functional observations from the same individual can be linked together during later analysis. 
+To accurately arrange the repeated structure, all available trials were retained and smoothed using the same B-spline smoothing procedure described previously for standard FPCA. The data were then reorganised into a long-format data structure, where each observation consisted of a subject ID, trial number, time point and the corresponding smoothed EEG value. By organising the data into this format, repeated functional observations from the same individual can be linked together during later analysis.
 
-MFPCA was implemented using the `mfpca.face()` function [@LiCui2024]. The smoothed EEG curves were arranged in a matrix where each row represented a single EEG trial, each column corresponded to a time point. To separate the subject-level and trial-level variation, subject ID and trial number were included. Components were retained until $95%$ of the total variation had been explained. 
+mFPCA was implemented using the `mFPCA.face()` function [@LiCui2024]. The smoothed EEG curves were arranged in a matrix where each row represented a single EEG trial, each column corresponded to a time point. To separate the subject-level and trial-level variation, subject ID and trial number were included. Components were retained until $95%$ of the total variation had been explained.
 
-The full model of MFPCA was formulated as 
+The full model of mFPCA was formulated as
 
-$$
-Y_{ij} = \mu(t) + \eta_j(t) + \sum^{K_1}_{k=1} \xi_{ik}\phi_k^{(1)}(t) + \sum^{K_2}_{l=1} \zeta_{ijl}\phi_l^{(2)} + \epsilon_{ij}(t)
-$$
+$$Y_{ij} = \mu(t) + \eta_j(t) + \sum^{K_1}_{k=1} \xi_{ik}\phi_k^{(1)}(t) + \sum^{K_2}_{l=1} \zeta_{ijl}\phi_l^{(2)} + \epsilon_{ij}(t)$$
 
-[@Zablocki2024], where $Y_{ij}(t)$ is the smoothed EEG signal measured at time $(t)$ for trial $(j)$ belonging to subject $(i)$, where $(i = 1, 2, \ldots, n)$ and $(j = 1, 2, \ldots, n)$. The function $(\mu(t))$ represents the overall mean EEG trajectory across all subjects and trials, and $(\eta_j(t))$ represents the trial-specific shift from this overall mean. The term $(\epsilon_{ij}(t))$ denotes a residual error. 
+[@Zablocki2024], where $Y_{ij}(t)$ is the smoothed EEG signal measured at time $(t)$ for trial $(j)$ belonging to subject $(i)$, where $(i = 1, 2, \ldots, n)$ and $(j = 1, 2, \ldots, n)$. The function $(\mu(t))$ represents the overall mean EEG trajectory across all subjects and trials, and $(\eta_j(t))$ represents the trial-specific shift from this overall mean. The term $(\epsilon_{ij}(t))$ denotes a residual error.
 
-The functions $(\phi_k^{(1)(t))})$ and $(\phi_l^{(2)}(t))$ are the eigenfunctions at Level 1 and Level 2 respectively. Level 1 eigenfunctions describe between-subject variation, capturing the systematic differences in EEG signals across subjects, whereas Level 2 eigenfunctions describe the within-subject variation, capturing trial-to-trial fluctuations within the same subject. The corresponding scores, $(\xi_{ik})$ and $(\zeta_{ijl})$, quantifies this variation from at a subject and trial level, described  by each eigenfunction. 
+The functions $(\phi_k^{(1)(t))})$ and $(\phi_l^{(2)}(t))$ are the eigenfunctions at Level 1 and Level 2 respectively. Level 1 eigenfunctions describe between-subject variation, capturing the systematic differences in EEG signals across subjects, whereas Level 2 eigenfunctions describe the within-subject variation, capturing trial-to-trial fluctuations within the same subject. The corresponding scores, $(\xi_{ik})$ and $(\zeta_{ijl})$, quantifies this variation from at a subject and trial level, described by each eigenfunction.
 
-Intuitively here, each eigenfunction can be interpreted as representing a particular characteristic pattern of EEG activity. The corresponding principal component score, similar to standard FPCA, indicates the extent to which that pattern is present within an individual's EEG trajectory. Larger positive or negative scores indicate a greater differentiation from the overall mean function. Therefore, the eigenvalues associated with each component tell one the amount of variability explained by that specific component. 
+Intuitively here, each eigenfunction can be interpreted as representing a particular characteristic pattern of EEG activity. The corresponding principal component score, similar to standard FPCA, indicates the extent to which that pattern is present within an individual's EEG trajectory. Larger positive or negative scores indicate a greater differentiation from the overall mean function. Therefore, the eigenvalues associated with each component tell one the amount of variability explained by that specific component.
 
-In order to explain 95% of the total variability in the EEG data, as set within `mfpca.face()`, an appropriate number of principal components were to be selected at both Level 1 and Level 2. The quantities $(K_1)$ and $(K_2)$ denote this number of retained components at Level 1 and Level 2 respectively. The resulting Level 1 and Level 2 scores represented these repeated EEG measurements in a concise way and were subsequently used in clustering and classification analyses. 
+In order to explain 95% of the total variability in the EEG data, as set within `mFPCA.face()`, an appropriate number of principal components were to be selected at both Level 1 and Level 2. The quantities $(K_1)$ and $(K_2)$ denote this number of retained components at Level 1 and Level 2 respectively. The resulting Level 1 and Level 2 scores represented these repeated EEG measurements in a concise way and were subsequently used in clustering and classification analyses.
 
 ## K-Means Clustering Level 1 Scores
 
-Following the formation of Level 1 MFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
+Following the formation of Level 1 mFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status.
 
 ## Elastic Net
 
@@ -206,39 +205,34 @@ Elastic net is a regularization and variable selection method that combines the 
 
 In ordinary least squares (OLS) regression, coefficients are estimated by minimizing the residual sum of squares (RSS), which represents the sum of the squared differences between the observed and predicted values. Consequently, the fitted regression line is chosen to produce predictions that are as close as possible to the observed data. Ridge regression, introduced by @HoerlKennard1970, extends OLS by adding an (L_2) penalty to the objective function. This penalty constrains the magnitude of the regression coefficients by minimizing:
 
-$$
-\mathrm{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2
-$$
+$$\mathrm{RSS} + \lambda \sum_{j=1}^{p}\beta_j^2$$
 
 where $\lambda$ is a non-negative tuning parameter controlling the degree of shrinkage. By shrinking coefficients towards zero, ridge regression reduces model variance and can improve predictive performance in the presence of multicollinearity. However, coefficients are not reduced exactly to zero, meaning all predictors remain in the model. Lasso regression applies an (L_1) penalty to the regression coefficients and minimizes:
 
-$$
-\mathrm{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|
-$$
+$$\mathrm{RSS} + \lambda \sum_{j=1}^{p}|\beta_j|$$
 
 This penalty shrinks coefficients towards zero and can set some coefficients exactly equal to zero. Consequently, lasso performs automatic variable selection, removing less informative predictors and producing a more parsimonious model, [@Tibshirani1996]. Elastic net combines the (L_1) and (L_2) penalties and minimizes:
 
-$$
-\mathrm{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]
-$$
+$$\mathrm{RSS} + \lambda \left[(1-\alpha)\sum_{j=1}^{p}\beta_j^2 + \alpha\sum_{j=1}^{p}|\beta_j|\right]$$
 
 This approach balances the sparsity-inducing properties of lasso with the ability of ridge regression to handle correlated predictors. The mixing parameter $\alpha$ was tuned over a grid of values between 0 and 1. For each value of $\alpha$, an elastic net model was fitted and evaluated using 10-fold cross-validation. The value of $\alpha$ that produced the lowest cross-validated error was selected, together with its corresponding optimal penalty parameter, $\lambda$. Elastic net is particularly useful when the number of predictors exceeds the number of observations and when predictors are highly correlated. In such settings, it often provides more stable and accurate predictions than lasso regression alone [@ZouHastie2005].
 
-
 # Performance Evaluation
 
-Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration. 
+Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration.
 
-The ROC curve assesses the ability of a classification model to distinguish between two classes, (Fawcett, 2006), cases and controls in this application. It plots the true positive rate (sensitivity) against the false positive rate (specificity) across a range of classification thresholds. These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0). The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), (Fawcett, 2006). The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination. 
+The ROC curve assesses the ability of a classification model to distinguish between two classes, (Fawcett, 2006), cases and controls in this application. It plots the true positive rate (sensitivity) against the false positive rate (specificity) across a range of classification thresholds. These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0). The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), (Fawcett, 2006). The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination.
 
 Classification performance was further evaluated using a confusion matrix. Accuracy was calculated as the proportion of correctly classified observations, while the misclassification error rate was calculated as the proportion of incorrectly classified observations. Calibration was assessed using calibration plots, which compare observed outcome frequencies with predicted probabilities, (Collins et al., 2014). A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
 # Results
+
 \label{sec:results}
 
-This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, MFPCA, and elastic net analyses are reported.
+This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, mFPCA, and elastic net analyses are reported.
 
 ## Permutation t-test
+
 The a priori null hypothesis was that, following stimulus presentation at approximately 100 ms, there would be no difference in the mean EEG functions between cases and controls. Stimulus onset is indicated by the vertical blue reference line in the plots below. As this hypothesis was pre-specified, statistical significance was assessed relative to the pointwise 0.05 critical value. Evidence against the null hypothesis is indicated when the observed test statistic exceeds this threshold.
 
 In Condition 1, during which participants pressed a button to immediately produce a sound, the observed test statistic exceeded the pointwise 0.05 critical value over a substantial portion of the post-stimulus interval. This provides strong evidence of differences in the EEG responses of cases and controls.
@@ -246,7 +240,6 @@ In Condition 1, during which participants pressed a button to immediately produc
 In Condition 2, during which participants passively listened to the same sound without pressing a button, the observed test statistic exceeded the pointwise 0.05 critical value over a small portion of the post-stimulus interval, suggesting evidence of differences between the groups.
 
 In Condition 3, during which participants pressed a button, but no sound was produced, the observed test statistic did not exceed the pointwise 0.05 critical value. Consequently, there was no evidence of a difference between the EEG responses of cases and controls.
-
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Permutation T-tests: (a) Condition 1; (b) Condition 2; (c) Condition 3.", fig.pos="H"}
 
@@ -271,11 +264,11 @@ knitr::include_graphics("Images/FPCA.png")
 
 As you can see the functional principal components are eigenfunctions which explain the main modes of variation. We found we only needed three functional principal components to explain 95% of the variability in the curves.
 
-On the top right of this plot is the mean curve, and on the bottom right, we can see the main modes of variation about this mean curve. So, the mean curve is flattened to be a straight line, and the eigenfunctions represent the functional principal components. 
+On the top right of this plot is the mean curve, and on the bottom right, we can see the main modes of variation about this mean curve. So, the mean curve is flattened to be a straight line, and the eigenfunctions represent the functional principal components.
 
-The first functional principal component, shown in black, remains close to the mean function initially, and then it drops below the mean. In the second FPC shown in red the eigenfunction rises above the mean and then dropping below. The third initially rises above the mean then goes below before rising above the mean again. 
+The first functional principal component, shown in black, remains close to the mean function initially, and then it drops below the mean. In the second FPC shown in red the eigenfunction rises above the mean and then dropping below. The third initially rises above the mean then goes below before rising above the mean again.
 
-These are the three main ways in which subject's curves vary about the mean and as we can see from the scree plot on the bottom left we can see that the first FPC explains the most variance at approximately ~90% and the second and third describe the remaining ~5% of the variation.
+These are the three main ways in which subject's curves vary about the mean and as we can see from the scree plot on the bottom left we can see that the first FPC explains the most variance at approximately \~90% and the second and third describe the remaining \~5% of the variation.
 
 ### Investigating FPC scores
 
@@ -295,7 +288,7 @@ For those with the highest scores for the second functional principal component 
 
 Those with the highest scores for the third principal component (plot on the bottom) they go up, then down, then up again as in the third eigenfunction. The lowest scorers as before do the opposite however, these patterns are not as distinct as the actual eigenfunction itself.
 
-## K-means clustering 
+## K-means clustering
 
 ```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="(a) Visulisation of K-means clustering of FPC scores, (b) Plot of each subject's function by cluster", fig.pos="H"}
 
@@ -326,60 +319,34 @@ cm %>%
 
 ```
 
-We can see from the confusion matrix above, the exact number of cases and controls in each cluster. 
+We can see from the confusion matrix above, the exact number of cases and controls in each cluster.
 
 ## Multi-Level Functional Principal Component Analysis
 
-Unlike the previous FPCA analysis, which considered a single trial under a single condition, MFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation). 
+Unlike the previous FPCA analysis, which considered a single trial under a single condition, mFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and Level 2 (within-subject variation).
 
-The first four eigenfunctions for Level 1 and Level 2 are shown below. Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals. However, Level 1 components describe differences between subjects, whereas Level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the Level 1 MFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as MFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
+The first four eigenfunctions for Level 1 and Level 2 are shown below. Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals, explaining 95% of the variation in the curves. However, Level 1 components describe differences between subjects, whereas Level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the Level 1 mFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as mFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
 
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="mFPCA eigenfunctions (a) First four Level 1 eigenfunctions representing between-subject variation, (b) First four Level 2 eigenfunctions representing within-subject trial-to-trial variation", fig.pos="H"}
 
-```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="MFPCA eigenfunctions (a) First four Level 1 eigenfunctions representing between-subject variation, (b) First four Level 2 eigenfunctions representing within-subject trial-to-trial variation", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level1mfpca.png",
-                        "Images/level2mfpca.png"))
-
-```
-
-The Level 1 eigenfunctions (Figure (a)), exhibit substantial variation throughout the EEG time frame. The first component captures a broad pattern of variability across the time period, while the remaining components exhibit more localised changes in the EEG pattern. In contrast, the Level 2 eigenfunctions (Figure (b)) appear smoother and capture less between-trial fluctuations around an individual's typical EEG response. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject. 
-
-To aid interpretation of the components, the mean EEG function was plotted alongside the deviations corresponding to each principal component. The figures below show the first three principal components for Levels 1 and 2 respectively. 
-
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 1 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level1PC1.png",
-                          "Images/level1PC2.png",
-                          "Images/level1PC3.png"))
+knitr::include_graphics(c("Images/level1mFPCA.png",
+                        "Images/level2mFPCA.png"))
 
 ```
 
-For Level 1, above, the first principal component explains the largest proportion of between-subject variability. Subjects with high positive PC1 tend to show increased EEG trajectories relative to the mean function, particularly surrounding $100ms$, the point of stimulus onset. Whereas, subjects with large negative scores exhibit reduced trajectories. The second and third components capture more specific localised variations, with changes occuring at certain times rather than across the entire time period. 
+The Level 1 eigenfunctions (Figure (a)), exhibit substantial variation throughout the EEG time frame. The first component captures a broad pattern of variability across the time period, while the remaining components exhibit more localised changes in the EEG pattern. In contrast, the Level 2 eigenfunctions (Figure (b)) appear smoother and capture less between-trial fluctuations around an individual's typical EEG response. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject.
 
-
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Mean EEG function (red) with positive and negative deviations corresponding to Level 2 (a) PC1, (b) PC2, (c) PC3", fig.pos="H"}
-
-knitr::include_graphics(c("Images/level2PC1.png",
-                          "Images/level2PC2.png",
-                          "Images/level2PC3.png"))
-
-```
-
-For Level 2, above, the first principal component displays the dominant source of between-trial variation within subjects. As expected, less localised variation is observed than between-subject variation. However, the magnitude of the deviations from the mean function suggests that a lot of variability exists between repeated trials despite accounting for subject-level effects. As before, the second and third Level 2 components describe additional within-subject fluctuations. 
-
-Overall, the MFPCA results indicate that meaningful variation does exist at both the subject and trial levels. This information is used further as predictors in the elastic net classification model.
+Overall, the mFPCA results indicate that meaningful variation does exist at both the subject and trial levels. This information is used further as predictors in the elastic net classification model.
 
 ## K-Means Clustering Level 1 Scores
 
-To determine whether the subject-level variation identified by MFPCA improved the distinction between cases and controls, k-means clustering was applied to MFPCA level 1 scores and compared with standard FPCA score clustering results. This was done as the level 1 scores and the standard FPCA scores are both working on the between-subject level.
+To determine whether the subject-level variation identified by mFPCA improved the distinction between cases and controls, k-means clustering was applied to mFPCA level 1 scores and compared with standard FPCA score clustering results. This was done as the level 1 scores and the standard FPCA scores are both working on the between-subject level.
 
 To compare this with the kmeans clustering performed previously on the single trial data we used four clusters as before.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Kmeans clustering of level 1 mFPCA scores (a) visualisation of clusters, (b) curves coloured by case-control status, faceted by cluster", fig.pos="H"}
 
-knitr::include_graphics(c("Images/mfpca_kmeans_clusters.png",
+knitr::include_graphics(c("Images/mFPCA_kmeans_clusters.png",
                           "Images/mFPCA_kmeans_curves.png"))
 
 ```
@@ -388,7 +355,7 @@ In (b) the curves shown by cluster show all of the trials (curves) for an indivi
 
 ```{r, echo=FALSE, fig.show='hold', out.width= "12%", fig.cap="Confusion matrix for of case control status by cluster", fig.pos="H"}
 
-#knitr::include_graphics("Images/mfpca_kmeans_conf_mat.png")
+#knitr::include_graphics("Images/mFPCA_kmeans_conf_mat.png")
 cm <- matrix(
   c(1, 6, 7, 4,
     0, 7, 3, 0),
@@ -408,28 +375,28 @@ cm %>%
 
 
 ```
+
 As we can see from the confusion matrix, cluster one has only one subject (control), membership to cluster two is mixed with 6 controls and 7 cases, cluster three is dominated by controls and similarly cluster four has only controls in it.
 
-As expected, the clustering results were broadly similar to those obtained using standard FPCA scores, since both methods primarily describe between-subject variation. While MFPCA provides a more appropriate framework for repeated measures data, the overall cluster composition remained largely unchanged.
+As expected, the clustering results were broadly similar to those obtained using standard FPCA scores, since both methods primarily describe between-subject variation. While mFPCA provides a more appropriate framework for repeated measures data, the overall cluster composition remained largely unchanged.
 
+## Elastic Net
 
-## Elastic Net 
 Elastic net models were trained using the training datasets and subsequently evaluated on independent test datasets.
 
-The first analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with MFPCA scores explaining 95% of the variability at both levels 1 and 2. Models were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions.
+The first analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with mFPCA scores explaining 95% of the variability at both levels 1 and 2. Models were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions.
 
-The second analysis incorporated data from two EEG nodes (fp1 and f3) together with MFPCA scores explaining 95% of the variability at both Levels 1 and 2.
+The second analysis incorporated data from two EEG nodes (fp1 and f3) together with mFPCA scores explaining 95% of the variability at both Levels 1 and 2.
 
-The third analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with MFPCA scores explaining 90% of the variability at both Levels 1 and 2.
+The third analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with mFPCA scores explaining 90% of the variability at both Levels 1 and 2.
 
 The fourth analysis examined the effect of ridge regression by setting $\alpha = 0$, thereby retaining all the predictors in the model as ridge regression shrinks coefficients towards zero but does not set them exactly equal to zero, and therefore does not perform variable selection. Data from four EEG nodes (fp1, f3, f7 and af7) were incorporated together with mFPCA scores explaining 95% of the variability at both Levels 1 and 2.
 
 As in the first analysis, models in the second, third and fourth analyses were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions. However, only the results for all conditions combined and for Condition 1 are presented in detail. The focus on Condition 1 was motivated by the permutation t-test results, which provided the strongest evidence of differences between cases and controls. Results for Conditions 2 and 3 are not presented, as these conditions showed limited evidence of group differences.
 
-
 ### Section 1 – four EEG nodes, with 95% variability explained
 
-Firstly, the model was fitted on all conditions simultaneously. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 32 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was outstanding, with an AUC of 0.937 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope between 0.47 and 0.70. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range.
+Firstly, the model was fitted on all conditions simultaneously. Using 10-fold cross-validation, the optimal tuning parameters were identified as $\alpha = 0.71$ and $\lambda = 0.000081$. The original set of 290 predictor variables was reduced to 35 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 32 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was outstanding, with an AUC of 0.937 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 74.2%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope between 0.47 and 0.70. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1 rather than being spread across the full probability range.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -441,7 +408,7 @@ knitr::include_graphics(c(
 
 ```
 
-Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the mFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -453,7 +420,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the MFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the mFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -465,7 +432,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the MFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the mFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -479,7 +446,7 @@ knitr::include_graphics(c(
 
 ### Section 2: two EEG nodes, with 95% variability explained
 
-Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.61$ and $\lambda = 0.000049$. The original set of 148 predictor variables was reduced to 37 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 27 level 1 and 7 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.914 (Figure b). Classification accuracy at a threshold of 0.5 was 79.89%. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.46 to 0.73. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.61$ and $\lambda = 0.000049$. The original set of 148 predictor variables was reduced to 37 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 27 level 1 and 7 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.914 (Figure b). Classification accuracy at a threshold of 0.5 was 79.89%. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.46 to 0.73. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -491,7 +458,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000016$. The original set of 40 predictor variables was reduced to 32 non-zero coefficients (Figure a). Among the MFPCA score predictors, 13 level 1 and 18 level 2 predictors were retained. Model discrimination was limited, with an AUC of 0.577 (Figure b) Classification accuracy was 58.0%, indicating limited classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.01 to 0.04. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000016$. The original set of 40 predictor variables was reduced to 32 non-zero coefficients (Figure a). Among the mFPCA score predictors, 13 level 1 and 18 level 2 predictors were retained. Model discrimination was limited, with an AUC of 0.577 (Figure b) Classification accuracy was 58.0%, indicating limited classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.01 to 0.04. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1 with 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -504,7 +471,8 @@ knitr::include_graphics(c(
 ```
 
 ### Section 3: four EEG nodes, with 90% variability
-Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.91$ and $\lambda = 0.000071$. The original set of 150 predictor variables was reduced to 24 non-zero coefficients (Figure a), indicating substantial variable selection. Among the MFPCA score predictors, 20 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was modest, with an AUC of 0.655 (Figure b). Classification accuracy at a threshold of 0.5 was 49.63%, indicating performance close to random classification. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.03 to 0.07. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+
+Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.91$ and $\lambda = 0.000071$. The original set of 150 predictor variables was reduced to 24 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 20 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was modest, with an AUC of 0.655 (Figure b). Classification accuracy at a threshold of 0.5 was 49.63%, indicating performance close to random classification. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.03 to 0.07. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -516,7 +484,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000020$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the MFPCA score predictors, 13 level 1 and 2 level 2 predictors were retained. Model discrimination was modest, with an AUC of 0.684 (Figure b). Classification accuracy at a threshold of 0.5 was 40.77%, indicating poor classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from -0.03 to -0.01. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000020$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the mFPCA score predictors, 13 level 1 and 2 level 2 predictors were retained. Model discrimination was modest, with an AUC of 0.684 (Figure b). Classification accuracy at a threshold of 0.5 was 40.77%, indicating poor classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from -0.03 to -0.01. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1 with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -528,10 +496,9 @@ knitr::include_graphics(c(
 
 ```
 
-
 ### Section 4: Ridge Regression, four EEG nodes, with 95% variability explained
 
-Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as ($\lambda = 0.020575$). All 148 original predictors were retained in the model. Among the MFPCA score predictors, 42 Level 1 and 102 Level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.946 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 79.89%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope estimate exceeding 1. The 95% confidence interval was between 2.22 and 3.52, suggesting substantial underfitting and overly conservative predicted probabilities. This was reflected in both the calibration rug plot and the predicted probability density plot (Figure d), which showed predictions distributed across a broad range of probabilities rather than clustering near 0 and 1.
+Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as ($\lambda = 0.020575$). All 148 original predictors were retained in the model. Among the mFPCA score predictors, 42 Level 1 and 102 Level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.946 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 79.89%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope estimate exceeding 1. The 95% confidence interval was between 2.22 and 3.52, suggesting substantial underfitting and overly conservative predicted probabilities. This was reflected in both the calibration rug plot and the predicted probability density plot (Figure d), which showed predictions distributed across a broad range of probabilities rather than clustering near 0 and 1.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -543,7 +510,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.0144897$. All 40 predictor variables were retained in the model. Among the MFPCA score predictors, 21 Level 1 and 4 Level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.574 (Figure b), indicating only limited ability to distinguish between cases and controls. Classification accuracy at a threshold of 0.5 was 58.30%. Examination of the calibration plot (Figure c) indicated imperfect calibration. The calibration slope was substantially below 1, with a 95% confidence interval of between 0.09 and 0.31, suggesting overfitting. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 1 and 0.
+Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.0144897$. All 40 predictor variables were retained in the model. Among the mFPCA score predictors, 21 Level 1 and 4 Level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.574 (Figure b), indicating only limited ability to distinguish between cases and controls. Classification accuracy at a threshold of 0.5 was 58.30%. Examination of the calibration plot (Figure c) indicated imperfect calibration. The calibration slope was substantially below 1, with a 95% confidence interval of between 0.09 and 0.31, suggesting overfitting. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 1 and 0.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -573,9 +540,10 @@ performance %>%
 
 The above is a summary table of the results found from all the models. It indicates which conditions were included in the model, the number of nodes, the amount of variance explained by the mFPC scores in the model, the number of coefficients in the reduced model after elastic net is applied, the number of level 1 and level 2 scores included in the elastic net model, the AUC, and the proportion of subjects correctly classified (i.e. accuracy).
 
-The highest classification accuracy is in the 2 node model of all the conditions with 95% variability explained. It has an accuracy of 79.89% using 37 predictors and an AUC of 0.914. The second highest accuracy comes from  the the 4 node model of all conditions with 95% variability explained. This model has an accuracy of 74.2% with 35 predictors included and an AUC of 0.937. The next model with the highest accuracy and AUC is the condition 1 model with 4 nodes and 95% variability explained. It has an accuracy of 66% with 26 predictors included. This is a worse performance than the previous two models. It's AUC of 0.711 is also slightly worse than those of the previous models.
+The highest classification accuracy is in the 2 node model of all the conditions with 95% variability explained. It has an accuracy of 79.89% using 37 predictors and an AUC of 0.914. The second highest accuracy comes from the the 4 node model of all conditions with 95% variability explained. This model has an accuracy of 74.2% with 35 predictors included and an AUC of 0.937. The next model with the highest accuracy and AUC is the condition 1 model with 4 nodes and 95% variability explained. It has an accuracy of 66% with 26 predictors included. This is a worse performance than the previous two models. It's AUC of 0.711 is also slightly worse than those of the previous models.
 
 # Discussion
+
 \label{sec:discussion}
 
 This section discusses the key findings of the study and considers their implications. The results as outlined in the results section above are interpreted with particular emphasis on sensory gating, group differences between cases and controls, and the performance of the predictive modelling approaches. The strengths and limitations of the study are also considered, together with recommendations for future research.
@@ -588,12 +556,11 @@ The difference was most pronounced in Condition 1, where participants generated 
 
 In contrast, no evidence of group differences was observed in Condition 3, where participants pressed a button, but no sound was produced. The absence of a difference when no auditory stimulus was present provides further support for the interpretation that the findings are related to altered processing of expected auditory information rather than the differences in motor activity associated with pressing the button.
 
-Overall, it is observed that permutation test results support previous evidence that sensory gating mechanisms are disrupted in schizophrenia, particularly when participants self-generate the auditory stimulus. These findings are consistent with previous research, proposing that schizophrenia is linked to impaired predictive processing. 
+Overall, it is observed that permutation test results support previous evidence that sensory gating mechanisms are disrupted in schizophrenia, particularly when participants self-generate the auditory stimulus. These findings are consistent with previous research, proposing that schizophrenia is linked to impaired predictive processing.
 
 ## FPCA
 
 FPCA was able to explain 95% of the variability in the curves by using three principal components (i.e. the three main modes of variation). Subjects with higher scores for FPC 1 had a similar trajectory to that of the eigenfunction as the score indicates how closely a curve aligns with the eigenfunction in question. The trajectories of the top scores for FPC 2 and FPC 3 followed similar trajectories to their eigenfunctions however it a was far less pronounced than similarity than that of FPC 1. This is likely due to the fact that FPC 1 explains far more of the variability in curves than FPC 2 or FPC 3.
-
 
 ### K-means Clustering
 
@@ -601,9 +568,9 @@ The k-means clusters indicate that there may be some predictive power in the FPC
 
 ## mFPCA
 
-The mFPCA results demonstrated that meaningful variation existed at both subject and trial level ($1$ and $2$). The presence of substantial Level 2 variability motivates the use of mFPCA, confirming that using repeated EEG trials contain valuable information rather than simply measuring noise. 
+The mFPCA results demonstrated that meaningful variation existed at both subject and trial level ($1$ and $2$). The presence of substantial Level 2 variability motivates the use of mFPCA, confirming that using repeated EEG trials contain valuable information rather than simply measuring noise.
 
-Interestingly, we see differences between the MFPCA Level 1 eigenfunctions and those obtained using standard FPCA. This is expected due to the additional inherently noisy EEG data across multiple conditions and repeated trials. We observe a cleaner representation of subject-level differences following the introduction of additional data, and the account for within-subject variability. This finding is consistent with previous work which suggested that between EEG trials may itself be informative in schizophrenia. 
+Interestingly, we see differences between the mFPCA Level 1 eigenfunctions and those obtained using standard FPCA. This is expected due to the additional inherently noisy EEG data across multiple conditions and repeated trials. We observe a cleaner representation of subject-level differences following the introduction of additional data, and the account for within-subject variability. This finding is consistent with previous work which suggested that between EEG trials may itself be informative in schizophrenia.
 
 ### K-means clustering
 
@@ -613,9 +580,42 @@ Membership to cluster 1, 3 and 4 were mainly controls, while cluster 2 membershi
 
 ## Classification Performance (Elastic net)
 
+### Comparison of Elastic Net Four Node Models
+
+
+
+### Comparison of Elastic Net Models - 4 nodes vs 2 nodes
+
+#### All Conditions Model
+
+The models containing all conditions from sections 1 and 2 are being compared, where the difference in the model arises from the number of EEG nodes differing between models, where section 1 includes four nodes and section 2 includes only two. Subsequent differences are primarily due to the differing levels of regularisation between the two models.
+
+Both models performed very well, being the best performing models among the elastic net models, both in terms of accuracy, which was 74.2% in the 4-node model and 78.89% in the 2-node model, and in terms of AUC, which was 0.937 and 0.914, respectively. Indicating that they performed well in ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the models and slightly decreased the AUC.
+
+Calibration in both was quite similar, with an intercept of 1.36 and a slope of 0.58 in the 4-node model. The calibration in the large (intercept) is greater than 0, indicating that the observed event rate exceeds the average predicted probability; therefore, the model is systematically underpredicting the risk of schizophrenia. And, since the calibration slope is less than 1, there is evidence of overfitting in this model. The two-node model did not have significantly better calibration, with a slope of 0.59 and an intercept of 0.92; it suffers from the same calibration issues as the four-node model. We can see this overfitting by the limited number of predicted probabilities shown on both the rug plot and in the predicted probabilities plot. We can also see that it underpredicts the number of cases, which shows how the mean calibration is not correct.
+
+Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration than the four-node model. 
+
+#### Condition 1 models
+
+Comparing these, the condition 1 models for the four-node model and the two-node model, we can see that the four-node model has both a higher accuracy at 66% and a higher AUC at 0.711 than the 2 node model, which had an accuracy of 58% and an AUC of 0.577. 
+
+Compared with the previous all conditions model, the accuracy of both models has dropped alongside the AUC; however, less so in the four nodes model.
+
+Neither model was well calibrated, however, in different ways. The four-node model had an intercept of -2.82, which is under 0, indicating that it systematically overpredicts the risk of schizophrenia, and it has a slope of 0.07, which is less than 0, indicating that it is overfit to the data. Alternatively, in the two-node model, the intercept of 7.22 indicates that it systematically underpredicts the risk, and the slope of 0.02 indicates that the model is overfit once again. 
+
+This result is unexpected since we would expect that both models would perform well with only condition 1, given that the permutation test indicated the most significant difference between cases and controls in condition 1, but this may show that the other two conditions may provide additional predictive information in the model.
+
+Here, the preferred model is the four-node model due to it’s overall better performance in accuracy AUC and slightly better calibration than in the two-node model.
+
+### Comparison of Elastic Net Overall Models - 95% variability vs 90% variability explained
+
+
+
 ### Comparison of Elastic Net and Ridge Regression models
 
 #### Overall models including all conditions, elastic net versus ridge regression
+
 It was of interest to compare the performance of the elastic net models, in which $\alpha$ was selected using cross-validation, with ridge regression models. Both sections 1 and 4 of the results incorporated data from the same four EEG nodes and included mFPCA scores explaining 95% of the variability. Consequently, differences in model performance can be attributed primarily to the differing regularisation strategies rather than differences in the predictor set.
 
 When applied to all three conditions simultaneously, the two models demonstrated similar predictive performance. The model in section 1 implemented elastic net regularisation and, using 10-fold cross-validation, identified optimal tuning parameters of $\alpha = 0.71$ and $\lambda = 0.000081$. As the optimal value of $\alpha$ was closer to lasso ($\alpha = 1$) than ridge ($\alpha = 0$), the model placed greater emphasis on variable selection than on addressing multicollinearity. The elastic net model retained 35 non-zero coefficients, including 32 level 1 mFPCA score predictors and no level 2 predictors.
@@ -627,6 +627,7 @@ Both models demonstrated excellent discrimination, with AUC values of 0.937 and 
 In contrast, the ridge regression model exhibited substantial underfitting, with a calibration slope above 1 (95% confidence interval: 2.22–3.52), indicating overly conservative predicted probabilities. Unlike the elastic net model, ridge regression retained all predictors and shrank the coefficients towards zero. This stronger emphasis on coefficient shrinkage resulted in less extreme predicted probabilities and may explain the observed underfitting. This contrast is evident in Figure d of sections 1 and 4 in the results section above, where the elastic net model produced probabilities concentrated near 0 and 1, whereas the ridge model produced predictions distributed more conservatively across the probability range.
 
 #### Condition 1 models, elastic net versus ridge regression
+
 When analysing Condition 1 individually, the elastic net model outperformed the ridge regression model in terms of discrimination and classification accuracy. The elastic net model identified an optimal value of $\alpha = 0.91$, indicating behaviour very similar to lasso regression. This likely reflects the high-dimensional nature of the dataset, in which the number of predictor variables was large relative to the number of observations. The model reduced the original set of predictors from 62 to 26 non-zero coefficients, including 21 level 1 and 4 level 2 mFPCA score predictors. Model discrimination was only acceptable, with an AUC of 0.711, and classification accuracy was 66%. In contrast, the ridge regression model demonstrated poorer discrimination, with an AUC of 0.574 and an accuracy of 58.30%. This is evident from the ROC curve (Figure b, section 4), which approached the reference line corresponding to random classification (AUC = 0.5).
 
 When considering the ridge regression model, performance declined substantially when only condition 1 was analysed compared with the model fitted using all three conditions simultaneously. In particular, the AUC decreased from 0.946 to 0.574. This suggests that conditions 2 and 3 contain useful classification information despite the permutation t-test results indicating that condition 1 exhibited the strongest differences between cases and controls.
@@ -638,21 +639,22 @@ Overall, despite the somewhat improved calibration of the ridge regression model
 
 ### Strengths and Limitations
 
-A key strength of this study was the use of Functional Data Analysis techniques to analyse EEG signals as continuous functions, in particular, the application of MFPCA which allowed the incorporation of the repeated-trial structure of the data. Another strength was the successful development of a predictive model for schizophrenia using these MFPCA-derived scores. Elastic Net regression proved a suitable choice due to the large amount of correlated predictor variables, simultaneously balancing variable shrinkage and selection. Furthermore, several analyses produced consistent findings, with Condition 1 emerging as the most informative condition across both the permutation tests and Elastic Net models. This consistency furthers confidence in the robustness of overall findings.
+A key strength of this study was the use of Functional Data Analysis techniques to analyse EEG signals as continuous functions, in particular, the application of mFPCA which allowed the incorporation of the repeated-trial structure of the data. Another strength was the successful development of a predictive model for schizophrenia using these mFPCA-derived scores. Elastic Net regression proved a suitable choice due to the large amount of correlated predictor variables, simultaneously balancing variable shrinkage and selection. Furthermore, several analyses produced consistent findings, with Condition 1 emerging as the most informative condition across both the permutation tests and Elastic Net models. This consistency furthers confidence in the robustness of overall findings.
 
-Several limitations should be acknowledged. Firstly, following the overall train-test split of the data set, the number of unique subjects for model development was relatively small which limits the statistical power of analysis. Secondly, potential over-fitting is observed within the Elastic Net models due to the large number of predictors retained within a model compared with the number of subjects. Finally, the analysis focused on a few pre-determined EEG nodes which are commonly associated with schizophrenia rather than the entire electrode set. This means potential informative signals from other brain regions were not investigated which may produce meaningful results. 
+Several limitations should be acknowledged. Firstly, following the overall train-test split of the data set, the number of unique subjects for model development was relatively small which limits the statistical power of analysis. Secondly, potential over-fitting is observed within the Elastic Net models due to the large number of predictors retained within a model compared with the number of subjects. Finally, the analysis focused on a few pre-determined EEG nodes which are commonly associated with schizophrenia rather than the entire electrode set. This means potential informative signals from other brain regions were not investigated which may produce meaningful results.
 
-Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia. 
+Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia.
 
+## Further Research
 
+Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study.
 
-### Further Research
+It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of mFPCA scores.
 
-Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study. 
+# Conclusion
 
-It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of MFPCA scores. 
+In conclusion, using multilevel functional data analysis allows for the analysis of EEG curves and the development of a classification model that can discriminate well between individuals with schizophrenia and controls. Our best model.....
+
+Further work could be done with a larger set of subject in order to improve the generalisability of this model as the calibration was poor and all models tested overfitted to the data.
 
 ## References
-
-
-
