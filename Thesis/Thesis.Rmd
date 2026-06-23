@@ -58,22 +58,21 @@ Sensory gating is the process by which the brain filters repeated, expected or r
 
 Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In paarticular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each funtional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
-Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory. 
+Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory.
 
 At present, researchers have been using FDA to study EEG data using differing techniques. Yi Yuyan et al. [@yi2022classification] explored classification of EEG signals using functional data analysis. This research involved feature extraction and dimension reduction via FDA in a study consisting of healthy adults, where the aim was to classify long versus short distance travel. Similar to our approach, multiple trials and multiple electrodes were analysed for penalised functional logistic regression. However, the hierarchical structure of repeated trials within subjects was not explicitly modelled, with trials instead treated as separate observations.
 
 To address the hierarchical nature of complex data, Hasenstab et al. (2017) [@hasenstab2017multidimensional] used Multidimensional FPCA to preserve the structure of EEG data collected from children with autism spectrum disorder. Their study incorporated multiple trials (120 per participant) and multiple nodes, with the main analysis focuses on four nodes from right frontal region. However, the work primarily focused on understanding variation within the data, whereas the current study investigates whether FPCA-derived features can be used to discriminate between schizophrenia cases and controls through predictive modelling and clustering.
 
-The main foundation for this current study was introduced by Di et al. (2009) [@Di2009] who developed  Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
+The main foundation for this current study was introduced by Di et al. (2009) [@Di2009] who developed Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
 
-Together, these studies display the value of using FDA and multilevel approaches for the analysis of complex EEG data. However, limited research has applied mFPCA specifically to schizophrenia EEG data while also evaluating these PC scores within predictive modelling frameworks. This study aims to address this gap. 
+Together, these studies display the value of using FDA and multilevel approaches for the analysis of complex EEG data. However, limited research has applied mFPCA specifically to schizophrenia EEG data while also evaluating these PC scores within predictive modelling frameworks. This study aims to address this gap.
 
 In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (mFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data and motivates the methodology adopted in the present study.
 
 AIM:
 
 <!-- The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status.  -->
-
 
 ## Data
 
@@ -148,8 +147,7 @@ Each EEG curve is decomposed into: (1) a mean function; (2) eigenfunctions descr
 
 The curves are decomposed by the Karhunen-Loève expansion as follows:
 
-$$X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)$$
-where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
+$$X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)$$ where $\mu(t)$ is the mean function, $\xi_{ik} = \int_0^1 (X_i(t) - \mu(t))\Phi_k(t)  dt$ are the FPC scores.
 
 Using the PACE method, however we estimate the FPC scores as follows:
 
@@ -580,13 +578,23 @@ Membership to cluster 1, 3 and 4 were mainly controls, while cluster 2 membershi
 
 ## Classification Performance (Elastic net)
 
-### Comparison of Elastic Net Four Node Models
+### Comparison of Elastic Net Four Node Models 
 
+The elastic net models with four nodes (see section 1) are all models based on the same nodes and the same predictors, with differing optimal tuning parameters with regard to the regularisation.
 
+The all conditions model performs the best overall, with the highest accuracy of 74.2% and the highest AUC of 0.937. This is expected since this is the model that contains the most information of all of them. None of the models are well calibrated, and all are overfit, so considerations of calibration were of less importance. However, the calibration slope of 0.58 was closer to 1 (ideal) than that of the other 4 node models.
+
+The condition 1 model would be expected to perform well, too, given the result from the permutation test, indicating that condition 1 shows the most significant difference in the EEG signal between cases and controls, which aligns with the literature on sensory gating impairment in schizophrenia. This model has an accuracy of 66% and an AUC of 0.711. It performs relatively well despite the all conditions model performing better.
+
+The conditions 2 and 3 models have a worse performance, with both having an accuracy of approximately 58% and an AUC of 0.427 and 0.548, respectively. These AUC results indicate that both these models do not rank cases over controls consistently, and condition 2 performs worse than random chance (AUC = 0.5), with condition 3 not performing much better than random chance.
+
+Although these conditions 2 and 3 models are not very useful on their own. Including conditions 2 and 3 in the all conditions model increases the accuracy and AUC by a relatively large margin, indicating that they still hold some predictive power when coupled with the condition 1 scores.
+
+Overall the all conditions model performs best on all performance metrics compared to the other four-node models, so it is the preferred of all these models.
 
 ### Comparison of Elastic Net Models - 4 nodes vs 2 nodes
 
-#### All Conditions Model
+**All Conditions Model**
 
 The models containing all conditions from sections 1 and 2 are being compared, where the difference in the model arises from the number of EEG nodes differing between models, where section 1 includes four nodes and section 2 includes only two. Subsequent differences are primarily due to the differing levels of regularisation between the two models.
 
@@ -594,27 +602,41 @@ Both models performed very well, being the best performing models among the elas
 
 Calibration in both was quite similar, with an intercept of 1.36 and a slope of 0.58 in the 4-node model. The calibration in the large (intercept) is greater than 0, indicating that the observed event rate exceeds the average predicted probability; therefore, the model is systematically underpredicting the risk of schizophrenia. And, since the calibration slope is less than 1, there is evidence of overfitting in this model. The two-node model did not have significantly better calibration, with a slope of 0.59 and an intercept of 0.92; it suffers from the same calibration issues as the four-node model. We can see this overfitting by the limited number of predicted probabilities shown on both the rug plot and in the predicted probabilities plot. We can also see that it underpredicts the number of cases, which shows how the mean calibration is not correct.
 
-Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration than the four-node model. 
+Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration than the four-node model.
 
-#### Condition 1 models
+**Condition 1 models**
 
-Comparing these, the condition 1 models for the four-node model and the two-node model, we can see that the four-node model has both a higher accuracy at 66% and a higher AUC at 0.711 than the 2 node model, which had an accuracy of 58% and an AUC of 0.577. 
+Comparing these, the condition 1 models for the four-node model and the two-node model, we can see that the four-node model has both a higher accuracy at 66% and a higher AUC at 0.711 than the 2 node model, which had an accuracy of 58% and an AUC of 0.577.
 
 Compared with the previous all conditions model, the accuracy of both models has dropped alongside the AUC; however, less so in the four nodes model.
 
-Neither model was well calibrated, however, in different ways. The four-node model had an intercept of -2.82, which is under 0, indicating that it systematically overpredicts the risk of schizophrenia, and it has a slope of 0.07, which is less than 0, indicating that it is overfit to the data. Alternatively, in the two-node model, the intercept of 7.22 indicates that it systematically underpredicts the risk, and the slope of 0.02 indicates that the model is overfit once again. 
+Neither model was well calibrated, however, in different ways. The four-node model had an intercept of -2.82, which is under 0, indicating that it systematically overpredicts the risk of schizophrenia, and it has a slope of 0.07, which is less than 0, indicating that it is overfit to the data. Alternatively, in the two-node model, the intercept of 7.22 indicates that it systematically underpredicts the risk, and the slope of 0.02 indicates that the model is overfit once again.
 
 This result is unexpected since we would expect that both models would perform well with only condition 1, given that the permutation test indicated the most significant difference between cases and controls in condition 1, but this may show that the other two conditions may provide additional predictive information in the model.
 
 Here, the preferred model is the four-node model due to it’s overall better performance in accuracy AUC and slightly better calibration than in the two-node model.
 
-### Comparison of Elastic Net Overall Models - 95% variability vs 90% variability explained
+### Comparison of Elastic Net Models - 95% variability vs 90% variability explained
 
+The comparison of the previous all conditions models to this model is different, as the predictors in the 90% variability explained model differ from those in the 95% variability model, since there are more eigenfunctions in the 95% model, indicating there are more mFPC scores, and the scores themselves will differ from those in the 90% model due to this difference in the number of eigenfunctions.
+
+The all conditions models previously performed very well; however, here it performs far worse than before, with an accuracy of 49.63% and a moderate AUC of 0.655. 
+
+Similarly, the condition 1 model with the 90% variability explained performs worse still than the two-node model and the four-node model. With 40.77% accuracy and 0.684 AUC 
+Neither of these models is very good in terms of their discriminative ability, their accuracy or their calibration, with both being overfit and both systematically underpredicting the risk of schizophrenia. 
+
+This is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. What was saved in terms of fewer predictors was lost in terms of predictive power. 
+
+### Overall
+
+Overall, the two best models were the all conditions models with 4 nodes and 2 nodes respectively that used the mFPC scores, which explained 95% of the variability. 
+
+The condition 1 model using 4 nodes did not perform badly either, and it performed better than condition 2 or 3, which is as we would expect from the results of the permutation test. 
+
+However, there is likely some important information contained in the condition 2 and condition 3 scores, as the model with all conditions performed the best of the elastic net models.
 
 
 ### Comparison of Elastic Net and Ridge Regression models
-
-#### Overall models including all conditions, elastic net versus ridge regression
 
 It was of interest to compare the performance of the elastic net models, in which $\alpha$ was selected using cross-validation, with ridge regression models. Both sections 1 and 4 of the results incorporated data from the same four EEG nodes and included mFPCA scores explaining 95% of the variability. Consequently, differences in model performance can be attributed primarily to the differing regularisation strategies rather than differences in the predictor set.
 
@@ -626,7 +648,7 @@ Both models demonstrated excellent discrimination, with AUC values of 0.937 and 
 
 In contrast, the ridge regression model exhibited substantial underfitting, with a calibration slope above 1 (95% confidence interval: 2.22–3.52), indicating overly conservative predicted probabilities. Unlike the elastic net model, ridge regression retained all predictors and shrank the coefficients towards zero. This stronger emphasis on coefficient shrinkage resulted in less extreme predicted probabilities and may explain the observed underfitting. This contrast is evident in Figure d of sections 1 and 4 in the results section above, where the elastic net model produced probabilities concentrated near 0 and 1, whereas the ridge model produced predictions distributed more conservatively across the probability range.
 
-#### Condition 1 models, elastic net versus ridge regression
+**Condition 1 models, elastic net versus ridge regression**
 
 When analysing Condition 1 individually, the elastic net model outperformed the ridge regression model in terms of discrimination and classification accuracy. The elastic net model identified an optimal value of $\alpha = 0.91$, indicating behaviour very similar to lasso regression. This likely reflects the high-dimensional nature of the dataset, in which the number of predictor variables was large relative to the number of observations. The model reduced the original set of predictors from 62 to 26 non-zero coefficients, including 21 level 1 and 4 level 2 mFPCA score predictors. Model discrimination was only acceptable, with an AUC of 0.711, and classification accuracy was 66%. In contrast, the ridge regression model demonstrated poorer discrimination, with an AUC of 0.574 and an accuracy of 58.30%. This is evident from the ROC curve (Figure b, section 4), which approached the reference line corresponding to random classification (AUC = 0.5).
 
@@ -635,7 +657,6 @@ When considering the ridge regression model, performance declined substantially 
 Calibration was somewhat improved relative to the elastic net model, although evidence of overfitting remained. The calibration slope was below 1, with a 95% confidence interval of 0.09–0.31. Compared with the elastic net model, which had a calibration slope confidence interval of 0.04–0.09, the ridge regression model produced less extreme predicted probabilities. This is reflected in the rug plot and predicted probability density plot, where predicted probabilities were distributed more broadly across the probability range rather than clustering near 0 and 1 as observed in the elastic net model. As observed in the models incorporating all three conditions, this likely reflects the differing regularisation strategies of the two approaches. Elastic net performed variable selection and retained a relatively small subset of predictors, resulting in larger coefficient magnitudes and more extreme predicted probabilities. In contrast, ridge regression retained all predictors while shrinking coefficients towards zero, resulting in less extreme predictions.
 
 Overall, despite the somewhat improved calibration of the ridge regression model, the elastic net model would be preferred in this setting because it demonstrated substantially better discrimination and classification accuracy, especially for condition 1. In addition, elastic net performed variable selection, yielding a more parsimonious model that identified a smaller subset of informative predictors.
-
 
 ### Strengths and Limitations
 
