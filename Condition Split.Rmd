@@ -2243,16 +2243,25 @@ coef_selam <- coef(enet, s = selam)
 coef_df <- data.frame(predictor = rownames(coef_selam),
                       coefficient = as.vector(coef_selam))
 
-non_zero_coeffs <- coef_df %>% filter(coefficient != 0)
-non_zero_coeffs
+non_zero_coeffs <- coef_df %>% filter(coefficient != 0) %>% arrange(desc(abs(coefficient)))
+
+hist(abs(non_zero_coeffs$coefficient))
+
+
+cutoff <- quantile(abs(coef_df$coefficient), 0.90)
+important_predictors <- coef_df %>%
+  filter(abs(coefficient) >= cutoff)
+
+important_predictors %>% summarise(Level1 = sum(str_detect(predictor, "L1")),
+                                   Level2 = sum(str_detect(predictor, "L2")))
+
 
 non_zero_coeffs %>%
-  summarise(
-    Level1 = sum(str_detect(predictor, "L1")),
-    Level2 = sum(str_detect(predictor, "L2"))
-  )
+  summarise(Level1 = sum(str_detect(predictor, "L1")),
+            Level2 = sum(str_detect(predictor, "L2")))
 
 zero_coeffs <- coef_df %>% filter(coefficient == 0)
+
 
 
 ```
@@ -2554,6 +2563,18 @@ coef_selam <- coef(enet, s = selam)
 
 coef_df <- data.frame(predictor = rownames(coef_selam),
                       coefficient = as.vector(coef_selam))
+
+non_zero_coeffs <- coef_df %>% filter(coefficient != 0) %>% arrange(desc(abs(coefficient)))
+
+hist(abs(non_zero_coeffs$coefficient))
+
+cutoff <- quantile(abs(coef_df$coefficient), 0.90)
+
+important_predictors <- coef_df %>%
+  filter(abs(coefficient) >= cutoff)
+
+important_predictors %>% summarise(Level1 = sum(str_detect(predictor, "L1")),
+                                   Level2 = sum(str_detect(predictor, "L2")))
 
 non_zero_coeffs_cond1 <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs_cond1
