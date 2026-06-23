@@ -85,7 +85,14 @@ In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cas
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
 
-Each subject completed each of these sensory conditions up to 100 times. Therefore, we have many repetitions of the same conditions for each of the subjects. So in total we have approximately $64\times 40 \times 100 = 256,000$ curves.
+Each subject completed each of these sensory conditions up to 100 times. Consequently, multiple observations of the same condition were available for each participant. EEG data were recorded using a 64-sensor EEG cap, the sensor positions can be seen in the image below. In total, the dataset comprised of approximately $64\times 40 \times 100 = 256,000$ curves.
+
+```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 1, fig.cap = "EEG Cap Sensor Labels, [@Artinis2024]", fig.pos="H"}
+
+knitr::include_graphics("Images/EEG_cap.png")
+
+```
+Previous studies investigating electrophysiological abnormalities in schizophrenia have reported altered neural activity in the prefrontal and frontal regions of the brain. Therefore, the primary analysis focused on the FP1 (prefrontal) and F3 (frontal) electrodes, with a secondary analysis examining the F7 and AF7 electrodes [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
 # Methods
 
