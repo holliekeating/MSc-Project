@@ -173,7 +173,6 @@ To establish an appropriate number of clusters for our k-means analysis, several
 
 ## Logistic Regression Model
 
-<<<<<<< HEAD
 According to Lan N. Bui, "Logistic regression is commonly utilized in clinical and educational research to examine relationships between risk factors and binary outcomes" [@BuiDing2025]. Following FPCA, logistic regression models were fitted to examine whether FPCA scores were associated with the classification of schizophrenia (group = 1). 
 
 The multiple logistic regression model is given by:
@@ -206,7 +205,6 @@ $$Y_{ij} = \mu(t) + \eta_j(t) + \sum^{K_1}_{k=1} \xi_{ik}\phi_k^{(1)}(t) + \sum^
 
 [@Zablocki2024], where $Y_{ij}(t)$ is the smoothed EEG signal measured at time $(t)$ for trial $(j)$ belonging to subject $(i)$, where $(i = 1, 2, \ldots, n)$ and $(j = 1, 2, \ldots, n)$. The function $(\mu(t))$ represents the overall mean EEG trajectory across all subjects and trials, and $(\eta_j(t))$ represents the trial-specific shift from this overall mean. The term $(\epsilon_{ij}(t))$ denotes a residual error.
 
-<<<<<<< HEAD
 The functions $(\phi_k^{(1)(t))})$ and $(\phi_l^{(2)}(t))$ are the eigenfunctions at level 1 and level 2 respectively. Level 1 eigenfunctions describe between-subject variation, capturing the systematic differences in EEG signals across subjects, whereas level 2 eigenfunctions describe the within-subject variation, capturing trial-to-trial fluctuations within the same subject. The corresponding scores, $(\xi_{ik})$ and $(\zeta_{ijl})$, quantifies this variation from at a subject and trial level, described  by each eigenfunction. 
 
 Intuitively here, each eigenfunction can be interpreted as representing a particular characteristic pattern of EEG activity. The corresponding principal component score, similar to standard FPCA, indicates the extent to which that pattern is present within an individual's EEG trajectory. Larger positive or negative scores indicate a greater differentiation from the overall mean function. Therefore, the eigenvalues associated with each component tell one the amount of variability explained by that specific component.
@@ -237,11 +235,16 @@ This approach balances the sparsity-inducing properties of lasso with the abilit
 
 # Performance Evaluation
 
-Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration.
+Model performance was evaluated using the Receiver Operating Characteristic (ROC) curve, the Area Under the ROC Curve (AUC), accuracy, misclassification error rate, and calibration. 
 
-The ROC curve assesses the ability of a classification model to distinguish between two classes, (Fawcett, 2006), cases and controls in this application. It plots the true positive rate (sensitivity) against the false positive rate (specificity) across a range of classification thresholds. These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0). The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), (Fawcett, 2006). The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination.
+The ROC curve assesses the ability of a classification model to distinguish between two classes, [@Fawcett2006], cases and controls in this application. ROC curves were generated in R using the pROC package, [@Robin2011]. Predicted probabilities from the classification models were evaluated across all possible classification thresholds. At each threshold, sensitivity and specificity were calculated from the resulting confusion matrix, and the ROC curve was constructed by plotting the true positive rate (sensitivity) against the false positive rate (1 − specificity). These thresholds determine the predicted probability above which an observation is classified as a case (1) rather than a control (0).
 
-Classification performance was further evaluated using a confusion matrix. Accuracy was calculated as the proportion of correctly classified observations, while the misclassification error rate was calculated as the proportion of incorrectly classified observations. Calibration was assessed using calibration plots, which compare observed outcome frequencies with predicted probabilities, (Collins et al., 2014). A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
+The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), [@Fawcett2006]. The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination. 
+
+Classification performance was further evaluated using a confusion matrix at a threshold of 0.5. Predicted probabilities greater than or equal to 0.5 were classified as cases, while probabilities below 0.5 were classified as controls. Accuracy was calculated as the proportion of correctly classified observations, and the misclassification error rate as the proportion incorrectly classified.
+
+Calibration was assessed using calibration plots generated from the model's predicted probabilities. These plots compare predicted probabilities with observed outcome frequencies across the range of predicted risks [@Collins2014]. A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
+
 
 # Results
 
@@ -526,7 +529,6 @@ knitr::include_graphics(c(
 
 ### Section 4: Ridge Regression, four EEG nodes, with 95% variability explained
 
-<<<<<<< HEAD
 Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as ($\lambda = 0.020575$). All 148 original predictors were retained in the model. Among the mFPCA score predictors, 42 level 1 and 102 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.946 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 79.89%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope estimate exceeding 1. The 95% confidence interval was between 2.22 and 3.52, suggesting substantial underfitting and overly conservative predicted probabilities. This was reflected in both the calibration rug plot and the predicted probability density plot (Figure d), which showed predictions distributed across a broad range of probabilities rather than clustering near 0 and 1.
 
 
@@ -564,7 +566,7 @@ performance <- data.frame(Section = c(1, 1, 1, 1, 2, 2, 3, 3, 4, 4),
                           L1 = c(32, 21, 23, 21, 27, 13, 20, 13, 42, 14),
                           L2 = c(0, 4, 40, 25, 7, 18, 0, 2, 102, 24),
                           AUC = c(0.937, 0.711, 0.427, 0.548, 0.914, 0.577, 0.655, 0.684, 0.946, 0.574),
-                          Accuracy = c("74.2%", "66%", "58.67%", "58.49%", "79.89%", "58%", "49.63%", "40.77%", "79.89%", "58.30%"))
+                          Accuracy = c("74.20%", "66.00%", "58.67%", "58.49%", "79.89%", "58.00%", "49.63%", "40.77%", "79.89%", "58.30%"))
 
 performance %>%
   kbl(booktabs = T) %>%
