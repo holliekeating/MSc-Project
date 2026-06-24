@@ -17,7 +17,12 @@ authors:
     location: Galway, Ireland
     email: H.Keating3@universityofgalway.ie
 abstract: |
-  Enter the text of your abstract here.
+Schizophrenia is associated with impaired sensory gating and abnormalities in neural processing. The objectives of this study were to investigate differences in EEG signals between schizophrenia cases and controls, assess the ability of EEG-derived features to predict case-control status, and determine whether discrimination between cases and controls varied across sensory conditions. To achieve these aims, spline smoothing, permutation t-tests, Functional Principal Component Analysis (FPCA), Multilevel Functional Principal Component Analysis (mFPCA), K-means clustering, elastic net regression, and ridge regression were applied to EEG data collected under multiple sensory conditions.
+
+The results demonstrated that differences in brain activity between cases and controls varied across sensory conditions, with some conditions exhibiting stronger group differences than others. These findings provide further evidence of impaired sensory gating in schizophrenia. Classification models based on mFPCA scores achieved strong predictive performance, with the best elastic net models achieving an AUC greater than 0.90 and classification accuracies exceeding 70%. 
+
+Overall, the findings suggest that EEG-derived functional features can distinguish between schizophrenia cases and controls, particularly when information from multiple sensory conditions is combined. The results highlight the potential of combining mFPCA with penalised regression methods for the analysis of high-dimensional EEG data and support further investigation of these approaches.
+
 keywords:
   - Electroencephelogram
   - Schizophrenia
@@ -70,6 +75,10 @@ Together, these studies display the value of using FDA and multilevel approaches
 
 In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (mFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data and motivates the methodology adopted in the present study.
 
+AIM:
+
+<!-- The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status.  -->
+
 ## Data
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
@@ -92,19 +101,12 @@ knitr::include_graphics("Images/EEG_cap.png")
 ```
 Previous studies investigating electrophysiological abnormalities in schizophrenia have reported altered neural activity in the prefrontal and frontal regions of the brain. Therefore, the primary analysis focused on the FP1 (prefrontal) and F3 (frontal) electrodes, with a secondary analysis examining the F7 and AF7 electrodes [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
-## Aims
-
-The aims of our analysis were as follows:
-
-- To investigate whether EEG signals differ between schizophrenia cases and controls during the sensory conditions detailed above
-- To develop a prediction model using FDA to accurately predict case control status
-- To investigate how condition 1 differs from condition 2 and 3 in cases and controls, as we would expect more sensory gating in condition 1 compared to the other two conditions since the sound was expected due to subjects pressing the button. Therefore, we expect that the largest difference between cases and controls EEG signals will occur in condition 1, as cases are expected to exhibit impaired sensory gating.
 
 # Methods
 
 \label{sec:methods}
 
-This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (M FPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
+This section describes the statistical and machine learning methods used to analyse the EEG data and transform the raw signals into interpretable results. Spline smoothing was first applied to reduce noise while preserving the underlying structure of the EEG signals. Permutation t-tests were used to assess differences between the mean functional curves of cases and controls. Functional Principal Component Analysis (FPCA) and Multilevel Functional Principal Component Analysis (mFPCA) were employed to characterise the major sources of variation in the data and reduce dimensionality. K-means clustering was used to explore similarities and differences between cases and controls. Finally, elastic net regularisation was applied for variable selection and predictive modelling. Methods used to evaluate model performance, including discrimination, calibration, and classification accuracy, are also described.
 
 ## Smoothing
 
@@ -216,7 +218,7 @@ In order to explain 95% of the total variability in the EEG data, as set within 
 
 ## K-Means Clustering Level 1 Scores
 
-Following the formation of level 1 MFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
+Following the formation of level 1 mFPCA scores, it was of interest to explore how k-means clustering of these between-patient scores compare to standard FPCA clustering results. The optimal number of clusters was explored using the elbow method based on the total within-cluster sum of squares. K-means clustering was then performed using the selected number of clusters and cluster membership was compared with schizophrenia status. 
 
 ## Elastic Net
 
@@ -248,7 +250,6 @@ Classification performance was further evaluated using a confusion matrix at a t
 
 Calibration was assessed using calibration plots generated from the model's predicted probabilities. These plots compare predicted probabilities with observed outcome frequencies across the range of predicted risks [@Collins2014]. A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
-\vspace{-1.0cm}
 
 # Results
 
@@ -587,7 +588,7 @@ The highest classification accuracy is in the 2 node model of all the conditions
 
 This section discusses the key findings of the study and considers their implications. The results as outlined in the results section above are interpreted with particular emphasis on sensory gating, group differences between cases and controls, and the performance of the predictive modelling approaches. The strengths and limitations of the study are also considered, together with recommendations for future research.
 
-## Permutation t-tests
+## Permutation ttests
 
 Sensory gating refers to the ability of the brain to filter repeated, expected, or redundant sensory stimuli and has been shown to be impaired in individuals with schizophrenia (Boutros et al., 2009; Shen et al., 2020). In the present study, the repeated stimulus was represented by an auditory tone. The observed differences between cases and controls in Conditions 1 and 2 are consistent with impaired sensory gating in schizophrenia.
 
@@ -717,16 +718,13 @@ Despite these limitations, the study demonstrated that mFPCA combined with elast
 
 Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study.
 
-It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of mFPCA scores.'
-
-Moreover, only linear models (ridge regression, elastic net), were used in our analysis. It may be more suitable to use a non-linear prediction method such as random forest or bagging.
+It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of mFPCA scores.
 
 # Conclusion
 
-In conclusion, we found that there was a significant difference in the EEG curves of individuals with schizophrenia and controls in condition 1, since the permutation t-test showed pointwise significance in many parts and global significance in others. The effect was less in condition 2 however there was a small pointwise significant difference post-stimulus, and in condition 3 there is no pointwise significance. This aligns with our hypothesis that condition 1 would exhibit the most difference between cases and controls due to sensory gating occurring in controls as they expect the sound, and this process being impaired in subjects with schizophrenia.
+In conclusion, using multilevel functional data analysis allows for the analysis of EEG curves and the development of a classification model that can discriminate well between individuals with schizophrenia and controls. Our best model.....
 
-Using functional data analysis we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. Our best models were the all conditions model using 2 and 4 nodes respectively where mFPC scores were found from the eigenfunctions that explained 95% of the variability in the curves. These were followed by the four-node model of condition 1 where mFPCs explained 95% of the variability in the curves, in terms of model performance. This is likely due to the sensory gating process discussed previously. The condition 2 and condition 3 models did not perform well however, the inclusion of condition 2 and 3 alongside condition 1 appears to provide additional information that improves the predictive power of the model.
+Further work could be done with a larger set of subject in order to improve the generalisability of this model as the calibration was poor and all models tested overfitted to the data.
 
-Further work could be done with a larger set of subjects in order to improve the generalisability of this model as the calibration was poor and all models in the validation set.
 
 ## References
