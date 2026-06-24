@@ -70,10 +70,6 @@ Together, these studies display the value of using FDA and multilevel approaches
 
 In EEG experiments, subjects typically complete multiple trials under the same experimental condition to obtain a more reliable estimate of the neural response. Multilevel Functional Principal Component Analysis (mFPCA) extends FPCA by separating variation into between-subject and within-trial variation. This framework, therefore, provides a more appropriate representation of repeated-measures EEG data and motivates the methodology adopted in the present study.
 
-AIM:
-
-<!-- The aim of this study was to investigate whether EEG signals differ between schizophrenia cases and controls using Functional Data Analysis techniques. Specifically, permutation testing was used to assess functional differences between groups, FPCA was used to identify modes of variation and clustering behaviour, and MFPCA was used to account for repeated-trial structure of the data. Resulting component scores were incorporated into elastic net models to assess their ability to predict schizophrenia status.  -->
-
 ## Data
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
@@ -96,6 +92,13 @@ knitr::include_graphics("Images/EEG_cap.png")
 ```
 Previous studies investigating electrophysiological abnormalities in schizophrenia have reported altered neural activity in the prefrontal and frontal regions of the brain. Therefore, the primary analysis focused on the FP1 (prefrontal) and F3 (frontal) electrodes, with a secondary analysis examining the F7 and AF7 electrodes [@SenkowskiGallinat2015; @JeonPolich2003; @Shin2011].
 
+## Aims
+
+The aims of our analysis were as follows:
+
+- To investigate whether EEG signals differ between schizophrenia cases and controls during the sensory conditions detailed above
+- To develop a prediction model using FDA to accurately predict case control status
+- To investigate how condition 1 differs from condition 2 and 3 in cases and controls, as we would expect more sensory gating in condition 1 compared to the other two conditions since the sound was expected due to subjects pressing the button. Therefore, we expect that the largest difference between cases and controls EEG signals will occur in condition 1, as cases are expected to exhibit impaired sensory gating.
 
 # Methods
 
@@ -245,6 +248,7 @@ Classification performance was further evaluated using a confusion matrix at a t
 
 Calibration was assessed using calibration plots generated from the model's predicted probabilities. These plots compare predicted probabilities with observed outcome frequencies across the range of predicted risks [@Collins2014]. A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
+\vspace{-2cm}
 
 # Results
 
@@ -717,9 +721,10 @@ It could also be interesting to apply FPCA to multiple conditions and trials to 
 
 # Conclusion
 
-In conclusion, using multilevel functional data analysis allows for the analysis of EEG curves and the development of a classification model that can discriminate well between individuals with schizophrenia and controls. Our best model.....
+In conclusion, we found that there was a significant difference in the EEG curves of individuals with schizophrenia and controls in condition 1, since the permutation t-test showed pointwise significance in many parts and global significance in others. The effect was less in condition 2 however there was a small pointwise significant difference post-stimulus, and in condition 3 there is no pointwise significance. This aligns with our hypothesis that condition 1 would exhibit the most difference between cases and controls due to sensory gating occurring in controls as they expect the sound, and this process being impaired in subjects with schizophrenia.
 
-Further work could be done with a larger set of subject in order to improve the generalisability of this model as the calibration was poor and all models tested overfitted to the data.
+Using functional data analysis we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. Our best models were the all conditions model using 2 and 4 nodes respectively where mFPC scores were found from the eigenfunctions that explained 95% of the variability in the curves. These were followed by the four-node model of condition 1 where mFPCs explained 95% of the variability in the curves, in terms of model performance. This is likely due to the sensory gating process discussed previously. The condition 2 and condition 3 models did not perform well however, the inclusion of condition 2 and 3 alongside condition 1 appears to provide additional information that improves the predictive power of the model.
 
+Further work could be done with a larger set of subjects in order to improve the generalisability of this model as the calibration was poor and all models in the validation set.
 
 ## References
