@@ -536,7 +536,7 @@ knitr::include_graphics(c(
 
 ### Section 4: Ridge Regression, four EEG nodes, with 95% variability explained
 
-Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as ($\lambda = 0.020575$). All 148 original predictors were retained in the model. Among the mFPCA score predictors, 42 level 1 and 102 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.946 (Figure b). The ROC curve demonstrated strong separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 79.89%. Examination of the calibration plot (Figure c) indicated imperfect calibration, with a calibration slope estimate exceeding 1. The 95% confidence interval was between 2.22 and 3.52, suggesting substantial underfitting and overly conservative predicted probabilities. This was reflected in both the calibration rug plot and the predicted probability density plot (Figure d), which showed predictions distributed across a broad range of probabilities rather than clustering near 0 and 1.
+Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as $\lambda = 0.02058$. All 260 original predictors were retained in the model. Among the mFPCA score predictors, 74 Level 1 and 182 Level 2 predictors were retained. Model discrimination was good, with an AUC of 0.803 (Figure b). The ROC curve demonstrated separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 76.01%. Examination of the calibration plot indicated good agreement between predicted and observed probabilities, with the 95% confidence interval for the calibration slope containing 1 (95% CI: 0.85 to 1.29; Figure c). The calibration intercept was greater than 0 (95% CI: 0.28 to 0.71), suggesting that the model tended to underestimate predicted probabilities.
 
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
@@ -550,7 +550,7 @@ knitr::include_graphics(c(
 ```
 
 
-Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.0144897$. All 40 predictor variables were retained in the model. Among the mFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.574 (Figure b), indicating only limited ability to distinguish between cases and controls. Classification accuracy at a threshold of 0.5 was 58.30%. Examination of the calibration plot (Figure c) indicated imperfect calibration. The calibration slope was substantially below 1, with a 95% confidence interval of between 0.09 and 0.31, suggesting overfitting. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 1 and 0.
+Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. Examination of the calibration plot (Figure c) indicated good calibration. The confidence interval for the slope contained 1, (95% CI: 0.73 to 1.07), and the confidence interval for the intercept contained 0, (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1, (Figure d). 
 
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
@@ -569,11 +569,11 @@ performance <- data.frame(Section = c(1, 1, 1, 1, 2, 2, 3, 3, 4, 4),
                           Condition = c("All", "C1", "C2", "C3", "All", "C1", "All", "C1", "All", "C1"),
                           Nodes = c(rep(4, 4), rep(2, 2), rep(4,2), rep(4,2)),
                           Variability_Explained = c(rep(0.95, 6), rep(0.9, 2), rep(0.95, 2)),
-                          No._Coefficents = c(35, 26, 64, 48, 37, 32, 24, 16, 148, 40),
-                          L1 = c(32, 21, 23, 21, 27, 13, 20, 13, 42, 14),
-                          L2 = c(0, 4, 40, 25, 7, 18, 0, 2, 102, 24),
-                          AUC = c(0.937, 0.711, 0.427, 0.548, 0.914, 0.577, 0.655, 0.684, 0.946, 0.574),
-                          Accuracy = c("74.20%", "66.00%", "58.67%", "58.49%", "79.89%", "58.00%", "49.63%", "40.77%", "79.89%", "58.30%"))
+                          No._Coefficents = c(35, 26, 64, 48, 37, 32, 24, 16, 148, 65),
+                          L1 = c(32, 21, 23, 21, 27, 13, 20, 13, 42, 25),
+                          L2 = c(0, 4, 40, 25, 7, 18, 0, 2, 102, 35),
+                          AUC = c(0.937, 0.711, 0.427, 0.548, 0.914, 0.577, 0.655, 0.684, 0.946, 0.795),
+                          Accuracy = c("74.20%", "66.00%", "58.67%", "58.49%", "79.89%", "58.00%", "49.63%", "40.77%", "79.89%", "79.88%"))
 
 performance %>%
   kbl(booktabs = T) %>%
