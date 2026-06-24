@@ -248,7 +248,7 @@ Classification performance was further evaluated using a confusion matrix at a t
 
 Calibration was assessed using calibration plots generated from the model's predicted probabilities. These plots compare predicted probabilities with observed outcome frequencies across the range of predicted risks [@Collins2014]. A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
-\vspace{-2cm}
+\vspace{-1.0cm}
 
 # Results
 
@@ -587,7 +587,7 @@ The highest classification accuracy is in the 2 node model of all the conditions
 
 This section discusses the key findings of the study and considers their implications. The results as outlined in the results section above are interpreted with particular emphasis on sensory gating, group differences between cases and controls, and the performance of the predictive modelling approaches. The strengths and limitations of the study are also considered, together with recommendations for future research.
 
-## Permutation ttests
+## Permutation t-tests
 
 Sensory gating refers to the ability of the brain to filter repeated, expected, or redundant sensory stimuli and has been shown to be impaired in individuals with schizophrenia (Boutros et al., 2009; Shen et al., 2020). In the present study, the repeated stimulus was represented by an auditory tone. The observed differences between cases and controls in Conditions 1 and 2 are consistent with impaired sensory gating in schizophrenia.
 
@@ -717,7 +717,9 @@ Despite these limitations, the study demonstrated that mFPCA combined with elast
 
 Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study.
 
-It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of mFPCA scores.
+It could also be interesting to apply FPCA to multiple conditions and trials to investigate the consistency of Condition 1 results throughout the data set. Finally, while the Elastic Net model achieved strong discriminatory performance, future studies could explore alternative classification techniques, such as random forests or neural networks. Comparing multiple findings in this way could provide further insight into the predictive value of mFPCA scores.'
+
+Moreover, only linear models (ridge regression, elastic net), were used in our analysis. It may be more suitable to use a non-linear prediction method such as random forest or bagging.
 
 # Conclusion
 
