@@ -16,12 +16,7 @@ authors:
     affiliation: University of Galway
     location: Galway, Ireland
     email: H.Keating3@universityofgalway.ie
-abstract: |
-Schizophrenia is associated with impaired sensory gating and abnormalities in neural processing. The objectives of this study were to investigate differences in EEG signals between schizophrenia cases and controls, assess the ability of EEG-derived features to predict case-control status, and determine whether discrimination between cases and controls varied across sensory conditions. To achieve these aims, spline smoothing, permutation t-tests, Functional Principal Component Analysis (FPCA), Multilevel Functional Principal Component Analysis (mFPCA), K-means clustering, elastic net regression, and ridge regression were applied to EEG data collected under multiple sensory conditions.
-
-The results demonstrated that differences in brain activity between cases and controls varied across sensory conditions, with some conditions exhibiting stronger group differences than others. These findings provide further evidence of impaired sensory gating in schizophrenia. Classification models based on mFPCA scores achieved strong predictive performance, with the best elastic net models achieving an AUC greater than 0.90 and classification accuracies exceeding 70%. 
-
-Overall, the findings suggest that EEG-derived functional features can distinguish between schizophrenia cases and controls, particularly when information from multiple sensory conditions is combined. The results highlight the potential of combining mFPCA with penalised regression methods for the analysis of high-dimensional EEG data and support further investigation of these approaches.
+abstract: Schizophrenia is associated with impaired sensory gating and abnormalities in neural processing. The objectives of this study were to investigate differences in EEG signals between schizophrenia cases and controls, assess the ability of EEG-derived features to predict case-control status, and determine whether discrimination between cases and controls varied across sensory conditions. To achieve these aims, spline smoothing, permutation t-tests, Functional Principal Component Analysis (FPCA), Multilevel Functional Principal Component Analysis (mFPCA), K-means clustering, elastic net regression, and ridge regression were applied to EEG data collected under multiple sensory conditions. The results demonstrated that differences in brain activity between cases and controls varied across sensory conditions, with some conditions exhibiting stronger group differences than others. These findings provide further evidence of impaired sensory gating in schizophrenia. Classification models based on mFPCA scores achieved strong predictive performance, with the best elastic net models achieving an AUC greater than 0.90 and classification accuracies exceeding 70%. Overall, the findings suggest that EEG-derived functional features can distinguish between schizophrenia cases and controls, particularly when information from multiple sensory conditions is combined. The results highlight the potential of combining mFPCA with penalised regression methods for the analysis of high-dimensional EEG data and support further investigation of these approaches.
 
 keywords:
   - Electroencephelogram
@@ -51,10 +46,10 @@ library(plotly)
 library(kableExtra)
 ```
 
+\newpage
+
 # Introduction
-
 \label{sec:intro}
-
 An electroencephalogram (EEG) is a non-invasive test used to measure electrical activity in the brain by attaching 64 sensor nodes to the scalp. Each sensor measures a single curve, so each test produces 64 curves. The data from EEG is commonly used to diagnose conditions such as sleep disorders, seizures and schizophrenia
 
 Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010].
