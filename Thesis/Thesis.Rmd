@@ -713,6 +713,18 @@ Several limitations should be acknowledged. Firstly, following the overall train
 
 Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia.
 
+##Comparison with other studies
+
+In modern EEG analysis, FDA is a common tool, as it allows curves to be analysed as a whole, enabling interpretability and the development of accurate prediction models [@yi2022classification, @zhang2020prediction]. 
+
+However, when it comes to classification models for schizophrenia based on EEG signals, few use a functional data approach instead, opting for more novel machine learning approaches, such as in @SABETI2011, in which they performed a new feature selection method and used both linear discriminant analysis (LDA) and adaptive boosting (Adaboost) to classify subjects as cases or controls. These models had an accuracy of 85.9% and 91.4%, respectively and found that their feature selection method outperformed a PCA-based feature selection. 
+
+Another approach used a neural network classification model to diagnose schizophrenia. The model has a balanced accuracy and precision of 93% and shows improved accuracy compared to other traditional algorithms such as random forest and K-nearest neighbour [@lujan2023accurate].
+
+A review of deep learning models for schizophrenia diagnosis, @ranjan2024deep, found that convolutional neural networks were the most commonly employed model for mental health diagnosis. By comparing many different models, it was found that the 2D-CNN model had the highest classification performance, with an accuracy of 99.5%, while the other models included in the review also had accuracies over 90%.
+
+Using FDA, our analysis is much simpler than that of a neural network, which, although it has great prediction accuracy, lacks interpretability. Also, these neural networks require large datasets with many subjects, which would not have been appropriate for our dataset, which had only 40 subjects. As suggested in @SABETI2011, a more specialised feature selection process may have improved the accuracy of our models. Similarly, it is highly possible that our data were nonlinear and comparing our model with another approach, such as boosting or random forest, may have given a higher accuracy in our mFPCA-based elastic net model.
+
 ## Further Research
 
 Future work could include a larger number of participants within the study to improve the accuracy and reliability of results. With the addition of a number of trials and nodes, a complete picture could be created of the subject-level and trial-level variation within the study.
