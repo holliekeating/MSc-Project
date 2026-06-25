@@ -548,11 +548,7 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_ridge.png"))
 
 ```
-
-
 Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. Examination of the calibration plot (Figure c) indicated good calibration. The confidence interval for the slope contained 1, (95% CI: 0.73 to 1.07), and the confidence interval for the intercept contained 0, (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1, (Figure d). 
-
-
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -569,11 +565,11 @@ performance <- data.frame(Section = c(1, 1, 1, 1, 2, 2, 3, 3, 4, 4),
                           Condition = c("All", "C1", "C2", "C3", "All", "C1", "All", "C1", "All", "C1"),
                           Nodes = c(rep(4, 4), rep(2, 2), rep(4,2), rep(4,2)),
                           Variability_Explained = c(rep(0.95, 6), rep(0.9, 2), rep(0.95, 2)),
-                          No._Coefficents = c(35, 26, 64, 48, 37, 32, 24, 16, 148, 65),
-                          L1 = c(32, 21, 23, 21, 27, 13, 20, 13, 42, 25),
-                          L2 = c(0, 4, 40, 25, 7, 18, 0, 2, 102, 35),
-                          AUC = c(0.937, 0.711, 0.427, 0.548, 0.914, 0.577, 0.655, 0.684, 0.946, 0.795),
-                          Accuracy = c("74.20%", "66.00%", "58.67%", "58.49%", "79.89%", "58.00%", "49.63%", "40.77%", "79.89%", "79.88%"))
+                          No._Coefficents = c(35, 26, 64, 48, 37, 32, 24, 16, 260, 65),
+                          L1 = c(32, 21, 23, 21, 27, 13, 20, 13, 74, 25),
+                          L2 = c(0, 4, 40, 25, 7, 18, 0, 2, 182, 35),
+                          AUC = c(0.937, 0.711, 0.427, 0.548, 0.914, 0.577, 0.655, 0.684, 0.803, 0.795),
+                          Accuracy = c("74.20%", "66.00%", "58.67%", "58.49%", "79.89%", "58.00%", "49.63%", "40.77%", "76.01%", "79.88%"))
 
 performance %>%
   kbl(booktabs = T) %>%
@@ -675,11 +671,12 @@ It was of interest to compare the performance of the elastic net models, in whic
 
 **All Conditions Model**
 
-The ridge regression model retained all predictors (42 level 1 and 102 level 2 mFPCA score predictors), whereas the elastic net model selected a much smaller subset of variables. The elastic net model placed greater emphasis on variable selection than on addressing multi-collinearity, which likely reflects the high-dimensional nature of the data set, retaining 32 level 1 mFPCA score predictors and no level 2 predictors. Both approaches highlighted the importance of level 1 mFPCA scores over level 2 scores to different extents. This suggests that between-subject variation contains more useful information for distinguishing schizophrenia cases from controls than trial-to-trial variation within subjects.
+The all-conditions elastic net model used 10-fold cross-validation to identify the optimal tuning parameters of $\alpha = 0.71$ and $\lambda = 0.000081$. As the optimal value of $\alpha$ was closer to lasso ($\alpha = 1$) than ridge ($\alpha = 0$), the model placed greater emphasis on variable selection than on addressing multicollinearity. This likely reflects the high-dimensional nature of the dataset relative to the number of observations. Of the predictors retained in the final model, 32 mFPCA score predictors were level 1 and none were level 2. This suggests that level 1 mFPCA scores contributed more strongly to model predictions than level 2 scores. A similar pattern was observed in the ridge regression model. Although ridge retained all 260 predictors, none of the level 2 scores were among the top 20% of coefficients ranked by absolute magnitude. Together, these findings suggest that between-subject variation contains more useful information for distinguishing schizophrenia cases from controls than trial-to-trial variation within subjects.
 
-Both models demonstrated excellent discriminatory performance, indicating that the mFPCA scores contained substantial information relative to schizophrenia status. 
+The superior discriminatory performance of the elastic net model, coupled with its poorer calibration, may be attributable to its variable selection properties. By removing less informative predictors and retaining those most strongly associated with case-control status, the elastic net model achieved improved discrimination. However, the model also exhibited evidence of overfitting and systematic underprediction of the probability of schizophrenia. The model favoured sparsity through coefficient selection, retaining a relatively small subset of predictors. Consequently, the estimated coefficients were comparatively large, resulting in more extreme predicted probabilities and reduced calibration performance.
 
-However, their calibration characteristics differed substantially. The elastic net model exhibited evidence of over-fitting, and systematic under-prediction of the probability of schizophrenia. This may reflect the variable selection properties of the elastic net. The model favored sparsity through coefficient selection, retaining a relatively small subset of predictors. The resulting coefficient estimates were comparatively large, leading to more extreme predicted probabilities. In contrast, the ridge regression model exhibited substantial under-fitting. The calibration intercept also suggested that the model systematically under-predicted the probability of schizophrenia, although to a lesser extent than the elastic net model. This likely reflects the differing emphasis of the two methods, with elastic net favoring variable selection and ridge favoring coefficient shrinkage. This contrast is evident in Figure (d) of sections 1 and 4 in the results section.
+In contrast, ridge regression retained all predictors, potentially reducing discrimination through the inclusion of noisy or weakly informative variables. However, this additional shrinkage produced a better-calibrated model, with the 95% confidence interval for the calibration slope containing 1 and the 95% confidence interval for the calibration intercept containing 0, indicating good agreement between predicted and observed probabilities. This may be because ridge regression distributes information across all predictors, producing less extreme and more evenly distributed predicted probabilities. As a result, ridge regression sacrificed some discriminatory ability in favour of improved calibration.
+
 
 
 **Condition 1 models**
