@@ -419,8 +419,6 @@ As expected, the clustering results were broadly similar to those obtained using
 
 ## Elastic Net
 
-Elastic net models were trained using the training datasets and subsequently evaluated on independent test datasets.
-
 The first analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with mFPCA scores explaining 95% of the variability at both levels 1 and 2. Models were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions.
 
 
@@ -536,8 +534,7 @@ knitr::include_graphics(c(
 
 ### Section 4: Ridge Regression, four EEG nodes, with 95% variability explained
 
-Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as $\lambda = 0.02058$. All 260 original predictors were retained in the model. Among the mFPCA score predictors, 74 Level 1 and 182 Level 2 predictors were retained. Model discrimination was good, with an AUC of 0.803 (Figure b). The ROC curve demonstrated separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 76.01%. Examination of the calibration plot indicated good agreement between predicted and observed probabilities, with the 95% confidence interval for the calibration slope containing 1 (95% CI: 0.85 to 1.29; Figure c). The calibration intercept was greater than 0 (95% CI: 0.28 to 0.71), suggesting that the model tended to underestimate predicted probabilities.
-
+Alpha was set to zero, thereby fitting a ridge regression model. Firstly, the model was fitted using data from all conditions simultaneously. Using 10-fold cross-validation, the optimal shrinkage parameter was identified as $\lambda = 0.02058$. All 260 original predictors were retained in the model. Among the mFPCA score predictors, 74 Level 1 and 182 Level 2 predictors were retained. Model discrimination was good, with an AUC of 0.803 (Figure b). The ROC curve demonstrated separation between cases and controls across a range of classification thresholds. Classification accuracy at a threshold of 0.5 was 76.01%. The Brier score was 0.1634, indicating good overall predictive accuracy. Examination of the calibration plot indicated good agreement between predicted and observed probabilities, with the 95% confidence interval for the calibration slope containing 1 (95% CI: 0.85 to 1.29; Figure c). However, the calibration intercept was greater than 0 (95% CI: 0.28 to 0.71), suggesting that the model tended to underestimate the probability of schizophrenia.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for all conditions, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -548,7 +545,7 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_ridge.png"))
 
 ```
-Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. Examination of the calibration plot (Figure c) indicated good calibration. The confidence interval for the slope contained 1, (95% CI: 0.73 to 1.07), and the confidence interval for the intercept contained 0, (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1, (Figure d). 
+Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. The Brier score was 0.1555, indicating good overall predictive accuracy. Examination of the calibration plot indicated good calibration (Figure c). The 95% confidence interval for the calibration slope contained 1 (95% CI: 0.73 to 1.07), while the 95% confidence interval for the calibration intercept contained 0 (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1 (Figure d).
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -558,6 +555,40 @@ knitr::include_graphics(c(
 "Images/predprob_cond1_ridge.png"))
 
 ```
+
+Condition 2
+Accuracy: 0.8413284
+Brier score: 0.1418376
+level 1: 26
+level 2: 71
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond2_ridge.png",
+"Images/roc_cond2_ridge.png",
+"Images/calibration_cond2_ridge.png",
+"Images/predprob_cond2_ridge.png"))
+
+```
+Condition 3
+Accuracy: 0.8413284
+Brier score: 0.1541012
+
+level 1: 23 
+level 2: 76
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond3_ridge.png",
+"Images/roc_cond3_ridge.png",
+"Images/calibration_cond3_ridge.png",
+"Images/predprob_cond3_ridge.png"))
+
+```
+
+
+
+
 
 ```{r, echo=FALSE, fig.show='hold', out.width="70%", fig.cap="Table of performance results all models", fig.pos="H"}
 
