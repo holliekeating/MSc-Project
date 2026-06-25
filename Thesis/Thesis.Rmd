@@ -122,13 +122,13 @@ Spline smoothing uses piece-wise polynomial functions joined smoothly through po
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
 
-Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $X(t_i)$ from our observations assuming $y_i = X(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $X(t_i)$ represents the true underlying curve and $\epsilon_i ~ iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
+Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $X(t_i)$ from our observations assuming $y_i = X(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $X(t_i)$ represents the true underlying curve and $\epsilon_i \sim iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
 
 We estimate $X(t)$ by minimising the following:
 
 $$\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt$$
 
-Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
+Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is the second derivative penalty that prevents excessive wiggliness by preventing the slope from changing too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 ```{r, echo = FALSE, fig.show='hold', out.width="89%", out.height="6cm", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
@@ -149,7 +149,7 @@ In this study, five thousand permutation t-tests were applied to the FP1 electro
 
 ## Functional Principal Component Analysis
 
-Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data.
+Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation. To identify and explore these modes of variation, principal component analysis was applied to functional data.
 
 In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components.
 
@@ -157,7 +157,7 @@ Due to the inherently high-dimensional nature of EEG data, directly analysing ob
 
 ### FPCA via PACE
 
-Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
+Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories. The EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
 
 Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1.
 
@@ -171,12 +171,12 @@ $$X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)$$ where $\mu(t)$ is the m
 
 Using the PACE method, however we estimate the FPC scores as follows:
 
-Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and functions [@yao2005PACE]. Components explaining up to 95% of the total variability were retained for subsequent analyses.
+Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and eigenfunctions [@yao2005PACE]. Components explaining up to 95% of the total variability were retained for subsequent analyses.
 
 
 ### Exploring FPCA scores via extreme curve and then k-means clustering
 
-K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
+K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and iterates the process until the centroids become stable.
 
 As quoted from Fortuna F. "cluster analysis aims to group a set of data such that units within clusters are more similar than across clusters with respect to a metric. In the FDA context, the most popular technique is the k-means clustering algorithm" [@FortunaMaturo2019].
 
