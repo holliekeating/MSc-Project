@@ -421,7 +421,8 @@ table(fpca_scores_demo$group, kmeans_c1$cluster)
 
 #mean(scores$group == kmeans_c1$cluster)
 fviz_cluster(kmeans_c1, data = features_x, 
-             main = "K-Means Clusters")
+             main = "K-Means Clusters",
+             ggtheme = theme_bw())
 ```
 
 ```{r, plot kmeans}
@@ -440,7 +441,7 @@ df_cluster %>%
   geom_line(lwd = 0.5)+
   facet_wrap(~ cluster) +
   labs(title = "EEG signals by cluster, coloured by schizophrenia") %>%
-  show()
+  show()+theme_bw()
 ```
 
 
@@ -3198,7 +3199,8 @@ table(level1_scores_demo$group, kmeans_c1$cluster)
 
 #Visualise Clusters
 fviz_cluster(kmeans_c1, data = features_x, 
-             main = "K-Means Clusters - Level 1 mFPCA")
+             main = "K-Means Clusters - Level 1 mFPCA",
+             ggtheme = theme_bw())
 ```
 
 ```{r plotting mfpca1 clusters}
@@ -3212,7 +3214,8 @@ df_cluster %>%
   ggplot(aes(x = time, y = eeg_smooth, group = interaction(ID, trial), color = schizophrenia)) +
   geom_line()+
   facet_wrap(~ cluster) +
-  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") 
+  labs(title = "EEG signals by Level 1 mFPCA cluster, coloured by schizophrenia") +
+  theme_bw()
 
 ```
 

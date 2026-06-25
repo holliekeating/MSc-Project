@@ -34,7 +34,7 @@ output: rticles::arxiv_article
 header-includes:
   - \newcommand{\pandocbounded}[1]{#1}
   - \usepackage{setspace}
-  - \setstretch{1.2}
+  - \setstretch{1.1}
 ---
 
 ```{r, include=FALSE}
@@ -570,7 +570,8 @@ performance <- data.frame(Section = c(1, 1, 2, 2, 3, 3, 4, 4, 4, 4),
                           Accuracy = c("74.20%", "59.96%", "79.89%", "66.05%", "49.63%", "41.33%", "76.01%", "79.88%", "84.13%", "84.13%"))
 
 performance %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Model evaluation summary") %>%
   kable_classic_2(full_width = F, latex_options = "hold_position")
 ```
 
