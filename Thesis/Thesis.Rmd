@@ -343,7 +343,8 @@ cm <- matrix(
 cm <- as.data.frame.matrix(cm)
 
 cm %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Confusion matrix of FPC clusters") %>%
   kable_classic(full_width = F, html_font = "Cambria", latex_options = "hold_position")
 
 ```
@@ -408,7 +409,8 @@ cm <- matrix(
 cm <- as.data.frame.matrix(cm)
 
 cm %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Confusion matrix of mFPC clusters") %>%
   kable_classic(full_width = F, html_font = "Cambria", latex_options = "hold_position")
 
 
