@@ -257,7 +257,9 @@ Calibration was assessed using calibration plots generated from the model's pred
 
 \label{sec:results}
 
-This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, mFPCA, and elastic net analyses are reported.
+This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, mFPCA, and elastic net analyses are reported. 
+
+The code and datasets for this project can be viewed at our GitHub repository here: [GitHub](https://github.com/maeve-susan/MSc-Project)
 
 ## Permutation t-test
 
@@ -638,7 +640,7 @@ The elastic net models with four nodes (see section 1) are all models based on t
 
 The all-conditions model performed best, suggesting that information from all three conditions contributes to classification. 
 
-The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional predictive information in conditions 2 and 3.
+The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional predictive information in conditions 2 and 3. This is surprising given the previous result of the permutation t-test suggesting condition 1 exhibits significantly different EEG signals between cases and controls whereas conditions 2 and 3 had much less significant results. This suggests that the baseline EEG signals may be just as important in prediction as those where sensory gating is exhibited.
 
 Overall, the all-conditions model was the strongest performer and is clearly the preferred of the two models.
 
@@ -648,7 +650,9 @@ Overall, the all-conditions model was the strongest performer and is clearly the
 
 The all-conditions models from sections 1 and 2 differed only in the number of EEG nodes included, with the first model using four nodes and the second using two. Subsequent differences are primarily due to the differing levels of regularisation between the two models.
 
-Both models performed well, being the best-performing among the elastic net models, in terms of accuracy and AUC, indicating that they performed well at ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the model and slightly decreased the AUC. 
+Both models performed well, being the best-performing among the elastic net models, in terms of accuracy and AUC, indicating that they performed well at ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the model and slightly decreased the AUC.
+
+The reason for such high AUCs in these models is likely due to the level of shrinkage, causing there to be a very limited number of predicted probabilities. The shrinkage largely reduces the number of level 2 predictors, causing people to have very little within-subject variation and leading to highly extreme predicted probabilities. We can see that when there is no variable selection in the all conditions ridge model, it is almost perfectly calibrated and has a lower AUC of 0.803, which is likely a much more realistic estimate of the model's discriminative ability than in the elastic net models.
 
 As mentioned previously, the additional nodes (af7 and f7) included in the four-node analysis are supporting nodes and not the primary nodes for analysis, so while we expect that the four-node model might perform better than the two-node model, it is good to note that the models both performed well on AUC and accuracy, which is supported by our understanding the two-node model includes only the two primary nodes for analysis.
 
@@ -657,7 +661,8 @@ Calibration in both was quite similar; the calibration intercept is greater than
 Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration, as seen in the calibration slope of 0.92 being closer to 0 than the four-node model’s calibration slope of 1.36. The Brier score as an overall model evaluation metric also suggests that the two-node model has better overall performance than the four-node model since the Brier score of 0.1236 in the two-node model is lower than 0.1544 in the four-node model.
 
 **Condition 1 models**
-The four-node condition 1 model had a lower accuracy of 59.96% and a higher AUC of 0.69 than the two-node model with an accuracy of 66.05% and an AUC of 0.629. Both models perform much worse than the all-conditions models, suggesting that conditions 2 and 3 add useful information for schizophrenia prediction.
+
+The four-node condition 1 model had a lower accuracy of 59.96% and a higher AUC of 0.69 than the two-node model with an accuracy of 66.05% and an AUC of 0.629. Both models perform much worse than the all-conditions models, suggesting that conditions 2 and 3 add useful information for schizophrenia prediction as before. 
 
 Neither model was well calibrated, with the calibration slopes showing that both overfit to the data. The intercept suggests, however, that the model does not systematically over- or under-predict the risk of schizophrenia.
 
@@ -672,7 +677,6 @@ The all-conditions models previously performed very well; however, here it perfo
 The all-conditions model had an AUC of 0.655 and an accuracy of 49.63%, performing worse than random guessing at our 0.5 threshold. Its Brier score is similarly quite large at 0.483. The condition 1 model performs even worse than this, with an AUC of 0.512, indicating that the model performs hardly any better than random guessing, an accuracy of 41.33%, and a Brier score of 0.576. These models are also poorly calibrated, indicating overfitting and evidence that the model systematically underpredicts the risk of schizophrenia.
 
 The reason these models perform so much worse than previous 95% models is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. So, it was better to start out with the much larger dataset, as what was saved in terms of fewer predictors was lost in terms of predictive power. 
-
 
 
 ### Comparison of Elastic Net and Ridge Regression models
@@ -734,9 +738,9 @@ However, when it comes to classification models for schizophrenia based on EEG s
 
 Another approach used a neural network classification model to diagnose schizophrenia. The model has a balanced accuracy and precision of 93% and shows improved accuracy compared to other traditional algorithms such as random forest and K-nearest neighbour [@lujan2023accurate].
 
-A review of deep learning models for schizophrenia diagnosis, @ranjan2024deep, found that convolutional neural networks were the most commonly employed model for mental health diagnosis. By comparing many different models, it was found that the 2D-CNN model had the highest classification performance, with an accuracy of 99.5%, while the other models included in the review also had accuracies over 90%.
+A review of deep learning models for schizophrenia diagnosis, @ranjan2024deep, found that convolutional neural networks (CNN) were the most commonly employed model for mental health diagnosis. By comparing many different models, it was found that the 2D-CNN model had the highest classification performance, with an accuracy of 99.5%, while the other models included in the review also had accuracies over 90%.
 
-Using FDA, our analysis is much simpler than that of a neural network, which, although it has great prediction accuracy, lacks interpretability. Also, these neural networks require large datasets with many subjects, which would not have been appropriate for our dataset, which had only 40 subjects. As suggested in @SABETI2011, a more specialised feature selection process may have improved the accuracy of our models. Similarly, it is highly possible that our data were nonlinear and comparing our model with another approach, such as boosting or random forest, may have given a higher accuracy in our mFPCA-based elastic net model.
+Using FDA, our analysis is much simpler than that of a neural network, which, although it has great prediction accuracy, lacks interpretability. These neural networks require also large datasets with many subjects, which would not have been appropriate for our dataset, which had only 40 subjects despite containing a lot of repeated trials. As suggested in @SABETI2011, a more specialised feature selection process may have improved the accuracy of our models. Similarly, it is highly possible that our data were more suited to a nonlinear and comparing our model with another approach, such as boosting or random forest, may have given a higher accuracy in our mFPCA-based prediction models.
 
 ## Further Research
 
@@ -748,9 +752,11 @@ Using FDA, our analysis is much simpler than that of a neural network, which, al
 
 # Conclusion
 
-In conclusion, we found that there was a significant difference in the EEG curves of individuals with schizophrenia and controls in condition 1, since the permutation t-test showed pointwise significance in many parts and global significance in others. The effect was less in condition 2 however there was a small pointwise significant difference post-stimulus, and in condition 3 there is no pointwise significance. This supports the hypothesis that sensory gating deficits are most evident when participants generate an expected auditory stimulus through their own action, condition 1 in this study.
+In conclusion, we found that there was a significant difference in the EEG curves of individuals with schizophrenia and controls in condition 1, since the permutation t-test showed pointwise significance at many points and global significance in others. The effect was less prominent in condition 2 however there was a small pointwise significant difference post-stimulus, and in condition 3 there is no pointwise significant difference in the EEG signals of cases and controls. This supports the hypothesis that sensory gating deficits are most evident when participants generate an expected auditory stimulus through their own action, condition 1 in this study.
 
-Using functional data analysis we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. Our best models were the all conditions model using 2 and 4 nodes respectively where mFPC scores were found from the eigenfunctions that explained 95% of the variability in the curves. These were followed by the four-node model of condition 1 where mFPCs explained 95% of the variability in the curves, in terms of model performance. This is likely due to the sensory gating process discussed previously. The condition 2 and condition 3 models did not perform well however, the inclusion of condition 2 and 3 alongside condition 1 appears to provide additional information that improves the predictive power of the model.
+Using functional data analysis we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. 
+
+Our best models were the all conditions model using 2 and 4 nodes respectively where mFPC scores were found from the eigenfunctions that explained 95% of the variability in the curves. These were followed by the four-node model of condition 1 where mFPCs explained 95% of the variability in the curves, in terms of model performance. This is likely due to the sensory gating process discussed previously. The condition 2 and condition 3 models did not perform well however, the inclusion of condition 2 and 3 alongside condition 1 appears to provide additional information that improves the predictive power of the model.
 
 Further work could be done with a larger set of subjects in order to improve the generalisability of this model as the calibration was poor and all models in the validation set.
 
