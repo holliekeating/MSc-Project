@@ -539,6 +539,7 @@ knitr::include_graphics(c(
 
 ```
 
+<<<<<<< HEAD
 Condition 2 identified the optimal shrinkage parameter as *$\lambda = 0.02058$*. All *65 predictor variables* were retained in the model. Among the mFPCA score predictors, 26 level 1 and 71 level 2 predictors were retained. Model discrimination was good, with an AUC of 0.778 (Figure b). Classification accuracy at a threshold of 0.5 was 84.13%. The Brier score was 0.1418, indicating that the predicted probabilities were generally close to the observed outcomes. Examination of the calibration plot indicated good calibration (Figure c). The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of 0.55 (95% CI: 0.45-0.66) showing evidence of over-fitting. The 95% confidence interval for the calibration intercept was 0.83 (95% CI: 0.59-1.06), indicating that the model systematically under-predicted the probability of schizophrenia. The rug plot showed a concentration of observations at low predicted probabilities, with the remaining observations spread across the higher probability range.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
@@ -597,7 +598,7 @@ Among the ridge regression models, the condition 2 and condition 3 models equall
 
 This section discusses the key findings of the study and considers their implications. The results as outlined in the results section above are interpreted with particular emphasis on sensory gating, group differences between cases and controls, and the performance of the predictive modelling approaches. The strengths and limitations of the study are also considered, together with recommendations for future research.
 
-## Permutation ttests
+## Permutation t-tests
 
 Sensory gating refers to the ability of the brain to filter repeated, expected, or redundant sensory stimuli and has been shown to be impaired in individuals with schizophrenia (Boutros et al., 2009; Shen et al., 2020). In the present study, the repeated stimulus was represented by an auditory tone. The observed differences between cases and controls in Conditions 1 and 2 are consistent with impaired sensory gating in schizophrenia.
 
