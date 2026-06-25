@@ -16,7 +16,7 @@ authors:
     affiliation: University of Galway
     location: Galway, Ireland
     email: H.Keating3@universityofgalway.ie
-abstract: Schizophrenia is associated with impaired sensory gating and abnormalities in neural processing. The objectives of this study were to investigate differences in EEG signals between schizophrenia cases and controls, assess the ability of EEG-derived features to predict case-control status, and determine whether discrimination between cases and controls varied across sensory conditions. To achieve these aims, spline smoothing, permutation t-tests, Functional Principal Component Analysis (FPCA), Multilevel Functional Principal Component Analysis (mFPCA), K-means clustering, elastic net regression, and ridge regression were applied to EEG data collected under multiple sensory conditions. The results demonstrated that differences in brain activity between cases and controls varied across sensory conditions, with some conditions exhibiting stronger group differences than others. These findings provide further evidence of impaired sensory gating in schizophrenia. K-means clustering of FPCA and mFPCA scores revealed partial separation between cases and controls, indicating that the extracted functional features captured meaningful differences in EEG activity between the two groups. Classification models based on mFPCA scores achieved strong predictive performance, with the best elastic net models achieving an AUC greater than 0.90 and classification accuracies exceeding 70%. Overall, the findings suggest that EEG-derived functional features can distinguish between schizophrenia cases and controls, particularly when information from multiple sensory conditions is combined. The results highlight the potential of combining mFPCA with penalised regression methods for the analysis of high-dimensional EEG data and support further investigation of these approaches.
+abstract: Schizophrenia is associated with impaired sensory gating and abnormalities in neural processing. The objectives of this study were to investigate differences in EEG signals between schizophrenia cases and controls, assess the ability of EEG-derived features to predict case-control status, and determine whether discrimination between cases and controls varied across sensory conditions. To achieve these aims, spline smoothing, permutation t-tests, Functional Principal Component Analysis (FPCA), Multilevel Functional Principal Component Analysis (mFPCA), K-means clustering, elastic net regression, and ridge regression were applied to EEG data collected under multiple sensory conditions. The results demonstrated that differences in brain activity between cases and controls varied across sensory conditions, with some conditions exhibiting stronger group differences than others. These findings provide further evidence of impaired sensory gating in schizophrenia. K-means clustering of FPCA and mFPCA scores revealed partial separation between cases and controls, indicating that the extracted functional features captured meaningful differences in EEG activity between the two groups. Classification models based on mFPCA scores achieved strong predictive performance, with the best elastic net models achieving an AUC greater than 0.90 and classification accuracies exceeding 70% and the best ridge models achieving AUC of 0.795 and an accuracy of near 80%, with better calibration in the ridge model. Overall, the findings suggest that EEG-derived functional features can distinguish between schizophrenia cases and controls, particularly when information from multiple sensory conditions is combined. The results highlight the potential of combining mFPCA with penalised regression methods for the analysis of high-dimensional EEG data and support further investigation of these approaches.
 
 keywords:
   - Schizophrenia
@@ -34,7 +34,7 @@ output: rticles::arxiv_article
 header-includes:
   - \newcommand{\pandocbounded}[1]{#1}
   - \usepackage{setspace}
-  - \setstretch{1.2}
+  - \setstretch{1.1}
 ---
 
 ```{r, include=FALSE}
@@ -59,17 +59,17 @@ An electroencephalogram (EEG) is a non-invasive test used to measure electrical 
 
 Schizophrenia is a mental health condition which is associated with unusual activity in the frontal and prefrontal sections of the brain. According to Insel, T., schizophrenia presents with "paranoid delusions and auditory hallucinations late in adolescence or in early adulthood" [@Insel2010].
 
-Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the curve [@Shen2020; @BOUTROS2009].
+Sensory gating is the process by which the brain filters repeated, expected or redundant stimuli. This process is impaired in individuals with schizophrenia, particularly at the P50 (indicating pre-attentive filtering of sensory information), N100 and P200 (both reflecting the attention triggering/allocation process) regions of the EEG curve, which occur 50, 100 and 200 ms after an auditory stimulus, respectively. The impairment of the sensory gating process can be detected by a difference in the amplitude of these deflections in the EEG curve [@Shen2020; @BOUTROS2009].
 
-Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity by the continuous flow of voltages over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In particular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each functional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
+Functional data analysis (FDA) is a method of statistical analysis that analyses each function as an individual sample, as opposed to considering all the points along the curve separately. It is used when the underlying curve is smooth and continuous [@RamsaySilverman2005]. EEG curves are a type of functional data that indicates the brain's electrical activity over time. FDA helps to effectively describe and interpret inherit changes in EEG signals and its relationship with human behaviours, making it an interpretable approach. In particular, Functional Principal Component Analysis (FPCA) has been widely used to represent high-dimensional functional observations. However, standard FPCA assumes that each functional observation is independent, and so, does not naturally allow for analysis of repeated measurements.
 
 Previous studies have investigated schizophrenia using EEG data to identify abnormalities in sensory processing and sensory gating (e.g. @BOUTROS2009, @Shen2020). Many analyses have focused on specific EEG features, such as amplitudes and latencies at predefined regions of the signal, while others have applied machine learning (ML) methods to extracted EEG features. It is clear that these approaches create valuable insights, however, information is often discarded contained within the full EEG trajectory.
 
-At present, researchers have been using FDA to study EEG data using differing techniques. Yi Yuyan et al. [@yi2022classification] explored classification of EEG signals using functional data analysis. This research involved feature extraction and dimension reduction via FDA in a study consisting of healthy adults, where the aim was to classify long versus short distance travel. Similar to our approach, multiple trials and multiple electrodes were analysed for penalised functional logistic regression. However, the hierarchical structure of repeated trials within subjects was not explicitly modelled, with trials instead treated as separate observations.
+At present, researchers have been using FDA to study EEG data using differing techniques. @yi2022classification explored classification of EEG signals using functional data analysis. This research involved feature extraction and dimension reduction via FDA in a study consisting of healthy adults, where the aim was to classify long versus short distance travel. Similar to our approach, multiple trials and multiple electrodes were analysed for penalised functional logistic regression. However, the hierarchical structure of repeated trials within subjects was not explicitly modelled, with trials instead treated as separate observations.
 
-To address the hierarchical nature of complex data, Hasenstab et al. (2017) [@hasenstab2017multidimensional] used Multidimensional FPCA to preserve the structure of EEG data collected from children with autism spectrum disorder. Their study incorporated multiple trials (120 per participant) and multiple nodes, with the main analysis focuses on four nodes from right frontal region. However, the work primarily focused on understanding variation within the data, whereas the current study investigates whether FPCA-derived features can be used to discriminate between schizophrenia cases and controls through predictive modelling and clustering.
+To address the hierarchical nature of complex data, @hasenstab2017multidimensional used Multidimensional FPCA to preserve the structure of EEG data collected from children with autism spectrum disorder. Their study incorporated multiple trials (120 per participant) and multiple nodes, with the main analysis focuses on four nodes from right frontal region. However, the work primarily focused on understanding variation within the data, whereas the current study investigates whether FPCA-derived features can be used to discriminate between schizophrenia cases and controls through predictive modelling and clustering.
 
-The main foundation for this current study was introduced by Di et al. (2009) [@Di2009] who developed Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
+The main foundation for this current study was introduced by @Di2009 who developed Multilevel Functional Principal Component Analysis (mFPCA) using sleep EEG data collected at two visits per subject. While this study established the mFPCA framework for analysing hierarchical functional data, its focus was on methodological development rather than the clustering and classification of mFPCA-derived scores.
 
 Together, these studies display the value of using FDA and multilevel approaches for the analysis of complex EEG data. However, limited research has applied mFPCA specifically to schizophrenia EEG data while also evaluating these PC scores within predictive modelling frameworks. This study aims to address this gap.
 
@@ -80,15 +80,18 @@ In EEG experiments, subjects typically complete multiple trials under the same e
  
 - To investigate whether EEG signals differ between schizophrenia cases and controls during the sensory conditions detailed above
 - To develop a prediction model using FDA to accurately predict case control status
-- To investigate how condition 1 differs from condition 2 and 3 in cases and controls, as we would expect more sensory gating in condition 1 compared to the other two conditions since the sound was expected due to subjects pressing the button. Therefore, we expect that the largest difference between cases and controls EEG signals will occur in condition 1, as cases are expected to exhibit impaired sensory gating.
+- To investigate whether condition 1 has better predictive power than the other conditions as we expect there to be a larger differnce in the EEG signals of cases and controls here due to sensory gating
 
 ## Data
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
 In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which: 
+
 1.  Subjects press a button to immediately produce a sound
+
 2.  Subjects passively listen to the same sound without pressing a button
+
 3.  Subjects press a button, and no sound is produced.
 
 Each subject completed each of these sensory conditions up to 100 times. Therefore, we have many repetitions of the same conditions for each of the subjects. So in total we have approximately $64\times 40 \times 100 = 256,000$ curves. Data from case participants were compared with age- and gender-matched controls. Only right-handed subjects were included in this analysis [@ford2014did].
@@ -119,13 +122,13 @@ Spline smoothing uses piece-wise polynomial functions joined smoothly through po
 
 A second-derivative roughness penalty was then applied. In penalised smoothing approaches, smoothness is controlled by incorporating a roughness penalty into the objective function used to fit the data, rather than by restricting the number of basis functions available [@RamsaySilverman2005]. Penalising the second derivative discourages rapid changes in curvature, allowing gradual variation in the fitted function while reducing excessive wiggliness. In practice, this encourages neighbouring B-spline coefficients to vary smoothly and can be viewed as approximating penalties on finite differences between adjacent coefficients. The roughness penalty pools information across neighbouring regions of the function, resulting in more stable estimates and reduced sensitivity to noise. Consequently, variance is reduced at the cost of a small increase in bias, yielding smoother and more interpretable functional representations of the EEG signals [@RamsaySilverman2005; @Gertheiss2024]. This can be seen in the two plots below, which compare the raw EEG curves with the corresponding smoothed curves. The raw curves exhibit substantial noise and high variability, whereas the smoothed curves provide a clearer representation of the underlying signal by reducing random variation.
 
-Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $X(t_i)$ from our observations assuming $y_i = X(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $X(t_i)$ represents the true underlying curve and $\epsilon_i ~ iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
+Given a set of observations $\{t_i, y_i: i=1,2,...,n\}$, spline smoothing estimates a curve $X(t_i)$ from our observations assuming $y_i = X(t_i) + \epsilon_i$ where $t_i$ represents the time points along the x-axis of the curve, $X(t_i)$ represents the true underlying curve and $\epsilon_i \sim iid(0, \sigma^2)$ represents the exogenous error, which contributes to the roughness of the raw data.
 
 We estimate $X(t)$ by minimising the following:
 
 $$\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt$$
 
-Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
+Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is the second derivative penalty that prevents excessive wiggliness by preventing the slope from changing too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
 ```{r, echo = FALSE, fig.show='hold', out.width="89%", out.height="6cm", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
@@ -146,7 +149,7 @@ In this study, five thousand permutation t-tests were applied to the FP1 electro
 
 ## Functional Principal Component Analysis
 
-Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation - to identify and explore these, principal component analysis was applied to functional data.
+Following smoothing, each EEG recording was represented as a continuous function observed over 1,638 time points. Although, as mentioned above, smoothing reduces noise and improves interpretability, functional observations remain high-dimensional. As discussed by J.O Ramsay et al. [@RamsaySilverman2005], this data may display a small number of dominant modes of variation. To identify and explore these modes of variation, principal component analysis was applied to functional data.
 
 In functional PCA, eigenvalues of the bivariate variance-covariance function $\nu(s,t)$ denote the importance of each principal component. An eigenfunction is associated with each eigenvalue, and these describe major variational components.
 
@@ -154,7 +157,7 @@ Due to the inherently high-dimensional nature of EEG data, directly analysing ob
 
 ### FPCA via PACE
 
-Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories - the EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
+Functional Principal Component Analysis was implemented using the Principal Analysis by Conditional Estimation (PACE) method, developed by @yao2005PACE. This package is useful for the analysis of data that have been generated alongside noise, irregular time points or sparse data. A key advantage of the PACE method is that it can be used for sparsely or densely sampled random trajectories. The EEG recordings analysed in this study can be considered as densely sampled data, as each EEG curve was observed across a large number of time points on the same time grid. Here, PACE was used to estimate the principal modes of variation in the EEG curves and obtain subject-specific FPCA scores (FPCs).
 
 Each participant contributed a single densely sampled EEG curve corresponding to Trial 1 at the FP1 electrode under Condition 1.
 
@@ -168,12 +171,12 @@ $$X_i (t) = \mu (t) + \sum_{k=1}^K \xi_{ik} \Phi_k (t)$$ where $\mu(t)$ is the m
 
 Using the PACE method, however we estimate the FPC scores as follows:
 
-Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and functions [@yao2005PACE]. Components explaining up to 95% of the total variability were retained for subsequent analyses.
+Given the smoothed random functions $X_i(t)$ we first estimate the mean function $\hat\mu(t)$ for all these observations (curves) from all subjects in the training data. Then, we estimate the covariance function $Cov(X (s), X (t)) = G(s, t)$. If we perform eigendecomposition of this covariance function to get eigenvalues $e_k$ and eigenfunctions $\Phi_k(t)$ which are the FPCs we were looking for. The corresponding FPC scores $\xi_{ik}$ can be estimated from these the observations, the mean function and the eigenvalues and eigenfunctions [@yao2005PACE]. Components explaining up to 95% of the total variability were retained for subsequent analyses.
 
 
 ### Exploring FPCA scores via extreme curve and then k-means clustering
 
-K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K-distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and continues iterates the process until the centroids become stable.
+K-means clustering was subsequently applied to the scores to determine if there was any pattern in the data. K-means clustering is an unsupervised learning algorithm which groups unlabelled data into K distinct clusters by choosing a random point as a center (centroid) for the cluster and assigning each observation to the nearest cluster (using Euclidean distance). Then finding the mean point for all points in the cluster, it uses this as a new centroid and iterates the process until the centroids become stable.
 
 As quoted from Fortuna F. "cluster analysis aims to group a set of data such that units within clusters are more similar than across clusters with respect to a metric. In the FDA context, the most popular technique is the k-means clustering algorithm" [@FortunaMaturo2019].
 
@@ -570,7 +573,8 @@ performance <- data.frame(Section = c(1, 1, 2, 2, 3, 3, 4, 4, 4, 4),
                           Accuracy = c("74.20%", "59.96%", "79.89%", "66.05%", "49.63%", "41.33%", "76.01%", "79.88%", "84.13%", "84.13%"))
 
 performance %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Model evaluation summary") %>%
   kable_classic_2(full_width = F, latex_options = "hold_position")
 ```
 
@@ -628,7 +632,7 @@ The elastic net models with four nodes (see section 1) are all models based on t
 
 The all-conditions model performed best, suggesting that information from all three conditions contributes to classification. 
 
-The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, which had an accuracy of 74.2% abd an AUC of 0.937, suggesting there is additional predictive information in conditions 2 and 3. This is surprising given the previous result of the permutation t-test suggesting condition 1 exhibits significantly different EEG signals between cases and controls whereas conditions 2 and 3 had much less significant results. This suggests that the baseline EEG signals may be just as important in prediction as those where sensory gating is exhibited.
+The condition 1 model would be expected to perform well, given the result from the permutation t-test, indicating that condition 1 shows the most significant differences between cases' and controls' EEG signals. The model performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all-conditions model, which had an accuracy of 74.2% and an AUC of 0.937, suggesting there is additional predictive information in conditions 2 and 3. This is surprising given the previous result of the permutation t-test suggesting conditions 2 and 3 had much less significant differences in EEG signals of cases and controls than condition 1. This suggests that the baseline EEG signals may also be useful in schizophrenia prediction.
 
 Overall, the all-conditions model was the strongest performer and is clearly the preferred of the two models.
 \newpage
@@ -638,11 +642,9 @@ Overall, the all-conditions model was the strongest performer and is clearly the
 
 The all-conditions models from sections 1 and 2 differed only in the number of EEG nodes included, with the first model using four nodes and the second using two. Subsequent differences are primarily due to the differing levels of regularisation between the two models.
 
-Both models performed well, being the best-performing among the elastic net models, in terms of accuracy and AUC, indicating that they performed well at ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the model and slightly decreased the AUC.
+Both models performed well, being the best-performing among the elastic net models, in terms of accuracy and AUC, indicating that they performed well at ranking a randomly selected case over a randomly selected control. Reducing the number of nodes slightly increased the accuracy of the model and slightly decreased the AUC.
 
-The reason for such high AUCs in these models is likely due to the level of shrinkage, causing there to be a very limited number of predicted probabilities. The shrinkage largely reduces the number of level 2 predictors, causing people to have very little within-subject variation and leading to highly extreme predicted probabilities. We can see that when there is no variable selection in the all conditions ridge model, it is almost perfectly calibrated and has a lower AUC of 0.803, which is likely a much more realistic estimate of the model's discriminative ability than in the elastic net models.
-
-As mentioned previously, the additional nodes (af7 and f7) included in the four-node analysis are supporting nodes and not the primary nodes for analysis, so while we expect that the four-node model might perform better than the two-node model, it is good to note that the models both performed well on AUC and accuracy, which is supported by our understanding the two-node model includes only the two primary nodes for analysis.
+As mentioned previously, the additional nodes (af7 and f7) included in the four-node analysis are supporting nodes and not the primary nodes for analysis, so while we expect that the four-node model might perform better than the two-node model, it is good to note that the models both performed similarly well on AUC and accuracy, which is supported by our understanding the two-node model includes only the two primary nodes for analysis.
 
 Calibration in both was quite similar; the calibration intercept is greater than 0, indicating that the observed event rate exceeds the average predicted probability; therefore, the models are systematically under-predicting the risk of schizophrenia. The calibration slope is less than 1, which is evidence of over-fitting in both models. We can see this by the limited number of predicted probabilities shown on both the rug plot and in the predicted probabilities plot.
 
@@ -665,7 +667,7 @@ The all-conditions models previously performed very well; however, here it perfo
 
 The all-conditions model had an AUC of 0.655 and an accuracy of 49.63%, performing worse than random guessing at our 0.5 threshold. Its Brier score is similarly quite large at 0.483. The condition 1 model performs even worse than this, with an AUC of 0.512, indicating that the model performs hardly any better than random guessing, an accuracy of 41.33%, and a Brier score of 0.576. These models are also poorly calibrated, indicating overfitting and evidence that the model systematically underpredicts the risk of schizophrenia.
 
-The reason these models perform so much worse than previous 95% models is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. So, it was better to start out with the much larger dataset, as what was saved in terms of fewer predictors was lost in terms of predictive power. 
+The reason these models perform so much worse than previous 95% models is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. So, it was better to start out with the much larger dataset, as what was gained in terms of fewer predictors was lost in terms of predictive power. 
 
 
 ### Comparison of Elastic Net and Ridge Regression models
