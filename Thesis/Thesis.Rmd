@@ -635,9 +635,9 @@ The elastic net models with four nodes (see section 1) are all models based on t
 
 The all-conditions model performed best, suggesting that information from all three conditions contributes to classification. 
 
-The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional useful information in the 
+The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional predictive information in conditions 2 and 3.
 
-Overall, the all-conditions model was the strongest performer and was therefore selected as the preferred model.
+Overall, the all-conditions model was the strongest performer and is clearly the preferred of the two models.
 
 ### Comparison of Elastic Net Models - 4 nodes vs 2 nodes
 
@@ -645,31 +645,32 @@ Overall, the all-conditions model was the strongest performer and was therefore 
 
 The all-conditions models from sections 1 and 2 differed only in the number of EEG nodes included, with the first model using four nodes and the second using two. Subsequent differences are primarily due to the differing levels of regularisation between the two models.
 
-Both models performed well, being the best performing models among the elastic net models, both in terms of accuracy and in terms of AUC - indicating that they performed well in ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the models and slightly decreased the AUC.
+Both models performed well, being the best-performing among the elastic net models, in terms of accuracy and AUC, indicating that they performed well at ranking a randomly selected case over a randomly selected control. Reducing the number of nodes has slightly increased the accuracy of the model and slightly decreased the AUC. 
 
-Calibration in both was quite similar, results indicate that the observed event rate exceeds the average predicted probability; therefore, the model is systematically unde-rpredicting the risk of schizophrenia. The Calibration slope also shows evidence of over-fitting in both models. We can see this by the limited number of predicted probabilities shown on both the rug plot and in the predicted probabilities plot.
+As mentioned previously, the additional nodes (af7 and f7) included in the four-node analysis are supporting nodes and not the primary nodes for analysis, so while we expect that the four-node model might perform better than the two-node model, it is good to note that the models both performed well on AUC and accuracy, which is supported by our understanding the two-node model includes only the two primary nodes for analysis.
 
-Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration than the four-node model.
+Calibration in both was quite similar; the calibration intercept is greater than 0, indicating that the observed event rate exceeds the average predicted probability; therefore, the models are systematically under-predicting the risk of schizophrenia. The calibration slope is less than 1, which is evidence of over-fitting in both models. We can see this by the limited number of predicted probabilities shown on both the rug plot and in the predicted probabilities plot.
+
+Overall, these two models both perform well and have very similar calibration. However, the two-node model would be preferred in this case since it has a higher accuracy and a slightly better calibration, as seen in the calibration slope of 0.92 being closer to 0 than the four-node model’s calibration slope of 1.36. The Brier score as an overall model evaluation metric also suggests that the two-node model has better overall performance than the four-node model since the Brier score of 0.1236 in the two-node model is lower than 0.1544 in the four-node model.
 
 **Condition 1 models**
+The four-node condition 1 model had a lower accuracy of 59.96% and a higher AUC of 0.69 than the two-node model with an accuracy of 66.05% and an AUC of 0.629. Both models perform much worse than the all-conditions models, suggesting that conditions 2 and 3 add useful information for schizophrenia prediction.
 
-The four-node condition 1 model outperformed the two-node model, achieving higher accuracy and AUC. However, both models performed substantially worse than the corresponding all-conditions models, suggesting that information from conditions 2 and 3 contribute well to classification. 
+Neither model was well calibrated, with the calibration slopes showing that both overfit to the data. The intercept suggests, however, that the model does not systematically over- or under-predict the risk of schizophrenia.
 
-Neither model was well calibrated, however, in different ways. The four-node model indicates that it systematically over-predicts the risk of schizophrenia, and the calibration slope suggests that it is over-fit to the data. Alternatively, in the two-node model, it is indicated that it systematically under-predicts the risk. Similarly, the calibration slope indicates that the model is overfit once again.
-
-This result is unexpected since we would expect that both models would perform well with only condition 1, given that the permutation test indicated the most significant difference between cases and controls in condition 1, but this may show that the other two conditions may provide additional predictive information in the model.
-
-Overall, the four-node model was preferred due to its superior discriminatory performance.
+Overall, between these two condition 1 models, the four-node model is preferred due to the superior discrimination and its lower Brier score of 0.28 compared to 0.346 in the two-node model.
 
 ### Comparison of Elastic Net Models - 95% variability vs 90% variability explained
 
-Reducing the proportion of variability explained from 95% to 90% changed both the number and composition of the retained mFPC scores. Fewer components were retained under the 90% threshold, resulting in a smaller set of predictors.
+Reducing the proportion of variability explained from 95% to 90% changed both the number and composition of the retained mFPC scores. Fewer components are included under the 90% threshold, resulting in a smaller set of predictors.
 
-The all-conditions models previously performed very well; however, here it performs far worse than before. Similarly, the condition 1 model with the 90% variability explained performs worse still than the two-node model and the four-node model. Neither of these models are very good in terms of their discriminative ability, their accuracy or their calibration, with both being over-fit and both systematically under-predicting the risk of schizophrenia. 
+The all-conditions models previously performed very well; however, here it performs far worse than before. Similarly, the condition 1 model with the 90% variability explained performs worse still than the two-node model and the four-node model. 
 
-Both the all-conditions and condition 1 models performed worse under the 90% variability explained threshold, showing lower accuracy, poorer discrimination, and evidence of over-fitting. 
+The all-conditions model had an AUC of 0.655 and an accuracy of 49.63%, performing worse than random guessing at our 0.5 threshold. Its Brier score is similarly quite large at 0.483. The condition 1 model performs even worse than this, with an AUC of 0.512, indicating that the model performs hardly any better than random guessing, an accuracy of 41.33%, and a Brier score of 0.576. These models are also poorly calibrated, indicating overfitting and evidence that the model systematically underpredicts the risk of schizophrenia.
 
-This is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. What was saved in terms of fewer predictors was lost in terms of predictive power. 
+The reason these models perform so much worse than previous 95% models is likely due to the mFPC scores only explaining 90% of the variability compared to 95%, which was used in all the other models. So, it was better to start out with the much larger dataset, as what was saved in terms of fewer predictors was lost in terms of predictive power. 
+
+
 
 ### Comparison of Elastic Net and Ridge Regression models
 

@@ -2125,8 +2125,8 @@ best_cv <- cv_list[[best_index]]
 best_alpha <- alpha_grid[best_index]
 
 # best lambda corresponding to that alpha
-bestlam <- ((best_cv$lambda.min)/2)
-selam <- ((best_cv$lambda.1se)/2)
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
 
 # fit elastic net model
 enet <- glmnet(x_train, y_train,
@@ -2473,10 +2473,6 @@ enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
 # 1se lam
 enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 
-# convert to vector
-enet_prob_v <- as.vector(enet_prob)
-enet_prob_se_v <- as.vector(enet_prob_se)
-
 # uncomment for ridge regression
 # cv_fit <- cv.glmnet( x_train, y_train, alpha = 0, family = "binomial", nfolds = 10 ) 
 # bestlam <- cv_fit$lambda.min 
@@ -2518,7 +2514,7 @@ enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
 
-enet_error # closer to zero is better. 0.5 = random guessing
+1-enet_error #  0.5 = random guessing
 enet_brier # closer to zero is better. >0.25 is poor
 enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
@@ -2666,7 +2662,7 @@ enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
 
-enet_error # closer to zero is better. 0.5 = random guessing
+1-enet_error # closer to zero is better. 0.5 = random guessing
 enet_brier # closer to zero is better. >0.25 is poor
 enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
@@ -2705,6 +2701,12 @@ coef_df <- data.frame(predictor = rownames(coef_selam),
 
 non_zero_coeffs_cond2 <- coef_df %>% filter(coefficient != 0)
 non_zero_coeffs_cond2
+
+non_zero_coeffs_cond2 %>%
+  summarise(
+    Level1 = sum(str_detect(predictor, "L1")),
+    Level2 = sum(str_detect(predictor, "L2"))
+  )
 
 zero_coeffs_cond2 <- coef_df %>% filter(coefficient == 0)
 
@@ -2789,6 +2791,16 @@ enet_auc <- auc(enet_roc_obj)
 plot(enet_roc_obj, print.auc = TRUE)
 coords(enet_roc_obj, "best")   # 0.33 gives a good balance between sensitivity and specificity
 
+# misclassification error
+enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
+# confusion matrix (predicted, outcome)
+table(enet_class, y_test)
+enet_error <- mean(enet_class != y_test)
+
+1-enet_error # closer to zero is better. 0.5 = random guessing
+enet_brier # closer to zero is better. >0.25 is poor
+enet_auc # 1 is perfect discrimination. 0.5 = random guessing
+
 # Plots 
 plot(enet, xvar = "lambda")
 abline(v = -log(bestlam), col = "darkgreen", lty = 2, lwd = 2)
@@ -2823,7 +2835,11 @@ coef_df <- data.frame(predictor = rownames(coef_selam),
                       coefficient = as.vector(coef_selam))
 
 non_zero_coeffs_cond3 <- coef_df %>% filter(coefficient != 0)
-non_zero_coeffs_cond3
+non_zero_coeffs_cond3 %>%
+  summarise(
+    Level1 = sum(str_detect(predictor, "L1")),
+    Level2 = sum(str_detect(predictor, "L2"))
+  )
 
 zero_coeffs_cond3 <- coef_df %>% filter(coefficient == 0)
 
@@ -2859,8 +2875,8 @@ best_cv <- cv_list[[best_index]]
 best_alpha <- alpha_grid[best_index]
 
 # best lambda corresponding to that alpha
-bestlam <- ((best_cv$lambda.min)/2)
-selam <- ((best_cv$lambda.1se)/2)
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
 
 # fit elastic net model
 enet <- glmnet(x_train, y_train,
@@ -2997,8 +3013,8 @@ best_cv <- cv_list[[best_index]]
 best_alpha <- alpha_grid[best_index]
 
 # best lambda corresponding to that alpha
-bestlam <- ((best_cv$lambda.min)/2)
-selam <- ((best_cv$lambda.1se)/2)
+bestlam <- best_cv$lambda.min
+selam <- best_cv$lambda.1se
 
 # fit elastic net model
 enet <- glmnet(x_train, y_train,
@@ -3074,19 +3090,26 @@ enet_class <- ifelse(enet_prob_se_v > 0.5, 1, 0)
 table(enet_class, y_test)
 enet_error <- mean(enet_class != y_test)
 
-enet_error # closer to zero is better. 0.5 = random guessing
+1-enet_error # closer to zero is better. 0.5 = random guessing
 enet_brier # closer to zero is better. >0.25 is poor
 enet_auc # 1 is perfect discrimination. 0.5 = random guessing
 
 # To see which predictor was shrunk to zero (selam)
 rownames(coef(enet, s = selam))[as.vector(coef(enet, s = selam)) == 0]
 
+  
 coef_selam <- coef(enet, s = selam)
 
 coef_df <- data.frame(predictor = rownames(coef_selam),
                       coefficient = as.vector(coef_selam))
 
 non_zero_coeffs <- coef_df %>% filter(coefficient != 0) %>% arrange(desc(abs(coefficient)))
+
+non_zero_coeffs %>%
+  summarise(
+    Level1 = sum(str_detect(predictor, "L1")),
+    Level2 = sum(str_detect(predictor, "L2"))
+  )
 
 hist(abs(non_zero_coeffs$coefficient))
 
