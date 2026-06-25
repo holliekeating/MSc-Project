@@ -258,7 +258,7 @@ Calibration was assessed using calibration plots generated from the model's pred
 
 \label{sec:results}
 
-This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, mFPCA, and elastic net analyses are reported. 
+This section presents the results obtained from the statistical and machine learning methods described in the previous methods section. Findings from the permutation t-tests, FPCA, K-means clustering, mFPCA, elastic net analyses and ridge regression are reported. 
 
 The code and datasets for this project can be viewed at our GitHub repository here: [GitHub](https://github.com/maeve-susan/MSc-Project)
 
@@ -295,7 +295,7 @@ As you can see the functional principal components are eigenfunctions which expl
 
 On the top right of this plot is the mean curve, and on the bottom right, we can see the main modes of variation about this mean curve. So, the mean curve is flattened to be a straight line, and the eigenfunctions represent the functional principal components.
 
-The first functional principal component, shown in black, remains close to the mean function initially, and then it drops below the mean. In the second FPC shown in red the eigenfunction rises above the mean and then dropping below. The third initially rises above the mean then goes below before rising above the mean again.
+The first functional principal component, shown in black, remains close to the mean function initially, and then it drops below the mean. In the second FPC shown in red the eigenfunction rises above the mean and then drops below. The third initially rises above the mean then goes below before rising above the mean again.
 
 These are the three main ways in which subject's curves vary about the mean and as we can see from the scree plot on the bottom left we can see that the first FPC explains the most variance at approximately \~90% and the second and third describe the remaining \~5% of the variation.
 
@@ -353,7 +353,7 @@ We can see from the confusion matrix above, the exact number of cases and contro
 
 ## Multi-Level Functional Principal Component Analysis
 
-Unlike the previous FPCA analysis, which considered a single trial under a single condition, mFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into Level 1 (between-subject variation) and level 2 (within-subject variation).
+Unlike the previous FPCA analysis, which considered a single trial under a single condition, mFPCA allowed repeated EEG trials from each subject to be analysed simultaneously. This allowed variation to be broken down into level 1 (between-subject variation) and level 2 (within-subject variation).
 
 The first four eigenfunctions for level 1 and level 2 are shown below. Similar to FPCA, these eigenfunctions represent the dominant modes of variation within the EEG signals, explaining 95% of the variation in the curves. However, level 1 components describe differences between subjects, whereas level 2 components describe variation between repeated trials from the same subject. Comparing the FPCA eigenfunctions with the level 1 mFPCA eigenfunctions reveals notable differences in the dominant modes of variation. This is expected, as mFPCA incorporates repeated trials and separates between-subject and within-subject variation, whereas standard FPCA is based on a single functional observation per participant.
 
@@ -364,14 +364,14 @@ knitr::include_graphics("Images/level1mfpca.png")
 ```
 
  
-For level 1, above, the first principal component explains the largest proportion of between-subject variability. The first mFPC (blue) captures a broad pattern across the EEG trajectory, while the remaining components display more oscillatory behaviour. Notably, the third (red) and fourth (purple) components show substantial variation particularly surrounding $100 \ ms$, the point of stimulus onset. This suggests that differences in EEG responses during the post-stimulus period contribute meaningfully to the variability observed between subjects Together, these components summarise the primary ways in which subjects' EEG trajectories differ from one another.
+For level 1, above, the first principal component explains the largest proportion of between-subject variability. The first mFPC (blue) captures a broad pattern across the EEG trajectory, while the remaining components display more oscillatory behaviour. Notably, the third (red) and fourth (purple) components show substantial variation particularly surrounding $100 \ ms$, the point of stimulus onset. This suggests that differences in EEG responses during the post-stimulus period contribute meaningfully to the variability observed between subjects. Together, these components summarise the primary ways in which subjects' EEG trajectories differ from one another.
 
 ```{r, echo = FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap= "(b) First four Level 2 mFPCA principal components representing trial-to-trial variation" , fig.pos="H"}
 
-knitr::include_graphics(           "Images/level2mfpca.png")
+knitr::include_graphics(          "Images/level2mfpca.png")
 ```
 
-The level 2 mFPCs, figure (b) above, represent the dominant souces of within-subject variation across the repeated trials. Compared with the level 1 components, these appear smoother and exhibit more gradual changes over time. The first principal component (blue) displays the dominant source of between-trial variation within subjects and displays a broad decreasing trend throughout the EEG trajectory. As expected, less localised variation is observed than between-subject variation.
+The level 2 mFPCs, figure (b) above, represent the dominant sources of within-subject variation across the repeated trials. Compared with the level 1 components, these appear smoother and exhibit more gradual changes over time. The first principal component (blue) displays the dominant source of between-trial variation within subjects and displays a broad decreasing trend throughout the EEG trajectory. As expected, less localised variation is observed than between-subject variation.
 Unlike the level 1 components, which show substantial variation surrounding the stimulus onset period, the level 2 components do not exhibit any clear change around the $100 \ ms$ region which reflects more general fluctuations in EEG activity across repeated trials. 
 However, the magnitude of the deviations from the mean function suggests that a lot of variability exists between repeated trials despite accounting for subject-level effects. This observation is expected within our analysis, as variability between different subjects is anticipated to be greater than variability observed across repeated trials from the same subject. 
 
@@ -381,7 +381,7 @@ Overall, the mFPCA results indicate that meaningful variation does exist at both
 
 To determine whether the subject-level variation identified by mFPCA improved the distinction between cases and controls, k-means clustering was applied to mFPCA level 1 scores and compared with standard FPCA score clustering results. This was done as the level 1 scores and the standard FPCA scores are both working on the between-subject level.
 
-To compare this with the kmeans clustering performed previously on the single trial data we used four clusters as before.
+To compare this with the k-means clustering performed previously on the single trial data we used four clusters as before.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Kmeans clustering of level 1 mFPCA scores (a) visualisation of clusters, (b) curves coloured by case-control status, faceted by cluster", fig.pos="H"}
 
@@ -458,7 +458,7 @@ knitr::include_graphics(c(
 \newpage 
 ### Section 2: two EEG nodes, with 95% variability explained
 
-Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.61$ and $\lambda = 0.000049$. The original set of 148 predictor variables was reduced to 37 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 27 level 1 and 7 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.914 (Figure b). Classification accuracy at a threshold of 0.5 was 79.89%. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.46 to 0.73. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.61$ and $\lambda = 0.000049$. The original set of 148 predictor variables was reduced to 37 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 27 level 1 and 7 level 2 predictors were retained. Model discrimination was outstanding, with an AUC of 0.914 (Figure b). Classification accuracy at a threshold of 0.5 was 79.89%. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of 0.59, ranging from 0.46 to 0.73. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 0.5, fig.cap="Model performance results for all conditions, 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -484,7 +484,7 @@ knitr::include_graphics(c(
 
 ### Section 3: four EEG nodes, with 90% variability
 
-Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.91$ and $\lambda = 0.000071$. The original set of 150 predictor variables was reduced to 24 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 20 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was modest, with an AUC of 0.655 (Figure b). Classification accuracy at a threshold of 0.5 was 49.63%, indicating performance close to random classification. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.03 to 0.07. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Firstly, the model was fitted on all conditions simultaneously. The optimal tuning parameters were identified as $\alpha = 0.91$ and $\lambda = 0.000071$. The original set of 150 predictor variables was reduced to 24 non-zero coefficients (Figure a), indicating substantial variable selection. Among the mFPCA score predictors, 20 level 1 predictors were retained, while no level 2 predictors remained in the model. Model discrimination was modest, with an AUC of 0.655 (Figure b). Classification accuracy at a threshold of 0.5 was 49.63%, indicating performance close to random classification. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of 0.05, ranging from 0.03 to 0.07. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 0.5, fig.cap="Model performance results for all conditions with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -495,7 +495,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000036)$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the mFPCA score predictors, 12 level 1 and no level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.512 (Figure b). Classification accuracy at a threshold of 0.5 was 41.33%, indicating poor classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of -0.01 (95% CI: -0.02-0.00). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000036$. The original set of 32 predictor variables was reduced to 16 non-zero coefficients (Figure a). Among the mFPCA score predictors, 12 level 1 and no level 2 predictors were retained. Model discrimination was poor, with an AUC of 0.512 (Figure b). Classification accuracy at a threshold of 0.5 was 41.33%, indicating poor classification performance. The calibration plot indicated bad calibration (Figure c), with a calibration slope of -0.01 (95% CI: -0.02-0.00). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 \newpage
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 20, fig.asp = 0.5, fig.cap="Model performance results for condition 1 with 4 nodes 90% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
