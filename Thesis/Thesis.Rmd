@@ -456,29 +456,6 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 64 non-zero coefficients (Figure a). Among the mFPCA score predictors, 23 level 1 and 40 level 2 predictors remained. Model discrimination was very poor, with an AUC of 0.427 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.67%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from -0.02 to 0.00. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
-
-knitr::include_graphics(c(
-"Images/coefficients_cond2_4nodes_95var.png",
-"Images/roc_cond2_4nodes_95var.png",
-"Images/calibration_cond2_4nodes_95var.png",
-"Images/predprob_cond2_4nodes_95var.png"))
-
-```
-
-Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 48 non-zero coefficients (Figure a). Among the mFPCA score predictors, 21 level 1 and 25 level 2 predictors remained. Model discrimination was quite poor, with an AUC of at 0.548 (Figure b). Classification accuracy at a threshold of 0.5 was also poor at 58.49%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.00 to 0.03. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
-
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
-
-knitr::include_graphics(c(
-"Images/coefficients_cond3_4nodes_95var.png",
-"Images/roc_cond3_4nodes_95var.png",
-"Images/calibration_cond3_4nodes_95var.png",
-"Images/predprob_cond3_4nodes_95var.png"))
-
-```
 
 ### Section 2: two EEG nodes, with 95% variability explained
 
@@ -658,9 +635,7 @@ The elastic net models with four nodes (see section 1) are all models based on t
 
 The all-conditions model performed best, suggesting that information from all three conditions contributes to classification. 
 
-The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition.
-
-The conditions 2 and 3 models perform poorly, indicating that these conditions contain limited discriminatory information when analysed individually. However, their inclusion within the all-conditions model improved overall predictive performance, suggesting that they provide useful information relating to condition 1. 
+The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional useful information in the 
 
 Overall, the all-conditions model was the strongest performer and was therefore selected as the preferred model.
 
