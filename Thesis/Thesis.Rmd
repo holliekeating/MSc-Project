@@ -562,6 +562,8 @@ Accuracy: 0.8413284
 Brier score: 0.1418376
 level 1: 26
 level 2: 71
+
+lambda: 0.02057507
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(

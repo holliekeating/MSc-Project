@@ -2593,7 +2593,7 @@ y_test <- mfpca_cond2_test$group
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.1, 0.9, by = 0.1)
+alpha_grid <- seq(0.01, 0.99, by = 0.1)
 
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
@@ -2611,6 +2611,18 @@ best_alpha <- alpha_grid[best_index]
 # best lambda corresponding to that alpha
 bestlam <- best_cv$lambda.min
 selam <- best_cv$lambda.1se
+
+# uncomment for ridge regression
+# cv_fit <- cv.glmnet( x_train, y_train, alpha = 0, family = "binomial", nfolds = 10 ) 
+# bestlam <- cv_fit$lambda.min 
+# selam <- cv_fit$lambda.1se 
+# enet <- glmnet( x_train, y_train, alpha = 0, family = "binomial" ) 
+# enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+# enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response") 
+
+# convert to vector 
+enet_prob_v <- as.vector(enet_prob) 
+enet_prob_se_v <- as.vector(enet_prob_se)
 
 
 # fit elastic net model
@@ -2726,7 +2738,7 @@ y_test <- mfpca_cond3_test$group
 # elastic net: 0 < alpha < 1
 # 0 ridge, 1 lasso
 # cv to find best value of lambda and alpha 
-alpha_grid <- seq(0.1, 0.9, by = 0.1)
+alpha_grid <- seq(0.01, 0.99, by = 0.1)
 
 cv_list <- lapply(alpha_grid, function(a) {
   cv.glmnet(x_train, y_train, 
@@ -2745,20 +2757,27 @@ best_alpha <- alpha_grid[best_index]
 bestlam <- best_cv$lambda.min
 selam <- best_cv$lambda.1se
 
-
-# fit elastic net model
-enet <- glmnet(x_train, y_train,
-               alpha = best_alpha,
-               family = "binomial")      # standardize = TRUE is the default 
-
 # predicted probabilities with best lam from test set, type = response for pred prob (not log odds)
 enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response")
 # 1se lam
 enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response")
 
+# uncomment for ridge regression
+# cv_fit <- cv.glmnet( x_train, y_train, alpha = 0, family = "binomial", nfolds = 10 ) 
+# bestlam <- cv_fit$lambda.min 
+# selam <- cv_fit$lambda.1se 
+# enet <- glmnet( x_train, y_train, alpha = 0, family = "binomial" ) 
+# enet_prob <- predict(enet, s = bestlam, newx = x_test, type = "response") 
+# enet_prob_se <- predict(enet, s = selam, newx = x_test, type = "response") 
+
 # convert to vector
 enet_prob_v <- as.vector(enet_prob)
 enet_prob_se_v <- as.vector(enet_prob_se)
+
+# fit elastic net model
+enet <- glmnet(x_train, y_train,
+               alpha = best_alpha,
+               family = "binomial")      # standardize = TRUE is the default
 
 ##plot predicted probabilities for each subject
 df_pred_c3 <- data.frame(enet_prob_se_v) %>% mutate(ID = mfpca_cond3_test$ID, .before = 1) %>% mutate(schizophrenia = as.factor(mfpca_cond3_test$group)) %>% mutate(trial = mfpca_cond3_test$trial)
