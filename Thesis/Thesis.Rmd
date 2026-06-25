@@ -419,14 +419,13 @@ As expected, the clustering results were broadly similar to those obtained using
 
 ## Elastic Net
 
-The first analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with mFPCA scores explaining 95% of the variability at both levels 1 and 2. Models were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions.
+The first analysis incorporated demographic variables (age, gender and education) together with mFPCA scores from four EEG nodes (fp1, f3, f7 and af7) explaining 95% of the variability at both levels 1 and 2. Models were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions.
 
+The second analysis incorporated demographic variables together with mFPCA scores from two EEG nodes (fp1 and f3) explaining 95% of the variability at both Level 1 and Level 2.
 
-The second analysis incorporated data from two EEG nodes (fp1 and f3) together with mFPCA scores explaining 95% of the variability at both levels 1 and 2.
+The third analysis incorporated demographic variables together with mFPCA scores from four EEG nodes (fp1, f3, f7 and af7) explaining 90% of the variability at both Level 1 and Level 2.
 
-The third analysis incorporated data from four EEG nodes (fp1, f3, f7 and af7) together with mFPCA scores explaining 90% of the variability at both levels 1 and 2.
-
-The fourth analysis examined the effect of ridge regression by setting $\alpha = 0$, thereby retaining all the predictors in the model as ridge regression shrinks coefficients towards zero but does not set them exactly equal to zero, and therefore does not perform variable selection. Data from four EEG nodes (fp1, f3, f7 and af7) were incorporated together with mFPCA scores explaining 95% of the variability at both levels 1 and 2.
+The fourth analysis examined the effect of ridge regression by setting $\alpha = 0$, thereby retaining all predictors in the model, as ridge regression shrinks coefficients towards zero but does not set them exactly equal to zero and therefore does not perform variable selection. Demographic variables together with mFPCA scores from four EEG nodes (fp1, f3, f7 and af7) explaining 95% of the variability at both Level 1 and Level 2 were incorporated.
 
 As in the first analysis, models in the second, third and fourth analyses were fitted using data from all conditions simultaneously, as well as separately for each of the three experimental conditions. However, only the results for all conditions combined and for Condition 1 are presented in detail. The focus on Condition 1 was motivated by the permutation t-test results, which provided the strongest evidence of differences between cases and controls. Results for Conditions 2 and 3 are not presented, as these conditions showed limited evidence of group differences.
 
@@ -444,7 +443,7 @@ knitr::include_graphics(c(
 
 ```
 
-Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.91$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 26 non-zero coefficients (Figure a). Among the mFPCA score predictors, 21 level 1 and 4 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.711 (Figure b). Classification accuracy at a threshold of 0.5 was 66%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope ranging from 0.04 to 0.09. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Next the model was fitted on the conditions independently. Condition 1 obtained the optimal tuning parameters as $\alpha = 0.81$ and $\lambda = 0.000026$. The original set of 62 predictor variables was reduced to 31 non-zero coefficients (Figure a). Among the mFPCA score predictors, 19 level 1 and 8 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.690 (Figure b). Classification accuracy at a threshold of 0.5 was 59.96%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope of 0.10 (95% CI: 0.08-0.12). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
@@ -455,6 +454,31 @@ knitr::include_graphics(c(
 "Images/predprob_cond1_4nodes_95var.png"))
 
 ```
+
+Condition 2 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000021$. The original set of 99 predictor variables was reduced to 30 non-zero coefficients (Figure a). Among the mFPCA score predictors, 18 level 1 and 8 level 2 predictors remained. Model discrimination was moderate, with an AUC of 0.750 (Figure b). Classification accuracy at a threshold of 0.5 at 80.447%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope of 0.09 (95% CI: 0.08-0.11). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond2_4nodes_95var.png",
+"Images/roc_cond2_4nodes_95var.png",
+"Images/calibration_cond2_4nodes_95var.png",
+"Images/predprob_cond2_4nodes_95var.png"))
+
+```
+
+Condition 3 obtained the optimal tuning parameters as $\alpha = 0.9$ and $\lambda = 0.000013$. The original set of 101 predictor variables was reduced to 21 non-zero coefficients (Figure a). Among the mFPCA score predictors, 14 level 1 and 3 level 2 predictors remained. Model discrimination was improved, with an AUC of at 0.789 (Figure b). Classification accuracy at a threshold of 0.5 was at 73.06%. The calibration plot indicated imperfect calibration (Figure c) with a calibration slope of 0.12 (95% CI: 0.09-0.15). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 3, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
+
+knitr::include_graphics(c(
+"Images/coefficients_cond3_4nodes_95var.png",
+"Images/roc_cond3_4nodes_95var.png",
+"Images/calibration_cond3_4nodes_95var.png",
+"Images/predprob_cond3_4nodes_95var.png"))
+
+```
+
 
 
 ### Section 2: two EEG nodes, with 95% variability explained
@@ -471,7 +495,7 @@ knitr::include_graphics(c(
 
 ```
 
-Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000016$. The original set of 40 predictor variables was reduced to 32 non-zero coefficients (Figure a). Among the mFPCA score predictors, 13 level 1 and 18 level 2 predictors were retained. Model discrimination was limited, with an AUC of 0.577 (Figure b) Classification accuracy was 58.0%, indicating limited classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope ranging from 0.01 to 0.04. This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
+Condition 1 yielded optimal tuning parameters of $\alpha = 0.91$ and $\lambda = 0.000016$. The original set of 40 predictor variables was reduced to 21 non-zero coefficients (Figure a). Among the mFPCA score predictors, 12 level 1 and 5 level 2 predictors were retained. Model discrimination was limited, with an AUC of 0.629 (Figure b) Classification accuracy was 66.05%, indicating moderately limited classification performance. The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of 0.04 (95% CI: 0.03-0.05). This was further reflected in the distribution of predicted probabilities (Figure d), where predictions tended to cluster near 0 and 1, indicating overly extreme predicted probabilities.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1 with 2 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
