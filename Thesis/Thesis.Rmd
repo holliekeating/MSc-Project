@@ -248,7 +248,7 @@ The ROC curve assesses the ability of a classification model to distinguish betw
 
 The discriminatory ability of the model was quantified using the Area Under the ROC Curve (AUC), [@Fawcett2006]. The AUC can be interpreted as the probability that a randomly selected case receives a higher predicted probability than a randomly selected control. An AUC of 0.5 indicates no discriminatory ability, whereas an AUC of 1 indicates perfect discrimination. 
 
-Classification performance was further evaluated using a confusion matrix at a threshold of 0.5. Predicted probabilities greater than or equal to 0.5 were classified as cases, while probabilities below 0.5 were classified as controls. Accuracy was calculated as the proportion of correctly classified observations, and the misclassification error rate as the proportion incorrectly classified.
+Classification performance was further evaluated using a confusion matrix at a threshold of 0.5. Predicted probabilities greater than or equal to 0.5 were classified as cases, while probabilities below 0.5 were classified as controls. Accuracy was calculated as the proportion of correctly classified observations, and the misclassification error rate as the proportion incorrectly classified. The Brier score was also calculated to assess the overall accuracy of the predicted probabilities. It is defined as the mean squared difference between the observed outcomes and the predicted probabilities, with lower values indicating better predictive performance.
 
 Calibration was assessed using calibration plots generated from the model's predicted probabilities. These plots compare predicted probabilities with observed outcome frequencies across the range of predicted risks [@Collins2014]. A well-calibrated model produces predicted probabilities that closely reflect the observed outcomes. Perfect calibration is represented by a curve lying on the diagonal reference line, corresponding to a calibration slope of 1 and an intercept of 0.
 
@@ -545,7 +545,7 @@ knitr::include_graphics(c(
 "Images/predprob_allcond_ridge.png"))
 
 ```
-Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was acceptable, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. The Brier score was 0.1555, indicating good overall predictive accuracy. Examination of the calibration plot indicated good calibration (Figure c). The 95% confidence interval for the calibration slope contained 1 (95% CI: 0.73 to 1.07), while the 95% confidence interval for the calibration intercept contained 0 (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1 (Figure d).
+Condition 1 identified the optimal shrinkage parameter as $\lambda = 0.02058$. All 65 predictor variables were retained in the model. Among the mFPCA score predictors, 25 level 1 and 35 level 2 predictors were retained. Model discrimination was good, with an AUC of 0.795 (Figure b). Classification accuracy at a threshold of 0.5 was 79.88%. The Brier score was 0.1555, indicating good overall predictive accuracy. Examination of the calibration plot indicated good calibration (Figure c). The 95% confidence interval for the calibration slope contained 1 (95% CI: 0.73 to 1.07), while the 95% confidence interval for the calibration intercept contained 0 (95% CI: -0.03 to 0.41), suggesting good agreement between predicted and observed probabilities. The rug plot and predicted probability density plot demonstrated that predicted probabilities were distributed across the probability range rather than being concentrated near 0 and 1 (Figure d).
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 1, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
 
 knitr::include_graphics(c(
@@ -722,6 +722,12 @@ Interestingly, the condition 1 ridge regression model also outperformed the corr
 
 **Condition 2 and 3 models**
 
+Since ridge regression yielded the strongest performance for condition 1, the same modelling approach was subsequently applied to conditions 2 and 3. Although neither condition performed as well as condition 1, both achieved better predictive performance than expected, demonstrating good discrimination and classification accuracy. However, the calibration metrics for condition 2 suggested that the model was overfitted and systematically underpredicted the probability of schizophrenia. The condition 3 model performed somewhat better, with the 95% confidence interval for the calibration slope containing the ideal value of 1. Nevertheless, the calibration intercept indicated that the model still systematically underpredicted risk.
+
+The relatively good predictive performance of conditions 2 and 3 was somewhat surprising given the permutation t-test results, which identified condition 1 as the sensory condition exhibiting the strongest differences between schizophrenia cases and controls. However, these findings are consistent with previous research demonstrating that neural activity differs between schizophrenia cases and controls even in the absence of external sensory stimulation. Recent systematic reviews of resting-state EEG and MEG (magnetoencephalography) studies have reported widespread electrophysiological abnormalities in schizophrenia, indicating altered spontaneous neural activity and functional connectivity during resting-state conditions [@DePieri2025; @Liu2025].
+
+Although the ridge regression models for conditions 2 and 3 performed better than expected, neither outperformed the corresponding condition 1 model. This suggests that while all three sensory conditions contained predictive information, condition 1 remained the most informative condition for distinguishing schizophrenia cases from controls.
+
 
 ### Overall
 
@@ -730,6 +736,8 @@ Interestingly, the condition 1 ridge regression model also outperformed the corr
 <!-- The condition 1 elastic net model using 4 nodes did not perform badly either, and it performed better than condition 2 or 3, which is as we would expect from the results of the permutation test.  -->
 
 <!-- However, the superior performance of the all-conditions models from each of the four results sections suggests that there is likely some important information contained in the condition 2 and condition 3 scores, as the model with all conditions performed the best of the elastic net and ridge regression models. -->
+
+The best-performing model overall was the condition 1 ridge regression model, which achieved an AUC of 0.795. The 95% confidence interval for the calibration slope contained the ideal value of 1, while the 95% confidence interval for the calibration intercept contained the ideal value of 0, indicating good agreement between predicted probabilities and observed outcomes. The model also achieved a classification accuracy of 79.88% and a low Brier score of 0.1555. Collectively, these performance metrics indicate a well-performing classification model with good discrimination, calibration, and overall predictive accuracy.
 
 ### Strengths and Limitations
 
