@@ -539,7 +539,6 @@ knitr::include_graphics(c(
 
 ```
 
-<<<<<<< HEAD
 Condition 2 identified the optimal shrinkage parameter as *$\lambda = 0.02058$*. All *65 predictor variables* were retained in the model. Among the mFPCA score predictors, 26 level 1 and 71 level 2 predictors were retained. Model discrimination was good, with an AUC of 0.778 (Figure b). Classification accuracy at a threshold of 0.5 was 84.13%. The Brier score was 0.1418, indicating that the predicted probabilities were generally close to the observed outcomes. Examination of the calibration plot indicated good calibration (Figure c). The calibration plot indicated imperfect calibration (Figure c), with a calibration slope of 0.55 (95% CI: 0.45-0.66) showing evidence of over-fitting. The 95% confidence interval for the calibration intercept was 0.83 (95% CI: 0.59-1.06), indicating that the model systematically under-predicted the probability of schizophrenia. The rug plot showed a concentration of observations at low predicted probabilities, with the remaining observations spread across the higher probability range.
 
 ```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Model performance results for condition 2, 4 nodes, 95% variability explained: (a) Coefficient Plot; (b) ROC Curve; (c) Calibration Plot; (d) Predicted Probability Plot.", fig.pos="H"}
@@ -578,7 +577,7 @@ performance <- data.frame(Section = c(1, 1, 2, 2, 3, 3, 4, 4, 4, 4),
                           L1 = c(32, 19, 27, 12, 20, 12, 74, 25, 26, 23),
                           L2 = c(0, 8, 7, 5, 0, 0, 182, 35, 71, 76),
                           AUC = c(0.937, 0.690, 0.914, 0.629, 0.655, 0.512, 0.803, 0.795, 0.778, 0.838),
-                          Accuracy = c("74.20%", "59.96%", "79.89%", "66.05%", "49.63%", "41.33%", "76.01%", "79.88%", "84.13", "84.13"))
+                          Accuracy = c("74.20%", "59.96%", "79.89%", "66.05%", "49.63%", "41.33%", "76.01%", "79.88%", "84.13%", "84.13%"))
 
 performance %>%
   kbl(booktabs = T) %>%
@@ -727,7 +726,7 @@ Several limitations should be acknowledged. Firstly, following the overall train
 
 Despite these limitations, the study demonstrated that mFPCA combined with elastic net classification was an accurate framework for investigating the EEG abnormalities associated with schizophrenia.
 
-##Comparison with other studies
+## Comparison with other studies
 
 In modern EEG analysis, FDA is a common tool, as it allows curves to be analysed as a whole, enabling interpretability and the development of accurate prediction models [@yi2022classification, @zhang2020prediction]. 
 
