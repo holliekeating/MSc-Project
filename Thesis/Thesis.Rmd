@@ -343,7 +343,8 @@ cm <- matrix(
 cm <- as.data.frame.matrix(cm)
 
 cm %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Confusion matrix of FPC clusters") %>%
   kable_classic(full_width = F, html_font = "Cambria", latex_options = "hold_position")
 
 ```
@@ -408,7 +409,8 @@ cm <- matrix(
 cm <- as.data.frame.matrix(cm)
 
 cm %>%
-  kbl(booktabs = T) %>%
+  kbl(booktabs = T,
+      caption = "Confusion matrix of mFPC clusters") %>%
   kable_classic(full_width = F, html_font = "Cambria", latex_options = "hold_position")
 
 
@@ -626,7 +628,7 @@ The elastic net models with four nodes (see section 1) are all models based on t
 
 The all-conditions model performed best, suggesting that information from all three conditions contributes to classification. 
 
-The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, suggesting there is additional predictive information in conditions 2 and 3. This is surprising given the previous result of the permutation t-test suggesting condition 1 exhibits significantly different EEG signals between cases and controls whereas conditions 2 and 3 had much less significant results. This suggests that the baseline EEG signals may be just as important in prediction as those where sensory gating is exhibited.
+The condition 1 model would be expected to perform well, given the result from the permutation test, indicating that condition 1 shows the strongest case-control differences in this condition. It performed moderately with an accuracy of 59.96% and an AUC of 0.69. However, it is clearly outperformed by the all conditions model, which had an accuracy of 74.2% abd an AUC of 0.937, suggesting there is additional predictive information in conditions 2 and 3. This is surprising given the previous result of the permutation t-test suggesting condition 1 exhibits significantly different EEG signals between cases and controls whereas conditions 2 and 3 had much less significant results. This suggests that the baseline EEG signals may be just as important in prediction as those where sensory gating is exhibited.
 
 Overall, the all-conditions model was the strongest performer and is clearly the preferred of the two models.
 \newpage
@@ -716,7 +718,7 @@ Despite these limitations, the study demonstrated that mFPCA combined with elast
 
 ## Comparison with other studies
 
-In modern EEG analysis, FDA is a common tool, as it allows curves to be analysed as a whole, enabling interpretability and the development of accurate prediction models [@yi2022classification, @zhang2020prediction]. 
+In modern EEG analysis, FDA is a common tool, as it allows curves to be analysed as a whole, enabling interpretability and the development of accurate prediction models [@yi2022classification; @zhang2020prediction]. 
 
 However, when it comes to classification models for schizophrenia based on EEG signals, few use a functional data approach instead, opting for more novel machine learning approaches, such as in @SABETI2011, in which they performed a new feature selection method and used both linear discriminant analysis (LDA) and adaptive boosting (Adaboost) to classify subjects as cases or controls. These models had an accuracy of 85.9% and 91.4%, respectively and found that their feature selection method outperformed a PCA-based feature selection. 
 
