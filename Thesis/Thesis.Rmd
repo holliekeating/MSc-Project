@@ -709,14 +709,11 @@ The relatively good predictive performance of conditions 2 and 3 was somewhat su
 
 Although the ridge regression models for conditions 2 and 3 performed better than expected, neither outperformed the corresponding condition 1 model. This suggests that while all three sensory conditions contained predictive information, condition 1 remained the most informative condition for distinguishing schizophrenia cases from controls.
 
-
 ### Overall
 
-<!-- Overall, the best-performing models were the all-conditions elastic net models using mFPCA scores that explained 95% of the variability in the data.  -->
+Of the elastic net models, the best performing was the all conditions two-node model, which had an AUC of 0.914 and a Brier score of 0.124. However, all of the elastic net models were poorly calibrated, so despite good performance, the model is not very generalisable.
 
-<!-- The condition 1 elastic net model using 4 nodes did not perform badly either, and it performed better than condition 2 or 3, which is as we would expect from the results of the permutation test.  -->
-
-<!-- However, the superior performance of the all-conditions models from each of the four results sections suggests that there is likely some important information contained in the condition 2 and condition 3 scores, as the model with all conditions performed the best of the elastic net and ridge regression models. -->
+However, when ridge regression was applied, it found that these models were all fairly well calibrated in comparison to the elastic net models, and they all had fairly high AUCs and accuracies. Conditions 2 and 3 performed well in the ridge model too, suggesting that these conditions, where sensory gating is not exhibited, may be important for prediction.
 
 The best-performing model overall was the condition 1 ridge regression model, which achieved an AUC of 0.795. The 95% confidence interval for the calibration slope contained the ideal value of 1, while the 95% confidence interval for the calibration intercept contained the ideal value of 0, indicating good agreement between predicted probabilities and observed outcomes. The model also achieved a classification accuracy of 79.88% and a low Brier score of 0.1555. Collectively, these performance metrics indicate a well-performing classification model with good discrimination, calibration, and overall predictive accuracy.
 
@@ -752,11 +749,9 @@ Using FDA, our analysis is much simpler than that of a neural network, which, al
 
 In conclusion, we found that there was a significant difference in the EEG curves of individuals with schizophrenia and controls in condition 1, since the permutation t-test showed pointwise significance at many points and global significance in others. The effect was less prominent in condition 2 however there was a small pointwise significant difference post-stimulus, and in condition 3 there is no pointwise significant difference in the EEG signals of cases and controls. This supports the hypothesis that sensory gating deficits are most evident when participants generate an expected auditory stimulus through their own action, condition 1 in this study.
 
-Using functional data analysis we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. 
+Using functional data analysis, we analysed and decomposed EEG curves into functional principal components to develop a classification model that can discriminate well between individuals with schizophrenia and controls. Our best model was the condition 1 ridge regression model which had high AUC and prediction accuracy alongside being a well calibrated model. 
 
-Our best models were the all conditions model using 2 and 4 nodes respectively where mFPC scores were found from the eigenfunctions that explained 95% of the variability in the curves. These were followed by the four-node model of condition 1 where mFPCs explained 95% of the variability in the curves, in terms of model performance. This is likely due to the sensory gating process discussed previously. The condition 2 and condition 3 models did not perform well however, the inclusion of condition 2 and 3 alongside condition 1 appears to provide additional information that improves the predictive power of the model.
-
-Further work could be done with a larger set of subjects in order to improve the generalisability of this model as the calibration was poor and all models in the validation set.
+The performance of the conditions 2 and 3 ridge regression models suggests that baseline EEG differences between cases and controls can also contribute meaningfully to schizophrenia prediction. 
 
 
 ## References
