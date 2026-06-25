@@ -77,23 +77,19 @@ In EEG experiments, subjects typically complete multiple trials under the same e
 
 	
 ## Aims
-
-The aims of our analysis were as follows:
  
-1. To investigate whether EEG signals differ between schizophrenia cases and controls during the sensory conditions detailed above
-2. To develop a prediction model using FDA to accurately predict case control status
-3. To investigate how condition 1 differs from condition 2 and 3 in cases and controls, as we would expect more sensory gating in condition 1 compared to the other two conditions since the sound was expected due to subjects pressing the button. Therefore, we expect that the largest difference between cases and controls EEG signals will occur in condition 1, as cases are expected to exhibit impaired sensory gating.
+- To investigate whether EEG signals differ between schizophrenia cases and controls during the sensory conditions detailed above
+- To develop a prediction model using FDA to accurately predict case control status
+- To investigate how condition 1 differs from condition 2 and 3 in cases and controls, as we would expect more sensory gating in condition 1 compared to the other two conditions since the sound was expected due to subjects pressing the button. Therefore, we expect that the largest difference between cases and controls EEG signals will occur in condition 1, as cases are expected to exhibit impaired sensory gating.
 
 ## Data
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which:
-
+In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which: \n 
 1.  Subjects press a button to immediately produce a sound
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
-
 
 Each subject completed each of these sensory conditions up to 100 times. Therefore, we have many repetitions of the same conditions for each of the subjects. So in total we have approximately $64\times 40 \times 100 = 256,000$ curves. Data from case participants were compared with age- and gender-matched controls. Only right-handed subjects were included in this analysis [@ford2014did].
 
