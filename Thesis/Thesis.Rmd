@@ -86,7 +86,7 @@ In EEG experiments, subjects typically complete multiple trials under the same e
 
 Our data were taken from the National Institute of Mental Health (NIMH project number R01MH058262), available from [Kaggle](www.kaggle.com/datasets/broach/button-tone-sz/data)
 
-In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which: \n 
+In our data, 40 subjects underwent three sensory conditions (25 controls, 15 cases) in which: 
 1.  Subjects press a button to immediately produce a sound
 2.  Subjects passively listen to the same sound without pressing a button
 3.  Subjects press a button, and no sound is produced.
@@ -128,7 +128,7 @@ $$\sum_{i=1}^n (y_i - X(t_i))^2 + \lambda \int [X''(t)]^2 dt$$
 Where $\sum_{i=1}^n (y_i - X(t_i))^2$ is the residual sum of square (RSS) and $\int [X''(t)]^2 dt$ is a penalty that prevents excessive wiggliness by preventing it from changing slope too quickly (as $X''(t)$ measures the rate of change of the slope) and $\lambda$ is the smoothing parameter where $\lambda = 0$ is the $RSS$ fit which is excessively wiggly and $\lambda \rightarrow \infty$ is over-smoothed and under-fit.
 
 We estimate $X(t)$ by assuming that $X(t) = \sum_{k=1}^K c_k B_k(t)$ where $B_k(t)$ are the cubic basis functions that we know, $K =100$ is the total number of knots that have been selected which are equally spaced along the x-axis and $c_k$ are the coefficients of the cubic b-splines we are estimating.
-```{r, echo = FALSE, fig.show='hold', out.width="89%", out.height="7cm", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
+```{r, echo = FALSE, fig.show='hold', out.width="89%", out.height="6cm", fig.cap = "Plots of raw and smoothed data, coloured by case-control status", fig.pos="H"}
 
 knitr::include_graphics("Images/raw_vs_smoothed.png")
 
@@ -272,7 +272,7 @@ In Condition 2, during which participants passively listened to the same sound w
 
 In Condition 3, during which participants pressed a button, but no sound was produced, the observed test statistic did not exceed the pointwise 0.05 critical value. Consequently, there was no evidence of a difference between the EEG responses of cases and controls.
 
-```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.9, fig.cap="Permutation T-tests: (a) Condition 1; (b) Condition 2; (c) Condition 3.", fig.pos="H"}
+```{r, echo=FALSE, fig.show='hold', out.width="49%", fig.width = 18, fig.asp = 0.7, fig.cap="Permutation T-tests: (a) Condition 1; (b) Condition 2; (c) Condition 3.", fig.pos="H"}
 
 knitr::include_graphics(c(
 "Images/permt_cond1.png",
